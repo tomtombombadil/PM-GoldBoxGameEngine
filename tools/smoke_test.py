@@ -80,6 +80,8 @@ def update_test(exe):
         game = ports / "goldbox"
         assert (ports / "Gold Box Game Engine.sh").is_file() and (game / "VERSION").read_text().strip() == "0.0.1"
         assert os.access(game / f"goldbox.{arch}", os.X_OK) and (game / "games").is_dir()
+        assert sorted(f.name for f in ports.iterdir()) == ["Gold Box Game Engine.sh", "GoldBox.Installer.sh", "goldbox"], \
+            "the installer left something else in the ports folder"
         # 2. A newer release appears (its "port" a script that says so): the
         # port finds it, downloads it, restarts; the launch script applies it
         (game / "conf").mkdir(exist_ok=True)

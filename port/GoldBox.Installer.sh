@@ -105,7 +105,8 @@ unzip -oqq "$WORK_ZIP" -d "$PORTS_DIR" || die "unpacking failed (card full or re
 rm -f "$WORK_ZIP"
 chmod +x "$PORTS_DIR/Gold Box Game Engine.sh" "$GAMEDIR"/goldbox.* "$GAMEDIR"/tools/*.sh 2>/dev/null
 mkdir -p "$GAMEDIR/games" "$GAMEDIR/conf"
-mv -f "$LOGF" "$GAMEDIR/install.log" 2>/dev/null
+# (the log began in the ports folder, before the port's own existed)
+mv -f "$LOGF" "$GAMEDIR/install.log" 2>/dev/null && LOGF="$GAMEDIR/install.log"
 
 # The new entry shows once the games list is read again
 if command -v curl >/dev/null 2>&1; then

@@ -49,7 +49,7 @@ Tick off with the version that did it. Never ask Tom the same thing twice.
 - [ ] Keep the `cyd` pin current (built on CYD 0.196.52, commit a1ee0ea).
 
 ## Done
-- [x] v0.3.0 (2026-11-14): releases as Pocket Curator's - installer,
+- [x] v0.3.1: the installer's stray log. v0.3.0 (2026-11-14): releases as Pocket Curator's - installer,
       Check for Updates, pre-releases; Send Logs to a WebDAV server.
 - [x] v0.2.0 (2026-11-14): B = Back / the menu's Exit (CYD v0.196.52
       `play::exit_point`); first real game run through the port (Curse,
