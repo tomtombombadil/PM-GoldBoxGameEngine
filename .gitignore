@@ -1,0 +1,25 @@
+build*/
+dist/
+.vscode/
+__pycache__/
+
+# Game files never go in the repo (bring your own game). The port's games
+# folder ships with its README only.
+*.DAX
+*.dax
+*.TLB
+*.tlb
+*.GLB
+*.glb
+*.pdf
+*.PDF
+*.EXE
+*.exe
+*.OVR
+*.ovr
+/port/goldbox/games/*
+!/port/goldbox/games/README.txt
+/port/goldbox/conf/
+/port/goldbox/log.txt
+/port/goldbox/goldbox.*
+/gamefiles/

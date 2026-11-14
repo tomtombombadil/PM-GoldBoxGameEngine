@@ -1,0 +1,5 @@
+# The launch script and build scripts run on Linux: Unix line ends always,
+# also when the repo is checked out on Windows
+*.sh text eol=lf
+*.py text eol=lf
+*.txt text

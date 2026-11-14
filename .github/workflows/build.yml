@@ -1,0 +1,99 @@
+name: Build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  # "Run workflow" on the Actions tab. Fill in a tag (v + the VERSION file,
+  # e.g. v0.2.0) to publish a release from the current main; leave empty
+  # for a plain build.
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: 'Release tag to create = v + the VERSION file, e.g. v0.2.0. Leave empty to just build.'
+        required: false
+        default: ''
+
+permissions:
+  contents: read
+
+jobs:
+  # The port on the runner itself: builds, then runs without a screen and
+  # plays back button presses (no game files: the game list, the menu, the
+  # messages).
+  check:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+      - name: Tools
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq libsdl2-dev
+      - name: No game files in the repo
+        run: |
+          if git ls-files | grep -Ei '\.(dax|tlb|glb|pdf|exe|ovr|cha|sav|ecl)$'; then
+            echo "::error::game files must never be committed"; exit 1
+          fi
+      - name: Launch script has Unix line ends
+        run: |
+          if grep -q $'\r' "port/Gold Box Game Engine.sh"; then
+            echo "::error::the launch script has Windows line ends"; exit 1
+          fi
+          bash -n "port/Gold Box Game Engine.sh"
+      - name: Build
+        run: |
+          cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-fsanitize=address,undefined" -DPM_STATIC_RUNTIME=OFF
+          cmake --build build -j"$(nproc)"
+      - name: Run without a screen
+        run: python3 tools/smoke_test.py build/goldbox
+
+  build:
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        arch: [aarch64, x86_64]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+      - name: Build goldbox.${{ matrix.arch }} (Ubuntu 20.04 container)
+        run: docker run --rm -v "$PWD":/src ubuntu:20.04 /src/tools/build_in_container.sh ${{ matrix.arch }}
+      - name: What was built
+        run: file dist/goldbox.${{ matrix.arch }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: bin-${{ matrix.arch }}
+          path: dist/goldbox.${{ matrix.arch }}
+
+  package:
+    needs: [check, build]
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: bin-*
+          path: dist
+          merge-multiple: true
+      - name: Package
+        run: python3 tools/package.py && unzip -l dist/goldbox.zip
+      - uses: actions/upload-artifact@v4
+        with:
+          name: goldbox-portmaster
+          path: dist/goldbox.zip
+      - name: Release
+        if: inputs.release_tag != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ inputs.release_tag }}
+        run: |
+          V="v$(tr -d ' \r\n' < VERSION)"
+          if [[ "$TAG" != "$V" && "$TAG" != "$V"-* ]]; then
+            echo "::error::the release tag must be $V - bump VERSION first"; exit 1
+          fi
+          gh release create "$TAG" dist/goldbox.zip --target "$GITHUB_SHA" --title "$TAG" --generate-notes

@@ -1,0 +1,3 @@
+[submodule "cyd"]
+	path = cyd
+	url = https://github.com/tomtombombadil/CYD-GoldBoxGameEngine.git

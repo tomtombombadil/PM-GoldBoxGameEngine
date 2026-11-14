@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<gameList>
+  <game>
+    <path>./Gold Box Game Engine.sh</path>
+    <name>Gold Box Game Engine</name>
+    <desc>Plays SSI's Gold Box AD&amp;D role-playing games - Pool of Radiance, Curse of the Azure Bonds, Secret of the Silver Blades, Pools of Darkness, the Savage Frontier and Krynn games - from your own copies of the original DOS game files.</desc>
+    <releasedate>20261114T000000</releasedate>
+    <developer>tomtombombadil</developer>
+    <publisher>tomtombombadil</publisher>
+    <genre>RPG</genre>
+    <image>./goldbox/screenshot.png</image>
+  </game>
+</gameList>

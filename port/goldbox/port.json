@@ -1,0 +1,34 @@
+{
+    "version": 4,
+    "name": "goldbox.zip",
+    "items": [
+        "Gold Box Game Engine.sh",
+        "goldbox"
+    ],
+    "items_opt": [],
+    "attr": {
+        "title": "Gold Box Game Engine",
+        "porter": [
+            "tomtombombadil"
+        ],
+        "desc": "Plays SSI's Gold Box AD&D role-playing games - Pool of Radiance, Curse of the Azure Bonds, Secret of the Silver Blades, Pools of Darkness, the Savage Frontier and Krynn games - from your own copies of the original DOS game files, with controls made for handheld buttons. An open-source engine written from scratch; it contains nothing from the games.",
+        "desc_md": null,
+        "inst": "You need your own copy of each game (the GOG or Steam releases). Copy each game's whole install folder into ports/goldbox/games/ - for example ports/goldbox/games/Curse of the Azure Bonds/ - and start the port.",
+        "inst_md": null,
+        "genres": [
+            "rpg"
+        ],
+        "image": null,
+        "rtr": false,
+        "exp": false,
+        "runtime": [],
+        "store": [],
+        "availability": "full",
+        "reqs": [],
+        "arch": [
+            "aarch64",
+            "x86_64"
+        ],
+        "min_glibc": ""
+    }
+}
