@@ -3,6 +3,13 @@
 Every version of Gold Box Game Engine for PortMaster. A release's notes are
 its part of this file.
 
+## [0.6.2] - 2026-11-14
+
+- Pre-release. **The game list and the Looking for Games screen fill the whole screen** on 16:9 and other wide handhelds (box art across the full width) instead of sitting in a 4:3 box. This version's first start remakes the list pictures once for the screen's width.
+- **Looking for Games uses smaller letters**, so its lines fit.
+- The "2 of 9" counter is gone from the game list.
+- Game Fixes' description: "Corrects game mistakes and uses AD&D 1E rules. Off: as original game."
+
 ## [0.6.1] - 2026-11-14
 
 - Pre-release. **Everything is prepared when a game is found, nothing afterwards.** The scan now also makes each game's list picture (box art or logo) and its program tables, alongside the journal and music. After that the game list only shows saved pictures and a game starts straight away - no "Loading" screen, nothing decoded on first use.

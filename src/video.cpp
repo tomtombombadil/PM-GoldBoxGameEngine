@@ -19,11 +19,16 @@ SDL_Rect      strip{0, 0, 0, 0};    // the room beside the game
 SDL_Texture*  back = nullptr;       // the backdrop picture
 bool          back_on = false;
 int           back_top = 0;
-int           big_k = 0;
+int           big_k = 0, big_uw = 0;
 Fit           fit = Fit::Original;
 uint32_t      pal[256];
-uint32_t      over[kW * kH];        // the overlay
-uint32_t      shown[kW * kH];       // the composed frame
+// The port's own pages (the game list, the scan) fill a wide panel: the
+// overlay is then `uw` across instead of 320, the 320 everything is laid
+// out in standing in its middle (`ox` in from its left)
+bool          wide = false;
+int           uw = kW, ox = 0;
+uint32_t      over[kMaxW * kH];     // the overlay (uw across)
+uint32_t      shown[kMaxW * kH];    // the composed frame
 SDL_Rect      dst{0, 0, kW, kH};    // where the picture lands in the window
 
 void layout()
@@ -52,24 +57,39 @@ void layout()
             w = oh * 4 / 3;
         }
     }
+    // A page of the port's own on a panel wider than 4:3: the whole panel,
+    // the same 1.2-tall pixels, more of them across
+    uw = kW;
+    if (wide && oh > 0) {
+        int wu = static_cast<int>(static_cast<long>(kH) * 6 * ow / (5L * oh)) & ~1;
+        if (wu > kMaxW) wu = kMaxW;
+        if (wu > kW) {
+            uw = wu;
+            h = oh;
+            w = static_cast<int>(static_cast<long>(oh) * uw * 5 / (kH * 6L));
+            if (w > ow) w = ow;
+        }
+    }
+    ox = (uw - kW) / 2;
     dst = SDL_Rect{(ow - w) / 2, (oh - h) / 2, w, h};
     strip = SDL_Rect{0, 0, 0, 0};
-    if (side_on && fit == Fit::Original && ow - w >= 200) {
+    if (uw == kW && side_on && fit == Fit::Original && ow - w >= 200) {
         dst.x = 0;                              // (the game at the left, the Companion in the rest)
         strip = SDL_Rect{w, 0, ow - w, oh};
     }
     // The in-between texture: the next whole multiple at or above the
     // picture's size, so uneven scaling doesn't make uneven pixels
-    int k = (dst.w + kW - 1) / kW;
+    int k = (dst.w + uw - 1) / uw;
     const int kv = (dst.h + kH - 1) / kH;
     if (kv > k) k = kv;
     if (k < 1) k = 1;
     if (k > 6) k = 6;
-    if (k != big_k || !big) {
+    if (k != big_k || uw != big_uw || !big) {
         if (big) SDL_DestroyTexture(big);
         SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "linear");
-        big = SDL_CreateTexture(ren, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_TARGET, kW * k, kH * k);
+        big = SDL_CreateTexture(ren, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_TARGET, uw * k, kH * k);
         big_k = big ? k : 0;
+        big_uw = uw;
     }
 }
 
@@ -92,9 +112,9 @@ void blit(int x, int y, int w, int h, const uint32_t* argb)
         const int py = y + j;
         if (py < 0 || py >= kH) continue;
         for (int i = 0; i < w; ++i) {
-            const int px = x + i;
+            const int px = x + ox + i;
             const uint32_t c = argb[j * w + i];
-            if (px >= 0 && px < kW && (c >> 24)) over[py * kW + px] = c;
+            if (px >= 0 && px < uw && (c >> 24)) over[py * uw + px] = c;
         }
     }
 }
@@ -116,9 +136,19 @@ void text_big(int x, int y, const char* s, uint32_t fg)
     }
 }
 
+void set_wide(bool on)
+{
+    if (on == wide) return;
+    wide = on;
+    if (ren) layout();
+}
+
+int margin() { return ox; }
+int back_w() { return uw * 2; }
+
 bool side_room()
 {
-    if (!ren || fit != Fit::Original) return false;
+    if (!ren || fit != Fit::Original || wide) return false;
     int ow = 0, oh = 0;
     SDL_GetRendererOutputSize(ren, &ow, &oh);
     const int w = ow * 3 / 4 > oh ? oh * 4 / 3 : ow;
@@ -165,7 +195,7 @@ void draw_side()
 int pixel_aspect()
 {
     if (dst.w <= 0 || dst.h <= 0) return 1000;
-    return static_cast<int>(static_cast<long>(dst.h) * kW * 1000 / (static_cast<long>(dst.w) * kH));
+    return static_cast<int>(static_cast<long>(dst.h) * uw * 1000 / (static_cast<long>(dst.w) * kH));
 }
 
 void set_backdrop(const uint32_t* argb, int top)
@@ -174,11 +204,12 @@ void set_backdrop(const uint32_t* argb, int top)
     if (!ren || !argb) return;
     if (!back) {
         SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "linear");
-        back = SDL_CreateTexture(ren, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, kBackW, kBackH);
+        back = SDL_CreateTexture(ren, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, kMaxW * 2, kBackH);
         SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "nearest");
         if (!back) return;
     }
-    SDL_UpdateTexture(back, nullptr, argb, kBackW * 4);
+    const SDL_Rect part{0, 0, uw * 2, kBackH};
+    SDL_UpdateTexture(back, &part, argb, uw * 2 * 4);
     back_top = top;
     back_on = true;
 }
@@ -196,7 +227,7 @@ bool begin(int window_w, int window_h)
     if (!ren) ren = SDL_CreateRenderer(win, -1, SDL_RENDERER_SOFTWARE);
     if (!ren) return false;
     SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "nearest");
-    tex = SDL_CreateTexture(ren, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, kW, kH);
+    tex = SDL_CreateTexture(ren, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, kMaxW, kH);
     if (!tex) return false;
     SDL_ShowCursor(SDL_DISABLE);
     set_ega_palette();
@@ -253,8 +284,9 @@ void clear(uint32_t colour)
 
 void fill(int x, int y, int w, int h, uint32_t colour)
 {
+    x += ox;
     for (int j = y < 0 ? 0 : y; j < y + h && j < kH; ++j)
-        for (int i = x < 0 ? 0 : x; i < x + w && i < kW; ++i) over[j * kW + i] = colour;
+        for (int i = x < 0 ? 0 : x; i < x + w && i < uw; ++i) over[j * uw + i] = colour;
 }
 
 void frame(int x, int y, int w, int h, uint32_t colour)
@@ -267,6 +299,7 @@ void frame(int x, int y, int w, int h, uint32_t colour)
 
 void text_at(int x, int y, const char* s, uint32_t fg, uint32_t bg)
 {
+    x += ox;
     for (; *s; ++s, x += 8) {
         const uint8_t* g = glyph(*s);
         for (int j = 0; j < 8; ++j) {
@@ -274,9 +307,9 @@ void text_at(int x, int y, const char* s, uint32_t fg, uint32_t bg)
             if (py < 0 || py >= kH) continue;
             for (int i = 0; i < 8; ++i) {
                 const int px = x + i;
-                if (px < 0 || px >= kW) continue;
-                if (g[j] & (0x80 >> i)) over[py * kW + px] = fg;
-                else if (bg != kClear) over[py * kW + px] = bg;
+                if (px < 0 || px >= uw) continue;
+                if (g[j] & (0x80 >> i)) over[py * uw + px] = fg;
+                else if (bg != kClear) over[py * uw + px] = bg;
             }
         }
     }
@@ -288,15 +321,39 @@ int text(int col, int row, const char* s, uint32_t fg, uint32_t bg)
     return col + static_cast<int>(strlen(s));
 }
 
+// A letter at one and a half times its size (12 x 12), smoothed: each of
+// its pixels the average of the 2 x 2 it covers of the letter at 3 x
+void small_text(uint32_t* buf, int bw, int bh, int x, int y, const char* s, uint32_t fg)
+{
+    for (; *s; ++s, x += 12) {
+        const uint8_t* g = glyph(*s);
+        for (int j = 0; j < 12; ++j) {
+            const int py = y + j;
+            if (py < 0 || py >= bh) continue;
+            for (int i = 0; i < 12; ++i) {
+                const int px = x + i;
+                if (px < 0 || px >= bw) continue;
+                int cover = 0;
+                for (int b = 0; b < 2; ++b)
+                    for (int a = 0; a < 2; ++a)
+                        if (g[(2 * j + b) / 3] & (0x80 >> ((2 * i + a) / 3))) ++cover;
+                if (!cover) continue;
+                const uint32_t rr = ((fg >> 16) & 0xFF) * cover / 4, gg = ((fg >> 8) & 0xFF) * cover / 4, bb = (fg & 0xFF) * cover / 4;
+                buf[static_cast<size_t>(py) * bw + px] = 0xFF000000u | (rr << 16) | (gg << 8) | bb;
+            }
+        }
+    }
+}
+
 void pointer(int x, int y)
 {
     // (an arrow, 7 tall: cream with a black edge)
     static const char* const kShape[9] = {"#", "##", "#.#", "#..#", "#...#", "#....#", "#..###", "#.#", "##"};
     for (int j = 0; j < 9; ++j)
         for (int i = 0; kShape[j][i]; ++i) {
-            const int px = x + i, py = y + j;
-            if (px < 0 || px >= kW || py < 0 || py >= kH) continue;
-            over[py * kW + px] = kShape[j][i] == '#' ? kBlack : kCream;
+            const int px = x + ox + i, py = y + j;
+            if (px < 0 || px >= uw || py < 0 || py >= kH) continue;
+            over[py * uw + px] = kShape[j][i] == '#' ? kBlack : kCream;
         }
 }
 
@@ -305,29 +362,31 @@ void present(const pic::Canvas* game)
     if (!ren) return;
     const bool picture = back_on && !game;      // (the backdrop shows through the overlay's gaps)
     for (int y = 0; y < kH; ++y)
-        for (int x = 0; x < kW; ++x) {
-            const uint32_t o = over[y * kW + x];
-            shown[y * kW + x] = (o >> 24) ? o : game && game->px ? pal[game->get(x, y)]
+        for (int x = 0; x < uw; ++x) {
+            const uint32_t o = over[y * uw + x];
+            const int gx = x - ox;
+            shown[y * uw + x] = (o >> 24) ? o : game && game->px && gx >= 0 && gx < kW ? pal[game->get(gx, y)]
                               : picture && y >= back_top ? 0u : 0xFF000000u;
         }
-    SDL_UpdateTexture(tex, nullptr, shown, kW * 4);
+    const SDL_Rect part{0, 0, uw, kH};
+    SDL_UpdateTexture(tex, &part, shown, uw * 4);
     SDL_SetRenderDrawColor(ren, 0, 0, 0, 255);
     SDL_SetTextureBlendMode(tex, SDL_BLENDMODE_NONE);
     if (picture) {
         SDL_RenderClear(ren);
         const SDL_Rect to{dst.x, dst.y + dst.h * back_top / kH, dst.w, dst.h - dst.h * back_top / kH};
-        const SDL_Rect from{0, 0, kBackW, kBackH - back_top * 2};
+        const SDL_Rect from{0, 0, uw * 2, kBackH - back_top * 2};
         SDL_RenderCopy(ren, back, &from, &to);
         if (big) {
             SDL_SetTextureBlendMode(big, SDL_BLENDMODE_BLEND);
             SDL_SetRenderTarget(ren, big);
-            SDL_RenderCopy(ren, tex, nullptr, nullptr);     // (alpha copied as it is)
+            SDL_RenderCopy(ren, tex, &part, nullptr);     // (alpha copied as it is)
             SDL_SetRenderTarget(ren, nullptr);
             SDL_RenderCopy(ren, big, nullptr, &dst);
             SDL_SetTextureBlendMode(big, SDL_BLENDMODE_NONE);
         } else {
             SDL_SetTextureBlendMode(tex, SDL_BLENDMODE_BLEND);
-            SDL_RenderCopy(ren, tex, nullptr, &dst);
+            SDL_RenderCopy(ren, tex, &part, &dst);
         }
         draw_side();
         SDL_RenderPresent(ren);
@@ -335,13 +394,13 @@ void present(const pic::Canvas* game)
     }
     if (big) {
         SDL_SetRenderTarget(ren, big);
-        SDL_RenderCopy(ren, tex, nullptr, nullptr);
+        SDL_RenderCopy(ren, tex, &part, nullptr);
         SDL_SetRenderTarget(ren, nullptr);
         SDL_RenderClear(ren);
         SDL_RenderCopy(ren, big, nullptr, &dst);
     } else {
         SDL_RenderClear(ren);
-        SDL_RenderCopy(ren, tex, nullptr, &dst);
+        SDL_RenderCopy(ren, tex, &part, &dst);
     }
     draw_side();
     SDL_RenderPresent(ren);
@@ -356,7 +415,8 @@ bool to_canvas(int wx, int wy, int& cx, int& cy)
     SDL_GetRendererOutputSize(ren, &ow, &oh);
     const int x = wx * ow / (ww ? ww : 1), y = wy * oh / (wh ? wh : 1);
     if (x < dst.x || y < dst.y || x >= dst.x + dst.w || y >= dst.y + dst.h) return false;
-    cx = (x - dst.x) * kW / dst.w;
+    cx = (x - dst.x) * uw / dst.w - ox;
+    if (cx < 0 || cx >= kW) return false;
     cy = (y - dst.y) * kH / dst.h;
     return true;
 }

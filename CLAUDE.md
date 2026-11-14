@@ -49,6 +49,16 @@ and maintains it; it is the primary output of the Claude Project
   engine makes from game files gets a scan step in the same version -
   before writing such code, read how the CYD's card scan does it
   (`cyd/src/app/library.cpp`, CYD CLAUDE.md "Card scan") and do the same.
+- **The port's own pages fill the panel** (Tom, 2026-11-14, on his
+  PowKiddy RGB10 MAX3, 16:9: the game list and the scan pillarboxed to
+  4:3 "looks very unprofessional"): the game list, the scan and any new
+  page of the port's own are laid out for the panel's real shape
+  (`video::set_wide`, `margin()`, `back_w()`; SPEC 5) - check each at
+  1280 x 720 as well as 640 x 480 (`--window`) before a release. Only
+  the game itself is 4:3. No "2 of 9" counter on the game list ("looks
+  bad"). The scan's list uses the smaller letters (`video::small_text`).
+- **Tom's devices**: RG40XX H / ROCKNIX (4:3, primary), PowKiddy RGB10
+  MAX3 (16:9).
 - **Game list pictures** (Tom, 2026-11-14): Steam box art when the
   Launcher folder is there, else the game's own logo from its folder's
   `goggame-*.ico` / `.dll` as the CYD. If a picture of our own is ever

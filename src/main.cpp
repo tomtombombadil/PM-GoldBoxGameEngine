@@ -209,13 +209,15 @@ art::Want art_want(const library::GameDir& g)
 
 void draw_games()
 {
+    // (the whole panel: m more columns each side of the 320 on a wide one)
+    const int m = video::margin(), left = -m, wide = video::kW + 2 * m, right = video::kW + m;
     video::clear(video::kClear);
     video::set_backdrop(nullptr);
-    video::fill(0, 0, video::kW, kHeaderH, video::kNavy);
-    video::text_at(8, 6, "Gold Box Game Engine", video::kGold);
-    video::text_at(video::kW - 8 - static_cast<int>(strlen(PM_VERSION)) * 8, 6, PM_VERSION, video::kMuted);
+    video::fill(left, 0, wide, kHeaderH, video::kNavy);
+    video::text_at(left + 8, 6, "Gold Box Game Engine", video::kGold);
+    video::text_at(right - 8 - static_cast<int>(strlen(PM_VERSION)) * 8, 6, PM_VERSION, video::kMuted);
     if (games_found.empty()) {
-        video::fill(0, kHeaderH, video::kW, video::kH - kHeaderH, video::kBlack);
+        video::fill(left, kHeaderH, wide, video::kH - kHeaderH, video::kBlack);
         int row = 4;
         centred(row, have_root ? "No games found" : "No games folder", video::kWarn);
         row = wrapped(2, row + 2, 36,
@@ -246,7 +248,7 @@ void draw_games()
     // own logo above the name) - only read here, never decoded
     const uint32_t* picture = art::load(g, library::cache_dir(g), art_want(g));
     if (picture) video::set_backdrop(picture, kHeaderH);
-    else video::fill(0, kHeaderH, video::kW, video::kH - kHeaderH, video::kBlack);
+    else video::fill(left, kHeaderH, wide, video::kH - kHeaderH, video::kBlack);
     const int ty = picture ? (l2.empty() ? 162 : 144) : (l2.empty() ? 92 : 82);
     video::text_big((video::kW - static_cast<int>(l1.size()) * 16) / 2, ty, l1.c_str(), can ? video::kCream : video::kMuted);
     if (!l2.empty())
@@ -255,20 +257,16 @@ void draw_games()
         video::fill(104, ty - 14, 112, 11, video::kBlack);
         video::text_at(112, ty - 12, "Not playable", video::kWarn);
     }
-    // The pages' clue: a small arrowhead at each side, which game of how many
+    // The pages' clue: a small arrowhead at each side (no "2 of 9" counter - Tom, 2026-11-14)
     if (n > 1) {
         for (int k = 0; k < 7; ++k) {
-            video::fill(4 + k, 106 - k, 1, 2 * k + 1, video::kBlack);
-            video::fill(video::kW - 5 - k, 106 - k, 1, 2 * k + 1, video::kBlack);
+            video::fill(left + 4 + k, 106 - k, 1, 2 * k + 1, video::kBlack);
+            video::fill(right - 5 - k, 106 - k, 1, 2 * k + 1, video::kBlack);
         }
         for (int k = 0; k < 5; ++k) {
-            video::fill(6 + k, 106 - k, 1, 2 * k + 1, video::kCream);
-            video::fill(video::kW - 7 - k, 106 - k, 1, 2 * k + 1, video::kCream);
+            video::fill(left + 6 + k, 106 - k, 1, 2 * k + 1, video::kCream);
+            video::fill(right - 7 - k, 106 - k, 1, 2 * k + 1, video::kCream);
         }
-        char page[24];
-        snprintf(page, sizeof page, "%d of %d", (game_sel + 1) % 1000, n % 1000);
-        video::fill(video::kW - 12 - static_cast<int>(strlen(page)) * 8, kHeaderH + 3, static_cast<int>(strlen(page)) * 8 + 8, 12, video::kBlack);
-        video::text_at(video::kW - 8 - static_cast<int>(strlen(page)) * 8, kHeaderH + 5, page, video::kMuted);
     }
 }
 
@@ -584,7 +582,7 @@ const char* menu_help(MenuItem m)
     case MFont: return "The game's letters: its own, the engine's Clear (easier to read), Darkness's, or Clear Caps.";
     case MPadMoves: return "On: exploring, the D-pad walks and L1 R1 L2 R2 move the highlights. Off: the D-pad moves them.";
     case MSwap: return "Which of A and B chooses; the other goes back.";
-    case MFixes: return "The original games' mistakes made as AD&D has them. Off: as the originals.";
+    case MFixes: return "Corrects game mistakes and uses AD&D 1E rules. Off: as original game.";
     case MRolls: return "Fights show the dice behind each message: to hit, needed, damage, saves.";
     case MReadTime: return "The games' timed messages stay at least a second. Off: the games' own timing.";
     case MCampFix: return "Pool of Radiance's camp gets Fix, as the later games have it.";
@@ -852,6 +850,8 @@ void keys_move(int dx, int dy)
 // ---- Frames ----------------------------------------------------------------
 void draw_frame()
 {
+    // The port's own pages fill the panel; a game is 320 across
+    video::set_wide(!playing);
     if (screen == Screen::Games) {
         draw_games();
     } else if (screen == Screen::Scan) {
@@ -1008,18 +1008,28 @@ constexpr char kScanTag[] = "scan 1";
 std::vector<std::string> scan_log;
 bool                     scan_done = false, scan_progress = false;
 
+// The scan's page: its lines in the smaller letters (12 x 12 on the
+// backdrop's sharper picture), as many across as the panel has room for
+std::vector<uint32_t> scan_page;
+
 void draw_scan()
 {
-    video::clear(video::kBlack);
-    video::set_backdrop(nullptr);
-    video::fill(0, 0, video::kW, kHeaderH, video::kNavy);
-    video::text_at(8, 6, "Looking for Games", video::kGold);
-    // The newest lines that fit, wrapped at 38
+    const int m = video::margin(), bw = video::back_w(), rows_px = (video::kH - kHeaderH) * 2;
+    video::clear(video::kClear);
+    video::fill(-m, 0, video::kW + 2 * m, kHeaderH, video::kNavy);
+    video::text_at(-m + 8, 6, "Looking for Games", video::kGold);
+    video::fill(-m, video::kH - 14, video::kW + 2 * m, 14, video::kBlack);
+    char line[41];
+    if (scan_done) snprintf(line, sizeof line, "%s: Continue", confirm_name());
+    else snprintf(line, sizeof line, "Working - this can take minutes.");
+    video::text_at((video::kW - static_cast<int>(strlen(line)) * 8) / 2, video::kH - 11, line, scan_done ? video::kGold : video::kMuted);
+    // The newest lines that fit, wrapped
+    const size_t cols = static_cast<size_t>((bw - 24) / 12);
     std::vector<std::string> rows;
     for (const std::string& l : scan_log) {
         size_t i = 0;
         do {
-            size_t end = i + 38;
+            size_t end = i + cols - (i ? 2 : 0);
             if (end >= l.size()) end = l.size();
             else {
                 const size_t brk = l.rfind(' ', end);
@@ -1030,14 +1040,13 @@ void draw_scan()
             while (i < l.size() && l[i] == ' ') ++i;
         } while (i < l.size());
     }
-    const int fit = 16;
+    const int pitch = 15, fit = (rows_px - 28 - 12) / pitch;
     const size_t from = rows.size() > static_cast<size_t>(fit) ? rows.size() - fit : 0;
+    scan_page.assign(static_cast<size_t>(bw) * video::kBackH, 0xFF000000u);
     for (size_t k = from; k < rows.size(); ++k)
-        video::text_at(4, 26 + static_cast<int>(k - from) * 10, rows[k].c_str(), video::kCream);
-    char line[41];
-    if (scan_done) snprintf(line, sizeof line, "%s: Continue", confirm_name());
-    else snprintf(line, sizeof line, "Working - this can take minutes.");
-    centred(24, line, scan_done ? video::kGold : video::kMuted);
+        video::small_text(scan_page.data(), bw, rows_px, 12, 10 + static_cast<int>(k - from) * pitch, rows[k].c_str(),
+                          rows[k].compare(0, 5, "Found") == 0 ? video::kGold : video::kCream);
+    video::set_backdrop(scan_page.data(), kHeaderH);
 }
 
 void scan_say(const char* line, bool replace, void*)
@@ -1068,7 +1077,7 @@ void scan_begin(bool& any)
     scan_log.clear();
     scan_done = scan_progress = false;
     screen = Screen::Scan;
-    video::set_backdrop(nullptr);
+    video::set_wide(true);
     scan_say("Searching for Gold Box games...", false, nullptr);
 }
 
@@ -1099,7 +1108,7 @@ bool discover(bool all)
                 play::prepare_program(g.data_dir.c_str(), g.game, cache.c_str());
             if (!art::ready(g, cache, art_want(g))) {
                 scan_begin(any);
-                snprintf(line, sizeof line, "Preparing the %s picture", games::short_title(g.game));
+                snprintf(line, sizeof line, "Preparing the picture for %s", games::title(g.game));
                 scan_say(line, false, nullptr);
                 scan_picture(g, cache);
             }
@@ -2059,6 +2068,7 @@ int main(int argc, char** argv)
         return 1;
     }
     video::set_fit(static_cast<video::Fit>(cfg.fit));
+    video::set_wide(true);
     if (SDL_InitSubSystem(SDL_INIT_AUDIO) == 0) pm::audio_begin();
     else plat::log("[port] no sound: %s\n", SDL_GetError());
     open_pad();

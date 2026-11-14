@@ -11,6 +11,7 @@
 namespace video {
 
 constexpr int kW = pic::kScreenW, kH = pic::kScreenH;
+constexpr int kMaxW = 576;      // the overlay at its widest (a 21:9 panel)
 
 // How the 320 x 200 picture fills the panel
 enum class Fit : uint8_t {
@@ -31,6 +32,19 @@ void resized();
 // The palette the canvas's values are shown in
 void set_palette(int index, const pic::Rgb& c);
 void set_ega_palette();
+
+// ---- The port's own pages on a wide panel (Tom, 2026-11-14: the game list
+// and the scan "resize to match the screen" - 16:9 and the like)
+// On: the overlay and the backdrop cover the WHOLE panel - the same
+// 1.2-tall pixels, more of them across. Everything is still laid out in
+// the 320 columns, which now stand in the middle: x runs from -margin()
+// to kW + margin(). Off (a game on screen): 320 across, as the games are.
+void set_wide(bool on);
+int margin();           // the columns beside the 320, each side (0: a 4:3 panel, or not wide)
+int back_w();           // the backdrop picture's width now: twice (kW + 2 * margin())
+// Smaller letters for a backdrop picture (12 x 12, smoothed; black behind):
+// into buf (bw x bh of 0xAARRGGBB) at (x, y)
+void small_text(uint32_t* buf, int bw, int bh, int x, int y, const char* s, uint32_t fg);
 
 // ---- The overlay (colours: 0xAARRGGBB; alpha 0 = the game shows through)
 constexpr uint32_t kClear = 0;
@@ -55,9 +69,9 @@ void blit(int x, int y, int w, int h, const uint32_t* argb);
 uint32_t palette(int value);
 
 // A picture behind the overlay where it is see-through, in place of the
-// game (the game list's box art): kBackW x kBackH pixels - twice the
-// canvas's, for the panel's sharpness - shown from canvas row `top` down.
-// nullptr: none.
+// game (the game list's box art): back_w() x kBackH pixels - twice the
+// canvas's, for the panel's sharpness (kBackW across unless set_wide) -
+// shown from canvas row `top` down. nullptr: none.
 constexpr int kBackW = kW * 2, kBackH = kH * 2;
 // How tall a canvas pixel is shown, in thousandths of its width (1200 on
 // a 4:3 fit): a picture made for the backdrop is squeezed by it

@@ -55,6 +55,9 @@ Tick off with the version that did it. Never ask Tom the same thing twice.
 - [ ] Keep the `cyd` pin current (built on CYD 0.197.1).
 
 ## Done
+- [x] v0.6.2 (2026-11-14, Tom on the RGB10 MAX3): game list and scan
+      fill a 16:9 panel; smaller scan letters; no game counter; Game
+      Fixes' words.
 - [x] v0.6.1 (2026-11-14, Tom: nothing processed at start-up or first
       use): the scan also makes the program's copy and the game list's
       picture (ART.BIN, only read afterwards); no loading screen.

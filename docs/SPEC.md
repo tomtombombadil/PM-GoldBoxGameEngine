@@ -125,6 +125,16 @@ Uneven scaling goes through a whole-multiple copy first, then smoothed, so
 pixels stay even. Every frame redraws the whole canvas (no dirty rows - a
 handheld has the speed).
 
+**The port's own pages fill the panel** (Tom, 2026-11-14; `video::set_wide`):
+the game list and the scan (and the menu over them) aren't held to 4:3 -
+on a panel wider than 4:3 the overlay is wider than 320 (the same 1.2-tall
+pixels; 426 across on 16:9, up to 576) and the backdrop twice that; pages
+are laid out in the 320 columns standing in the middle, with
+`video::margin()` more each side for what spans the panel (header, box
+art, arrowheads). The game list's picture is made by the scan at that
+width (`ART.BIN` keeps its width; another panel: made again). With a game
+on screen the overlay is 320 again.
+
 ## 6. The port's own screens
 - **Game list** (as the CYD's library): a game a page - its box art from
   the player's Steam `Launcher` folder in games/ (read at a quarter size by
@@ -149,7 +159,9 @@ handheld has the speed).
   start, every playable game folder without the mark
   `_CYD/<folder>/PMSCAN.TXT` (`discover()` in main.cpp). The screen lists
   what it does ("Found ...", "Processing the ... journal: page n of m",
-  "Making its music...") and stays until A. **Settings - Look for Games
+  "Making its music...") in smaller letters (12 x 12, smoothed, on the
+  backdrop's sharper picture: 52 across on 4:3, 69 on 16:9) and stays
+  until A. **Settings - Look for Games
   Again** does every game anew (journal files removed first, music
   forced). Never at a game's start or on first use: a game starts with no
   loading screen, and the game list only reads `ART.BIN` (`art::load`).
