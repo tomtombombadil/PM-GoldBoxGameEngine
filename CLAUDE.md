@@ -91,6 +91,11 @@ and maintains it; it is the primary output of the Claude Project
   and the buttons. The game is driven only through `play.h`.
 - The engine's folder inside `games/` is `_CYD` (its game code writes
   there by that name) - don't rename it.
+- `src/compat.*` - strlcpy / strlcat of the port's own, force-included
+  into the engine's files (glibc has them only since 2.38; the engine's
+  game code uses them). **Local builds on a new Linux hide this kind of
+  thing - only the CI's Ubuntu 20.04 container build says whether a
+  binary will start on old firmwares** ("newest glibc needed" in its log).
 - Built with CMake; C++17 as GCC 9 knows it (the Ubuntu 20.04 container).
   SDL2 calls no newer than 2.0.10 (that container's, and old firmwares').
   libstdc++ linked statically, SDL2 dynamically (the device's own).

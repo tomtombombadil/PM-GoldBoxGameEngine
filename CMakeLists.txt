@@ -20,9 +20,11 @@ find_package(SDL2 REQUIRED)
 # its .inc files are part of it). The boards' own front end and drivers
 # (cyd/src/ui, hal, boards, app/*.cpp) are not built here.
 file(GLOB ENGINE_SOURCES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/cyd/src/engine/*.cpp")
-add_library(gbengine STATIC ${ENGINE_SOURCES} cyd/src/game/play.cpp)
+add_library(gbengine STATIC ${ENGINE_SOURCES} cyd/src/game/play.cpp src/compat.cpp)
 target_include_directories(gbengine PUBLIC cyd/src)
-target_compile_options(gbengine PRIVATE -O2 -Wno-format-truncation)
+# (src/compat.h first in every engine file: strlcpy / strlcat of our own)
+target_compile_options(gbengine PRIVATE -O2 -Wno-format-truncation
+    -include "${CMAKE_CURRENT_SOURCE_DIR}/src/compat.h")
 
 add_executable(goldbox
     src/main.cpp src/video.cpp src/library.cpp src/settings.cpp

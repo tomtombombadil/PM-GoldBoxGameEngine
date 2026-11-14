@@ -17,7 +17,7 @@ if [ "$ARCH" = "aarch64" ]; then
     echo "deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports $s main universe" >> /etc/apt/sources.list
   done
   apt-get update -qq
-  apt-get install -y -qq --no-install-recommends cmake make g++-aarch64-linux-gnu libsdl2-dev:arm64 >/dev/null
+  apt-get install -y -qq --no-install-recommends cmake make binutils g++-aarch64-linux-gnu libsdl2-dev:arm64 >/dev/null
   CMAKE_ARGS=(-DCMAKE_SYSTEM_NAME=Linux -DCMAKE_SYSTEM_PROCESSOR=aarch64
               -DCMAKE_CXX_COMPILER=aarch64-linux-gnu-g++
               -DCMAKE_FIND_ROOT_PATH_MODE_PROGRAM=NEVER
@@ -33,5 +33,5 @@ cmake --build "build-$ARCH" -j"$(nproc)"
 mkdir -p dist
 cp "build-$ARCH/goldbox" "dist/goldbox.$ARCH"
 # (the newest glibc symbol it needs - for port.json's min_glibc)
-objdump -T "dist/goldbox.$ARCH" 2>/dev/null | grep -o 'GLIBC_[0-9.]*' | sort -uV | tail -1 || true
+echo "newest glibc needed: $(objdump -T "dist/goldbox.$ARCH" 2>/dev/null | grep -o 'GLIBC_[0-9.]*' | sort -uV | tail -1)" 
 chown -R "$(stat -c %u:%g /src)" dist "build-$ARCH"
