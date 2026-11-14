@@ -61,9 +61,14 @@ Tick off with the version that did it. Never ask Tom the same thing twice.
 - [ ] Before a PortMaster submission: `port.json` against their
       generator / checks (`availability`, `store`, `min_glibc` unverified),
       the gameplay screenshot (Tom: later), an armhf build if wanted.
-- [ ] Keep the `cyd` pin current (built on CYD 0.198.1).
+- [ ] Keep the `cyd` pin current (built on CYD 0.199.0). Tom, 2026-11-14:
+      a minor Companion display change is coming in the CYD - not pushed
+      yet at 0.199.0; pick it up when it lands.
 
 ## Done
+- [x] v0.9.0: CYD 0.199.0 - the Dark Queen's and Champions' music, made
+      by the scan in both releases (checked: 8 songs / 1 song each, the
+      title song plays).
 - [x] v0.8.1: Tom's first real Send Logs (R36S / ROCKNIX, v0.8.0) worked,
       every head line filled; the scan's PMSCAN.TXT marks no longer sent
       (they crowded the 12 files); the message points to the spam folder.

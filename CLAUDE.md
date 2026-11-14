@@ -77,8 +77,16 @@ and maintains it; it is the primary output of the Claude Project
   with the last run; a section far shorter than its neighbours is a miss.
   A miss in the engine's reading is an engine bug: fixed in the CYD repo.
 - **Tom's devices**: RG40XX H / ROCKNIX (4:3, primary), PowKiddy RGB10
-  MAX3 (16:9), an R36S on ROCKNIX (4:3, 640 x 480; it reports itself as
-  "R33S (Game Console R33S)" - v0.8.0's Send Logs worked there).
+  MAX3 (16:9), an **R36H** on ROCKNIX (4:3, 640 x 480; it reports itself
+  as "R33S (Game Console R33S)" - "those devices are sketchy"; logs
+  headed R33S are this one. v0.8.0's Send Logs worked there).
+- **The CYD repo keeps moving while Tom works on both** (2026-11-14: "I
+  probably shouldn't have made them separate projects, but here we
+  are"): when he says the CYD changed, fetch it, move the pin once its
+  CI is green, adapt the port to any changed call, and wrap anything
+  player-facing into this repo in the same version (new music -> the
+  scan; a Companion change -> `src/panel.*` shows it). Waiting on: a
+  minor Companion display change he announced (not pushed at v0.199.0).
 - **Game list pictures** (Tom, 2026-11-14): Steam box art when the
   Launcher folder is there, else the game's own logo from its folder's
   `goggame-*.ico` / `.dll` as the CYD. If a picture of our own is ever

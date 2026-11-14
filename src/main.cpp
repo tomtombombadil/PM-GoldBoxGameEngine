@@ -17,6 +17,7 @@
 
 #include "engine/journal.h"
 #include "game/music_make.h"
+#include "engine/profile.h"
 #include "engine/quickacts.h"
 #include "game/play.h"
 #include "platform/audio.h"
@@ -1053,7 +1054,7 @@ void apply_options()
 // lists what it does and stays until Continue.
 unsigned shape_seen = ~0u;      // (the picture shape the game list's pictures were last checked for: pictures_follow)
 constexpr char kScanMark[] = "PMSCAN.TXT";      // in the game's _CYD folder: found and its files made
-constexpr char kScanTag[] = "scan 2";       // (2: engine 0.198.1 - journals read anew, music 16-bit)
+constexpr char kScanTag[] = "scan 3";       // (2: engine 0.198.1 - journals read anew, music 16-bit; 3: 0.199 - Queen's and Champions' music)
 std::vector<std::string> scan_log;
 bool                     scan_done = false, scan_progress = false;
 
@@ -1181,9 +1182,12 @@ bool discover(bool all, bool pictures = true)
                                               : "  No journal: its Adventurer's Journal PDF isn't in the game's folder.");
         scan_say(line, false, nullptr);
         // Its music (the later games), from its own files
-        if (!g.hlib && musicfiles::songs(g.data_dir.c_str()) && (all || !musicfiles::ready(g.data_dir.c_str(), cache.c_str()))) {
+        // (engine 0.199: the Dark Queen's and Champions' too - by the game's profile, as the CYD's scan)
+        const profile::Profile* prof = profile::first(g.game);
+        if (musicfiles::songs(g.data_dir.c_str(), prof) && (all || !musicfiles::ready(g.data_dir.c_str(), cache.c_str(), prof))) {
             scan_say("  Making its music...", false, nullptr);
-            const int failed = musicfiles::make(g.data_dir.c_str(), cache.c_str(), games::short_title(g.game), all, scan_say, nullptr);
+            const int failed =
+                musicfiles::make(g.data_dir.c_str(), cache.c_str(), prof, games::short_title(g.game), all, scan_say, nullptr);
             scan_say(failed ? "  Some of its music couldn't be made." : "  Its music is ready.", false, nullptr);
         }
         plat::File f = plat::open((cache + "/" + kScanMark).c_str(), "w");
