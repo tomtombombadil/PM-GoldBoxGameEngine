@@ -255,12 +255,30 @@ and maintains it; it is the primary output of the Claude Project
     covering install -> update -> restart.
   - `CHANGELOG.md`: a section a version, written for Tom - it is the
     release's notes.
-- **Send Logs** (Tom, 2026-11-14): Start menu - Log Server (a WebDAV
-  address, typed once, kept in conf/settings.cfg - never an address in the
-  repo) and Send Logs (`tools/sendlogs.sh`: log.txt, log.prev.txt,
-  update.log, settings.cfg, the engine's `_CYD/*.TXT` - text only, never
-  game files) into `goldbox-logs/` on the server. Tom gets them on his PC
-  that way and passes them to Claude. When asking Tom for a log, ask for
-  Send Logs - not for files fetched off the card.
+- **Send Logs** (Tom, 2026-11-14, v0.8.0; replaces the WebDAV server of
+  v0.3 - v0.7, which is gone - no server address anywhere): the Start
+  menu's Send Logs uploads the logs with the firmware's curl
+  (`tools/sendlogs.sh`: plain form fields, no zip tool needed) to the
+  **log relay** - a Google Apps Script web app Tom deployed in the logs
+  mailbox's account (cyd.classic.games.logs@gmail.com;
+  `tools/logrelay/Code.gs` is its source - **a change there does nothing
+  until Tom pastes it and deploys a new version**: give him the file and
+  click-by-click steps, Manage deployments - Edit - New version, so the
+  address stays the same). It zips and emails them to that mailbox, the
+  player's address as Reply-To, and sends the player one fixed thank-you
+  note. The relay's address is public by design (it can only do that);
+  its limits are in Code.gs. No mail password, token or other secret
+  ever goes in the port (Tom asked about SMTP, SSH keys, GitHub tokens:
+  each needs a secret in a public package). Sent: log.txt, log.prev.txt,
+  device.txt, update.log, settings.cfg, the engine's `_CYD/*.TXT` - text
+  only, never game files, saves or BOOK.TXT.
+  - The **reply address** is asked for the first time (optional, X = No
+    Thanks), kept in conf/settings.cfg, changed at Settings - Reply
+    Address.
+  - **Every log's head** (the launch script): the port's version, the
+    device's make and model, the firmware and its version, PortMaster's
+    version - Tom wants all four in every log; `device.txt` has the same.
+  - Tom reads the emails and passes the zips to Claude. When asking Tom
+    for a log, ask for Send Logs - not for files fetched off the card.
 - Submitting to PortMaster's own catalogue (a PR to PortsMaster/PortMaster-New)
   is Tom's call and needs things only he can supply (TODO).

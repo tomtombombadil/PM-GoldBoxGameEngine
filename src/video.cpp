@@ -110,6 +110,11 @@ const uint8_t* glyph(char ch)
     if (c >= 'A' && c <= 'Z') return font::kClearUpper[c - 'A'];
     if (c >= 'a' && c <= 'z') return font::kClearLower[c - 'a'];
     if (c >= 32 && c <= 63) return font::kClearText[c - 32];
+    // (the two an email address needs that the engine's font hasn't - the port's own)
+    static const uint8_t kAt[8] = {0x7C, 0xC6, 0xDE, 0xDE, 0xDE, 0xC0, 0x78, 0x00};
+    static const uint8_t kUnder[8] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFE, 0x00};
+    if (c == '@') return kAt;
+    if (c == '_') return kUnder;
     return font::kClearText[0];
 }
 

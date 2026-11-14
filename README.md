@@ -76,11 +76,12 @@ Explorer's address bar (on ROCKNIX: Start - Network Settings shows the
 address; the `roms` folder is the `games-roms` share, so step 2's folder is
 `games-roms\ports`).
 
-**Sending logs.** Start - Settings - Log Server: the address of a WebDAV server on
-your network (for example rclone on a PC:
-`rclone serve webdav "C:\GoldBoxLogs" --addr :5006`, address
-`http://<the PC's IP>:5006`). Then Start - Send Logs puts the port's logs
-there, in a `goldbox-logs` folder.
+**Sending logs.** When something goes wrong, Start - Send Logs sends the
+port's logs to the developer over the internet (the handheld needs Wi-Fi).
+The first time it asks for your email address so the developer can write
+back about the problem - optional; X says No Thanks. Only text logs and
+the port's settings are sent (what the port did, your device, firmware and
+PortMaster versions) - never your game files or saves.
 
 ## Controls
 

@@ -192,7 +192,7 @@ on screen the overlay is 320 again.
     Fixes, Show Rolls, Readable Messages, Camp Fix, Icon Gallery, Icon
     Portrait, More Characters, Button Stops Demo, Quick Actions, Cheats -
     all on by default; Max Hit Points (off by default); As Original (all
-    off), All On; Log Server.
+    off), All On; Reply Address (Send Logs' - below).
   - **Cheats** (a page; only with a game open and Cheats on): Healer,
     Merchant, Sanctuary, Trainer (`play::cheat_open` - the game's own
     screens, driven as any other; only at the exploring menu, else a
@@ -259,8 +259,33 @@ hotkey.
   READY last -> Restart Now (or the next launch): the launch script copies
   the staged port over the installed one, replaces itself last, removes
   `.update`, starts the new version. `update.log` records it.
-- **Send Logs** (Start menu): Log Server (typed on the port's keyboard,
-  kept in settings) + `tools/sendlogs.sh` (curl -T to WebDAV).
+- **The log's head** (Tom, 2026-11-14): every `log.txt` starts with this
+  port's version, the device (PortMaster's name for it and the board's
+  own model line - its make and model), the firmware and its version,
+  PortMaster's version (its `version` file), the screen. The launch
+  script writes them, and the same as `device.txt` (name=value) for Send
+  Logs.
+- **Send Logs** (Start menu; Tom, 2026-11-14 - replaces the WebDAV
+  server of v0.3 - v0.7): `tools/sendlogs.sh` posts the logs with curl,
+  as plain form fields (`file:<name>` = its text - no zip or base64 tool
+  needed on the firmware; each file's end, 600 KB of log.txt at most),
+  with `app`, `version`, `device`, `firmware`, `portmaster`, `screen`,
+  `reply`, to the **log relay**: a Google Apps Script web app in the
+  logs mailbox's account (`tools/logrelay/Code.gs`; its address is in
+  sendlogs.sh, `GOLDBOX_RELAY_URL` overrides it for tests). The relay
+  zips the files and emails them to the mailbox - subject: version,
+  device, firmware; body: the details and log.txt's last 40 lines -
+  with the player's address as Reply-To, and sends that address one
+  fixed thank-you note asking what they were doing. Its limits: 3 MB an
+  upload, 60 reports and 20 notes a day, a note an address a day. It
+  answers "OK n files" / "ERROR why" (after a redirect: curl -L).
+  - **Reply address**: asked for the first time Send Logs is used (the
+    port's keyboard, with @ . _ -; X = No Thanks), kept in settings
+    (`reply_email`, `reply_asked`), changed or cleared at Settings -
+    Reply Address. Never required.
+  - Sent: log.txt, log.prev.txt, device.txt, update.log, settings.cfg,
+    the engine's `_CYD/*.TXT` logs - never BOOK.TXT (a journal's text),
+    game files or saves.
 - The helper scripts run on a thread (`src/task.*`); the screen shows a
   notice until they end. Buttons only: all of it from the Start menu.
 

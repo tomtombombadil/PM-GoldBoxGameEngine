@@ -14,7 +14,8 @@ struct Settings {
     bool    pad_moves = true;   // exploring: the D-pad walks (off: it always moves the highlight)
     uint16_t comforts_off = 0;  // the engine's comforts switched off (kOff* bits; 0: all on)
     bool    max_hp = false;     // the Max Hit Points cheat
-    std::string log_url;        // Send Logs' WebDAV server ("" none)
+    std::string reply_email;    // Send Logs: the player's reply address ("" none) - goes with the logs
+    bool    reply_asked = false; // Send Logs asked for it once (the player may have said No Thanks)
 };
 
 // comforts_off's bits - play::Options' switches

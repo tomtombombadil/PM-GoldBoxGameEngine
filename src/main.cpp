@@ -368,17 +368,29 @@ void update_check()
     run_job(Job::Check, tool("update.sh") + " check", "Updates", "Looking for a new version...");
 }
 
-void send_logs()
+// Send Logs (Tom, 2026-11-14): the logs go by the internet to the developer
+// (tools/sendlogs.sh -> the log relay -> email). The first time it asks for
+// a reply address - the player may say No Thanks - which goes with the logs
+// so the developer can write back; remembered, changed in Settings.
+void prompt_begin(bool then_send);
+
+void send_logs_now()
 {
-    if (cfg.log_url.empty()) {
-        show_notice("Send Logs", "Set the log server's address first: the menu's Log Server line.");
-        return;
-    }
     if (!tools_ready("sendlogs.sh")) return;
+    menu_open = false;
     fflush(stdout);
     run_job(Job::Logs,
-            tool("sendlogs.sh") + " " + task::quoted(cfg.log_url) + " " + task::quoted(port_dir()) + " " PM_VERSION,
-            "Send Logs", "Sending the logs...");
+            tool("sendlogs.sh") + " " + task::quoted(port_dir()) + " " PM_VERSION " " + task::quoted(cfg.reply_email),
+            "Send Logs", "Sending the logs to the developer...");
+}
+
+void send_logs()
+{
+    if (cfg.reply_email.empty() && !cfg.reply_asked) {
+        prompt_begin(true);
+        return;
+    }
+    send_logs_now();
 }
 
 // "v0.10.2" / "0.10.2" as one number to compare
@@ -400,6 +412,14 @@ void job_tick()
     const std::string err = task::field(out, "ERROR");
     if (code != 0 || !err.empty()) {
         show_notice(was == Job::Logs ? "Send Logs" : "Updates", err.empty() ? "It didn't work (see log.txt)." : err);
+        return;
+    }
+    if (was == Job::Logs) {
+        const std::string sent = task::field(out, "SENT");
+        std::string body = "The logs were sent to the developer. Thank you!";
+        if (sent.find("thanks") != std::string::npos)
+            body += " A note is on its way to " + cfg.reply_email + " - a reply saying what you were doing helps a lot.";
+        show_notice("Send Logs", body);
         return;
     }
     if (was == Job::Check) {
@@ -445,7 +465,7 @@ enum MenuItem : uint8_t {
     // Settings
     MDisplay, MSound, MMusic, MVolume, MFont, MPadMoves, MSwap,
     MFixes, MRolls, MReadTime, MCampFix, MGallery, MPortrait, MMoreGuys, MDemoTap, MQuickOn, MCheatsOn, MMaxHp,
-    MAsOriginal, MAllOn, MLogServer, MRescan,
+    MAsOriginal, MAllOn, MReplyAddr, MRescan,
     // Cheats
     MHealer, MMerchant, MSanctuary, MTrainer,
     MBack
@@ -480,7 +500,7 @@ void menu_build()
     if (menu_page == Page::Settings) {
         for (MenuItem m : {MDisplay, MSound, MMusic, MVolume, MFont, MPadMoves, MSwap, MFixes, MRolls, MReadTime, MCampFix,
                            MGallery, MPortrait, MMoreGuys, MDemoTap, MQuickOn, MCheatsOn, MMaxHp, MAsOriginal, MAllOn,
-                           MLogServer})
+                           MReplyAddr})
             menu_items.push_back(m);
         menu_items.push_back(MBack);
     } else if (menu_page == Page::Cheats) {
@@ -547,7 +567,7 @@ void menu_label(MenuItem m, char* out, size_t cap)
     case MRescan: snprintf(out, cap, "Rescan Game Files"); break;
     case MUpdate: snprintf(out, cap, "%s", update_staged.empty() ? "Check for Updates" : "Restart to Update"); break;
     case MSendLogs: snprintf(out, cap, "Send Logs"); break;
-    case MLogServer: snprintf(out, cap, "Log Server: %.20s", cfg.log_url.empty() ? "Not Set" : cfg.log_url.c_str()); break;
+    case MReplyAddr: snprintf(out, cap, "Reply Address: %.14s", cfg.reply_email.empty() ? "Not Set" : cfg.reply_email.c_str()); break;
     case MLeaveGame: snprintf(out, cap, "Exit Game"); break;
     case MExit: snprintf(out, cap, "Quit"); break;
     case MHealer: snprintf(out, cap, "Healer"); break;
@@ -570,7 +590,7 @@ const char* menu_help(MenuItem m)
     case MSettings: return "The picture, sound, buttons and the engine's extras.";
     case MControls: return "What each button does.";
     case MUpdate: return "Looks for a newer version of the port and installs it (needs Wi-Fi).";
-    case MSendLogs: return "Sends the port's logs to the Log Server set in Settings.";
+    case MSendLogs: return "Sends the port's logs to the developer by the internet (needs Wi-Fi).";
     case MLeaveGame: return "Back to the list of games. Save in the game first.";
     case MExit: return "Leaves the port.";
     case MDisplay: return "Original 4:3 as the games' monitors showed them, Square Pixels, or Stretch to the whole screen.";
@@ -595,7 +615,7 @@ const char* menu_help(MenuItem m)
     case MMaxHp: return "Training gives the highest hit points the dice allow. A cheat: off unless you turn it on.";
     case MAsOriginal: return "Every extra off: the games as they were.";
     case MAllOn: return "Every extra on (Max Hit Points stays as it is).";
-    case MLogServer: return "The WebDAV address Send Logs uploads to. Typed once, kept on this device only.";
+    case MReplyAddr: return "Your email address, sent with Send Logs so the developer can write back. Optional.";
     case MRescan: return "Looks through the games folder again and makes every game's picture, journal and music anew.";
     case MHealer: return "The game's temple, wherever you are: cures, all free.";
     case MMerchant: return "All the game's shops' goods in one shop; Id free.";
@@ -765,46 +785,73 @@ void draw_keys()
     }
 }
 
-void prompt_begin()
+// The reply address's keyboard (Send Logs' first time: then_send - the logs
+// go when it closes; Settings' Reply Address: just the address)
+bool        prompt_sends = false;
+const char* prompt_note = nullptr;
+
+void prompt_begin(bool then_send)
 {
     keys.clear();
     key_sel = 0;
-    static const char* const kRows[4] = {"abcdefghij", "klmnopqrst", "uvwxyz.:/-", "0123456789"};
+    static const char* const kRows[4] = {"abcdefghij", "klmnopqrst", "uvwxyz.@_-", "0123456789"};
     int row = 2;
     for (int r = 0; r < 4; ++r, row += 2)
         for (int i = 0; kRows[r][i]; ++i) keys.push_back(Key{kRows[r][i], nullptr, 5 + i * 3, row, 3});
-    keys.push_back(Key{'\b', "Delete", 5, row, 15});
-    keys.push_back(Key{'\n', "Done", 20, row, 15});
-    prompt_text = cfg.log_url.empty() ? "http://" : cfg.log_url;
+    keys.push_back(Key{'\b', "Delete", 5, row, 9});
+    keys.push_back(Key{'\x18', then_send ? "No Thanks" : "Clear", 14, row, 11});
+    keys.push_back(Key{'\n', "Done", 25, row, 10});
+    prompt_text = cfg.reply_email;
+    prompt_sends = then_send;
+    prompt_note = nullptr;
     prompt_open = true;
+    menu_open = false;
+}
+
+bool email_like(const std::string& t)
+{
+    const size_t at = t.find('@');
+    return at != std::string::npos && at > 0 && t.find('@', at + 1) == std::string::npos && t.find('.', at + 2) != std::string::npos &&
+           t.back() != '.';
 }
 
 void prompt_key(char ch)
 {
     if (ch == '\b') {
         if (!prompt_text.empty()) prompt_text.pop_back();
-    } else if (ch == '\n') {
-        cfg.log_url = prompt_text == "http://" ? "" : prompt_text;
+        prompt_note = nullptr;
+    } else if (ch == '\n' || ch == '\x18') {
+        // (Done with nothing typed is No Thanks / Clear)
+        if (ch == '\x18') prompt_text.clear();
+        if (!prompt_text.empty() && !email_like(prompt_text)) {
+            prompt_note = "That isn't an email address yet.";
+            return;
+        }
+        cfg.reply_email = prompt_text;
+        cfg.reply_asked = true;
         settings_save(conf_dir, cfg);
         prompt_open = false;
         keys.clear();
         keys_for = play::Input::None;       // (the game's own keyboard, if it was up, is built again)
-    } else if (prompt_text.size() < 60) {
-        prompt_text += ch;
+        if (prompt_sends) send_logs_now();
+    } else if (prompt_text.size() < 60 && ch > ' ' && ch < 127) {
+        prompt_text += (ch >= 'A' && ch <= 'Z') ? static_cast<char>(ch + 32) : ch;
+        prompt_note = nullptr;
     }
 }
 
 void draw_prompt()
 {
     draw_keys();
-    box(2, 15, 36, 8);
-    video::text(3, 15, "Log server (WebDAV) address:", video::kGold);
+    box(2, 15, 36, 9);
+    video::text(3, 15, "Your email address (optional):", video::kGold);
     const size_t n = prompt_text.size();
     video::text(3, 17, (prompt_text.substr(n > 33 ? n - 33 : 0) + "_").c_str(), video::kCream);
-    video::text(3, 19, "e.g. http://192.168.1.20:5005", video::kMuted);
+    if (prompt_note) video::text(3, 19, prompt_note, video::kWarn);
+    else wrapped(3, 19, 34, "It goes with the logs to the developer, who may write back about the problem.", video::kMuted);
     char line[41];
-    snprintf(line, sizeof line, "%s: Type  %s: Delete  Y: Done", confirm_name(), back_name());
-    video::text(3, 21, line, video::kMuted);
+    snprintf(line, sizeof line, "%s: Type  %s: Delete  X: %s  Y: Done", confirm_name(), back_name(), prompt_sends ? "No" : "Clear");
+    video::text(3, 23, line, video::kMuted);
 }
 
 // The key nearest to the chosen one's middle, a row up (dy -1) or down
@@ -1569,7 +1616,7 @@ void menu_press(int b)
             break;
         case MUpdate: update_check(); break;
         case MSendLogs: send_logs(); break;
-        case MLogServer: prompt_begin(); break;
+        case MReplyAddr: prompt_begin(false); break;
         case MLeaveGame: leave_game(); break;
         case MExit: quit = true; break;
         default: menu_change(0); break;
@@ -1596,6 +1643,7 @@ void press(int b)
         if (b == BA) prompt_key(keys[key_sel].ch);
         else if (b == BB) prompt_key('\b');
         else if (b == BY || b == BStart) prompt_key('\n');
+        else if (b == BX) prompt_key('\x18');
         else if (b <= BRight) keys_move(b == BLeft ? -1 : b == BRight ? 1 : 0, b == BUp ? -1 : b == BDown ? 1 : 0);
         return;
     }

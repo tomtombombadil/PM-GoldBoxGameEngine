@@ -74,8 +74,32 @@ cd "$GAMEDIR"
 [ -s "$GAMEDIR/log.txt" ] && mv -f "$GAMEDIR/log.txt" "$GAMEDIR/log.prev.txt"
 > "$GAMEDIR/log.txt" && exec > >(tee "$GAMEDIR/log.txt") 2>&1
 
-echo "[goldbox] version $(cat "$GAMEDIR/VERSION" 2>/dev/null), $(date '+%F %T')"
-echo "[goldbox] firmware ${CFW_NAME} ${CFW_VERSION}, device ${DEVICE_NAME}, ${DEVICE_ARCH}, screen ${DISPLAY_WIDTH}x${DISPLAY_HEIGHT}, sticks ${ANALOG_STICKS}"
+# Every log starts with what it ran on (Tom, 2026-11-14): this port's
+# version, the device's make and model, the firmware and its version,
+# PortMaster's version. device.txt holds the same for Send Logs.
+GB_VERSION="$(cat "$GAMEDIR/VERSION" 2>/dev/null)"
+GB_MODEL="$(tr -d '\0' < /sys/firmware/devicetree/base/model 2>/dev/null)"
+[ -n "$GB_MODEL" ] || GB_MODEL="$(cat /sys/class/dmi/id/product_name 2>/dev/null)"
+GB_DEVICE="${DEVICE_NAME:-unknown}"
+[ -n "$GB_MODEL" ] && GB_DEVICE="$GB_DEVICE ($GB_MODEL)"
+# (PortMaster's version: its "version" file, else the line in its program)
+GB_PM="$(head -n 1 "$controlfolder/version" 2>/dev/null | tr -d '\r')"
+[ -n "$GB_PM" ] || GB_PM="$(sed -n "s/^PORTMASTER_VERSION *= *['\"]\([^'\"]*\)['\"].*/\1/p" "$controlfolder/pugwash" 2>/dev/null | head -n 1)"
+{
+  echo "version=${GB_VERSION:-unknown}"
+  echo "device=$GB_DEVICE"
+  echo "cpu=${DEVICE_CPU:-unknown} ${DEVICE_ARCH}, RAM ${DEVICE_RAM:-?} GB"
+  echo "firmware=${CFW_NAME:-unknown} ${CFW_VERSION}"
+  echo "portmaster=${GB_PM:-unknown}"
+  echo "screen=${DISPLAY_WIDTH}x${DISPLAY_HEIGHT}"
+  echo "sticks=${ANALOG_STICKS}"
+} > "$GAMEDIR/device.txt" 2>/dev/null
+echo "[goldbox] ==== $(date '+%F %T') ===="
+echo "[goldbox] Gold Box Game Engine: v${GB_VERSION:-unknown}"
+echo "[goldbox] Device:               $GB_DEVICE - ${DEVICE_CPU:-unknown cpu}, ${DEVICE_ARCH}, RAM ${DEVICE_RAM:-?} GB"
+echo "[goldbox] Firmware:             ${CFW_NAME:-unknown} ${CFW_VERSION}"
+echo "[goldbox] PortMaster:           ${GB_PM:-unknown}"
+echo "[goldbox] Screen:               ${DISPLAY_WIDTH}x${DISPLAY_HEIGHT}, sticks ${ANALOG_STICKS}"
 
 export LD_LIBRARY_PATH="$GAMEDIR/libs.${DEVICE_ARCH}:$LD_LIBRARY_PATH"
 export SDL_GAMECONTROLLERCONFIG="$sdl_controllerconfig"

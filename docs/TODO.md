@@ -3,9 +3,11 @@
 Tick off with the version that did it. Never ask Tom the same thing twice.
 
 ## Tom
-- [ ] **Send Logs** couldn't find your WebDAV server (v0.3.1) - you're
-      looking at your side. If it still fails: what address you typed,
-      and what the server's own window shows when you try.
+- [ ] Send Logs (v0.8.0) on each handheld: does it say "The logs were
+      sent", does the email arrive with the device / firmware / PortMaster
+      lines filled in (not "unknown"), and does the thank-you note reach
+      the address you typed? Whatever reads "unknown" in the log's head on
+      a device: tell Claude which line.
 - [ ] After the v0.3.1 install the `goldbox` folder wasn't visible until
       the port had been started once. The release zip holds
       `goldbox/games/` and the installer makes it; say if v0.4's install
@@ -62,6 +64,11 @@ Tick off with the version that did it. Never ask Tom the same thing twice.
 - [ ] Keep the `cyd` pin current (built on CYD 0.198.1).
 
 ## Done
+- [x] v0.8.0 (2026-11-14, Tom): Send Logs by the internet - the log
+      relay (an Apps Script in the logs mailbox) emails them; the reply
+      address prompt and the thank-you note; the WebDAV server and its
+      setting gone; every log headed by the port's version, the device's
+      make and model, firmware and PortMaster versions.
 - [x] v0.7.0 (2026-11-14, Tom): journal viewer's X (text: next page;
       pictures: Width / Double / Whole / Turned); the game list's
       pictures checked once the panel's size has settled (RGB10 MAX3);

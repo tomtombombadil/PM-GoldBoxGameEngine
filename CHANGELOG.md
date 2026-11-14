@@ -3,6 +3,13 @@
 Every version of Gold Box Game Engine for PortMaster. A release's notes are
 its part of this file.
 
+## [0.8.0] - 2026-11-14
+
+- Pre-release. **Send Logs now sends the logs to the developer over the internet** - no server to set up. With Wi-Fi on, Start - Send Logs uploads them and they arrive by email. The Log Server setting and the WebDAV upload are gone.
+- **Reply address.** The first time, Send Logs asks for your email address (optional - X is No Thanks). It goes with the logs so the developer can write back, and you get one note confirming the logs arrived and asking what you were doing. Change or clear it at Settings - Reply Address.
+- **Every log starts with what it ran on**: the port's version, the device's make and model, the firmware's name and version, PortMaster's version, the screen size.
+- Only text logs and the port's settings are sent - never game files, saves or journal text.
+
 ## [0.7.0] - 2026-11-14
 
 - Pre-release. **Journals read properly from every game, both releases.** The scan missed things in several Steam journals: Treasures' Introduction, all of Champions' 57 tavern tales, and the whole text of the three Krynn journals (their PDFs were refused). Fixed in the engine (0.198.1) and checked game by game. This version's first start runs the scan once more to rebuild them (and the music, now 16-bit).

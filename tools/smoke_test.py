@@ -111,45 +111,83 @@ def update_test(exe):
 
 
 def logs_test(exe):
-    """Send Logs to a pretend WebDAV server: the address typed on the
-    port's keyboard, the files PUT."""
+    """Send Logs to a pretend log relay (as Google's: the POST answered with
+    a redirect to the result): the reply address asked for the first time,
+    typed or declined, remembered; the files and the device's details sent."""
     import http.server
     import threading
-    got = {}
+    import urllib.parse
+    posts = []
 
-    class Dav(http.server.BaseHTTPRequestHandler):
-        def do_MKCOL(self):
-            self.send_response(201)
+    class Relay(http.server.BaseHTTPRequestHandler):
+        def do_POST(self):
+            body = self.rfile.read(int(self.headers.get("Content-Length", 0))).decode()
+            form = dict(urllib.parse.parse_qsl(body, keep_blank_values=True))
+            posts.append(form)
+            self.send_response(302)
+            self.send_header("Location", f"/done?n={sum(1 for k in form if k.startswith('file:'))}&t={int(bool(form.get('reply')))}")
+            self.send_header("Content-Length", "0")
             self.end_headers()
 
-        def do_PUT(self):
-            got[self.path] = self.rfile.read(int(self.headers.get("Content-Length", 0)))
-            self.send_response(201)
+        def do_GET(self):
+            q = dict(urllib.parse.parse_qsl(urllib.parse.urlparse(self.path).query))
+            out = f"OK {q.get('n')} files{' thanks' if q.get('t') == '1' else ''}".encode()
+            self.send_response(200)
+            self.send_header("Content-Length", str(len(out)))
             self.end_headers()
+            self.wfile.write(out)
 
         def log_message(self, *a):
             pass
 
-    srv = http.server.HTTPServer(("127.0.0.1", 0), Dav)
+    srv = http.server.HTTPServer(("127.0.0.1", 0), Relay)
     threading.Thread(target=srv.serve_forever, daemon=True).start()
-    with tempfile.TemporaryDirectory() as t:
-        t = pathlib.Path(t)
-        shutil.copytree(ROOT / "port" / "goldbox" / "tools", t / "tools")
-        (t / "log.txt").write_text("a line of this run's log\n")
-        (t / "log.prev.txt").write_text("the run before\n")
-        env = dict(os.environ, SDL_VIDEODRIVER="dummy", SDL_AUDIODRIVER="dummy")
-        steps = (f"wait:100,start,menu:Send_Logs,a,wait:100,shot:{t}/nolog.bmp,a,"     # Send Logs with no server set
-                 f"menu:Settings,a,menu:Log_Server,a,type:127.0.0.1:{srv.server_port},y,"   # Settings - Log Server: typed
-                 f"b,menu:Send_Logs,a,wait:200,quit")                                     # Send Logs
+
+    def go(t, steps):
+        env = dict(os.environ, SDL_VIDEODRIVER="dummy", SDL_AUDIODRIVER="dummy",
+                   GOLDBOX_RELAY_URL=f"http://127.0.0.1:{srv.server_port}/exec")
         r = subprocess.run([exe, "--games", str(t / "games"), "--conf", str(t / "conf"), "--tools", str(t / "tools"),
                             "--script", steps], env=env, capture_output=True, text=True, timeout=120)
         print(r.stdout, r.stderr, sep="")
         assert r.returncode == 0
-        assert f"log_url=http://127.0.0.1:{srv.server_port}" in (t / "conf" / "settings.cfg").read_text()
-        names = sorted(got)
-        assert len(names) == 3 and all(n.startswith("/goldbox-logs/") for n in names), names
-        assert any(n.endswith("_log.txt") and got[n] == b"a line of this run's log\n" for n in names)
-        assert "Sent to the log server: 3 file(s)" in r.stdout
+        return r.stdout
+
+    def port(t):
+        t = pathlib.Path(t)
+        shutil.copytree(ROOT / "port" / "goldbox" / "tools", t / "tools")
+        (t / "log.txt").write_text("a line of this run's log\n")
+        (t / "log.prev.txt").write_text("the run before\n")
+        (t / "device.txt").write_text("version=9.9.9\ndevice=TESTBOX (Test Maker Box)\nfirmware=TestOS 1.2\nportmaster=2026.01.01\nscreen=640x480\n")
+        (t / "games" / "_CYD" / "Some Game").mkdir(parents=True)
+        (t / "games" / "_CYD" / "Some Game" / "BOOK.TXT").write_text("a journal's text: never sent\n")
+        (t / "games" / "_CYD" / "QUICK.TXT").write_text("engine text\n")
+        return t
+
+    # 1. The first time: the address asked for, typed (a bad one refused), sent with the logs; the second time not asked
+    with tempfile.TemporaryDirectory() as t:
+        t = port(t)
+        out = go(t, "wait:100,start,menu:Send_Logs,a,wait:100,type:tester,y,wait:100,type:@example.com,y,wait:900,a,"
+                    "start,menu:Send_Logs,a,wait:900,quit")
+        assert len(posts) == 2, posts
+        f = posts[0]
+        assert f["app"] == "goldbox" and f["reply"] == "tester@example.com" and f["device"] == "TESTBOX (Test Maker Box)"
+        assert f["firmware"] == "TestOS 1.2" and f["portmaster"] == "2026.01.01" and f["version"]
+        assert f["file:log.txt"] == "a line of this run's log\n" and "file:log.prev.txt" in f and "file:device.txt" in f
+        assert "file:engine_QUICK.TXT" in f and not any("BOOK" in k for k in f), sorted(f)
+        assert posts[1]["reply"] == "tester@example.com"
+        cfg = (t / "conf" / "settings.cfg").read_text()
+        assert "reply_email=tester@example.com" in cfg and "reply_asked=1" in cfg, cfg
+        assert "A note is on its way to tester@example.com" in out
+        assert not (t / ".sendlogs").exists(), "the sender's scratch folder left behind"
+    # 2. No Thanks (X): sent without an address, and not asked again; Settings' Reply Address sets one later
+    posts.clear()
+    with tempfile.TemporaryDirectory() as t:
+        t = port(t)
+        out = go(t, "wait:100,start,menu:Send_Logs,a,wait:100,x,wait:900,a,start,menu:Send_Logs,a,wait:900,a,"
+                    "start,menu:Settings,a,menu:Reply_Address,a,wait:100,type:me@example.org,y,wait:100,quit")
+        assert len(posts) == 2 and posts[0]["reply"] == "" and posts[1]["reply"] == "", posts
+        assert "reply_email=me@example.org" in (t / "conf" / "settings.cfg").read_text()
+        assert "The logs were sent to the developer" in out
     srv.shutdown()
 
 
