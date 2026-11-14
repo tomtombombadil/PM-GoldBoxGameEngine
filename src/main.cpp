@@ -23,6 +23,7 @@
 #include "host.h"
 #include "library.h"
 #include "settings.h"
+#include "task.h"
 #include "video.h"
 
 #ifndef PM_VERSION
@@ -40,6 +41,7 @@ enum class Screen : uint8_t { Games, Play, Message };
 
 Settings                      cfg;
 std::string                   conf_dir = "conf";
+std::string                   tools_dir = "tools";    // the helper scripts (update.sh, sendlogs.sh)
 std::vector<library::GameDir> games_found;
 bool                          have_root = false;
 int                           game_sel = 0;
@@ -71,6 +73,9 @@ struct Key {
 std::vector<Key> keys;
 play::Input      keys_for = play::Input::None;
 int              key_sel = 0;
+// The same keyboard for a line the port itself asks for (the log server's address)
+bool        prompt_open = false;
+std::string prompt_text;
 
 // The pointer: a tap anywhere on the game screen, for the rare thing the
 // highlight doesn't reach. Buttons alone do it (most handhelds have no
@@ -226,9 +231,159 @@ void draw_message()
     centred(18, line, video::kMuted);
 }
 
+// ---- The network jobs (tools/update.sh, tools/sendlogs.sh) ------------------
+enum class Job : uint8_t { None, Check, Fetch, Logs };
+Job         job = Job::None;
+std::string update_tag, update_zip, update_sha;     // the release a check found
+std::string update_staged;                          // downloaded: this version starts at the next launch
+bool        restart_wanted = false;
+
+// A box over everything: a job's progress, then its result and choices
+struct Notice {
+    bool        open = false;
+    std::string title, body;
+    const char* yes = nullptr;      // Confirm's label (nullptr: none)
+    const char* no = "Close";       // Back's
+    void (*on_yes)() = nullptr;
+};
+Notice notice;
+
+void show_notice(const char* title, const std::string& body, const char* yes = nullptr, void (*on_yes)() = nullptr,
+                 const char* no = "Close")
+{
+    notice.open = true;
+    notice.title = title;
+    notice.body = body;
+    notice.yes = yes;
+    notice.no = no;
+    notice.on_yes = on_yes;
+}
+
+std::string tool(const char* name) { return task::quoted(tools_dir + "/" + name); }
+
+// The folder the port lives in (tools/ is inside it)
+std::string port_dir()
+{
+    const size_t k = tools_dir.rfind('/');
+    return k == std::string::npos ? "." : tools_dir.substr(0, k);
+}
+
+bool tools_ready(const char* name)
+{
+    if (FILE* f = fopen((tools_dir + "/" + name).c_str(), "r")) {
+        fclose(f);
+        return true;
+    }
+    show_notice("Not Available", "This build has no tools folder (it isn't an installed port).");
+    return false;
+}
+
+void run_job(Job j, const std::string& command, const char* title, const char* text)
+{
+    if (!task::start("/bin/bash " + command + " 2>&1")) return;
+    job = j;
+    show_notice(title, text, nullptr, nullptr, nullptr);
+}
+
+void update_restart()
+{
+    // (the launch script puts the staged version in place and starts it)
+    if (FILE* f = fopen((port_dir() + "/restart").c_str(), "w")) fclose(f);
+    restart_wanted = true;
+}
+
+void update_fetch()
+{
+    run_job(Job::Fetch,
+            tool("update.sh") + " fetch " + task::quoted(update_tag) + " " + task::quoted(update_zip) + " " +
+                task::quoted(update_sha) + " " + task::quoted(port_dir()),
+            "Updating", "Downloading the new version...");
+}
+
+void update_check()
+{
+    if (!update_staged.empty()) {
+        show_notice("Update Ready", "Version " + update_staged.substr(1) + " is downloaded. It starts the next time the port does.",
+                    "Restart Now", update_restart, "Later");
+        return;
+    }
+    if (!tools_ready("update.sh")) return;
+    run_job(Job::Check, tool("update.sh") + " check", "Updates", "Looking for a new version...");
+}
+
+void send_logs()
+{
+    if (cfg.log_url.empty()) {
+        show_notice("Send Logs", "Set the log server's address first: the menu's Log Server line.");
+        return;
+    }
+    if (!tools_ready("sendlogs.sh")) return;
+    fflush(stdout);
+    run_job(Job::Logs,
+            tool("sendlogs.sh") + " " + task::quoted(cfg.log_url) + " " + task::quoted(port_dir()) + " " PM_VERSION,
+            "Send Logs", "Sending the logs...");
+}
+
+// "v0.10.2" / "0.10.2" as one number to compare
+long version_number(const std::string& v)
+{
+    long n[3] = {0, 0, 0};
+    sscanf(v.c_str() + (v[0] == 'v' || v[0] == 'V' ? 1 : 0), "%ld.%ld.%ld", &n[0], &n[1], &n[2]);
+    return (n[0] * 1000 + n[1]) * 1000 + n[2];
+}
+
+void job_tick()
+{
+    std::string out;
+    int code = 0;
+    if (job == Job::None || !task::finished(out, code)) return;
+    const Job was = job;
+    job = Job::None;
+    plat::log("[port] job %d ended (%d): %s", static_cast<int>(was), code, out.c_str());
+    const std::string err = task::field(out, "ERROR");
+    if (code != 0 || !err.empty()) {
+        show_notice(was == Job::Logs ? "Send Logs" : "Updates", err.empty() ? "It didn't work (see log.txt)." : err);
+        return;
+    }
+    if (was == Job::Check) {
+        update_tag = task::field(out, "TAG");
+        update_zip = task::field(out, "ZIP");
+        update_sha = task::field(out, "SHA");
+        const bool pre = task::field(out, "PRE") == "1";
+        if (update_tag.empty() || version_number(update_tag) <= version_number(PM_VERSION)) {
+            show_notice("Updates", "This is the newest version (" PM_VERSION ").");
+            return;
+        }
+        show_notice("Update Found",
+                    "Version " + update_tag.substr(1) + (pre ? " (a pre-release)" : "") +
+                        " is out. You have " PM_VERSION ".",
+                    "Download", update_fetch, "Later");
+    } else if (was == Job::Fetch) {
+        update_staged = task::field(out, "STAGED");
+        show_notice("Update Ready", "Version " + update_staged.substr(1) + " is downloaded and checked. It starts the next time the port does.",
+                    "Restart Now", update_restart, "Later");
+    } else {
+        std::string n = task::field(out, "SENT");
+        show_notice("Send Logs", "Sent to the log server: " + n.substr(0, n.find(' ')) + " file(s).");
+    }
+}
+
+void draw_notice()
+{
+    box(3, 6, 34, 13);
+    centred(7, notice.title.c_str(), video::kGold);
+    wrapped(4, 9, 32, notice.body, video::kCream);
+    char line[41] = "";
+    if (job != Job::None) snprintf(line, sizeof line, "Please wait...");
+    else if (notice.yes) snprintf(line, sizeof line, "%s: %s   %s: %s", confirm_name(), notice.yes, back_name(), notice.no);
+    else snprintf(line, sizeof line, "%s: %s", confirm_name(), notice.no ? notice.no : "Close");
+    centred(18, line, video::kMuted);
+}
+
 // ---- The menu --------------------------------------------------------------
 enum MenuItem : uint8_t {
-    MResume, MControls, MDisplay, MSound, MVolume, MFont, MPadMoves, MSwap, MRescan, MLeaveGame, MExit
+    MResume, MControls, MDisplay, MSound, MVolume, MFont, MPadMoves, MSwap, MRescan, MUpdate, MSendLogs, MLogServer,
+    MLeaveGame, MExit
 };
 std::vector<MenuItem> menu_items;
 
@@ -244,6 +399,9 @@ void menu_build()
     menu_items.push_back(MPadMoves);
     menu_items.push_back(MSwap);
     if (!playing) menu_items.push_back(MRescan);
+    menu_items.push_back(MUpdate);
+    menu_items.push_back(MSendLogs);
+    menu_items.push_back(MLogServer);
     if (playing) menu_items.push_back(MLeaveGame);
     menu_items.push_back(MExit);
     if (menu_sel >= static_cast<int>(menu_items.size())) menu_sel = 0;
@@ -263,6 +421,9 @@ void menu_label(MenuItem m, char* out, size_t cap)
     case MPadMoves: snprintf(out, cap, "D-Pad Walks: %s", cfg.pad_moves ? "On" : "Off"); break;
     case MSwap: snprintf(out, cap, "Confirm Button: %s", confirm_name()); break;
     case MRescan: snprintf(out, cap, "Look for Games Again"); break;
+    case MUpdate: snprintf(out, cap, "%s", update_staged.empty() ? "Check for Updates" : "Restart to Update"); break;
+    case MSendLogs: snprintf(out, cap, "Send Logs"); break;
+    case MLogServer: snprintf(out, cap, "Log Server: %.14s", cfg.log_url.empty() ? "Not Set" : cfg.log_url.c_str()); break;
     case MLeaveGame: snprintf(out, cap, "Exit Game"); break;
     case MExit: snprintf(out, cap, "Quit"); break;
     }
@@ -310,15 +471,16 @@ void draw_menu()
         return;
     }
     const int n = static_cast<int>(menu_items.size());
-    const int top = (25 - n * 2) / 2;
-    box(7, top - 1, 26, n * 2 + 1);
+    const int pitch = n > 11 ? 12 : 14, h = n * pitch + 8, y0 = (video::kH - h) / 2;
+    video::fill(52, y0, 216, h, video::kNavy);
+    video::frame(52, y0, 216, h, video::kGold);
     for (int i = 0; i < n; ++i) {
         char line[40];
         menu_label(menu_items[i], line, sizeof line);
-        const int row = top + i * 2;
+        const int y = y0 + 4 + i * pitch;
         const bool sel = i == menu_sel;
-        if (sel) video::fill(7 * 8 - 2, row * 8 - 3, 26 * 8 + 4, 14, video::kLit);
-        video::text(8, row, line, sel ? video::kCream : video::kMuted);
+        if (sel) video::fill(54, y, 212, pitch, video::kLit);
+        video::text_at(62, y + (pitch - 8) / 2, line, sel ? video::kCream : video::kMuted);
     }
 }
 
@@ -352,6 +514,48 @@ void draw_keys()
         const char* s = k.label ? k.label : one;
         video::text_at(k.col * 8 + (k.w * 8 - static_cast<int>(strlen(s)) * 8) / 2, k.row * 8, s, video::kCream);
     }
+}
+
+void prompt_begin()
+{
+    keys.clear();
+    key_sel = 0;
+    static const char* const kRows[4] = {"abcdefghij", "klmnopqrst", "uvwxyz.:/-", "0123456789"};
+    int row = 2;
+    for (int r = 0; r < 4; ++r, row += 2)
+        for (int i = 0; kRows[r][i]; ++i) keys.push_back(Key{kRows[r][i], nullptr, 5 + i * 3, row, 3});
+    keys.push_back(Key{'\b', "Delete", 5, row, 15});
+    keys.push_back(Key{'\n', "Done", 20, row, 15});
+    prompt_text = cfg.log_url.empty() ? "http://" : cfg.log_url;
+    prompt_open = true;
+}
+
+void prompt_key(char ch)
+{
+    if (ch == '\b') {
+        if (!prompt_text.empty()) prompt_text.pop_back();
+    } else if (ch == '\n') {
+        cfg.log_url = prompt_text == "http://" ? "" : prompt_text;
+        settings_save(conf_dir, cfg);
+        prompt_open = false;
+        keys.clear();
+        keys_for = play::Input::None;       // (the game's own keyboard, if it was up, is built again)
+    } else if (prompt_text.size() < 60) {
+        prompt_text += ch;
+    }
+}
+
+void draw_prompt()
+{
+    draw_keys();
+    box(2, 15, 36, 8);
+    video::text(3, 15, "Log server (WebDAV) address:", video::kGold);
+    const size_t n = prompt_text.size();
+    video::text(3, 17, (prompt_text.substr(n > 33 ? n - 33 : 0) + "_").c_str(), video::kCream);
+    video::text(3, 19, "e.g. http://192.168.1.20:5005", video::kMuted);
+    char line[41];
+    snprintf(line, sizeof line, "%s: Type  %s: Delete  Y: Done", confirm_name(), back_name());
+    video::text(3, 21, line, video::kMuted);
 }
 
 // The key nearest to the chosen one's middle, a row up (dy -1) or down
@@ -403,10 +607,12 @@ void draw_frame()
         draw_message();
     } else {
         video::clear();
-        if (!menu_open) draw_keys();
+        if (!menu_open && !prompt_open) draw_keys();
         if (ptr_on && !menu_open) video::pointer(static_cast<int>(ptr_x), static_cast<int>(ptr_y));
     }
     if (menu_open) draw_menu();
+    if (prompt_open) draw_prompt();
+    if (notice.open) draw_notice();
     video::present(playing ? &cv : nullptr);
 }
 
@@ -670,6 +876,9 @@ void menu_press(int b)
             rescan();
             menu_open = false;
             break;
+        case MUpdate: update_check(); break;
+        case MSendLogs: send_logs(); break;
+        case MLogServer: prompt_begin(); break;
         case MLeaveGame: leave_game(); break;
         case MExit: quit = true; break;
         default: menu_change(0); break;
@@ -683,6 +892,22 @@ void menu_press(int b)
 void press(int b)
 {
     if (b <= BRight && !ptr_mode) ptr_on = false;
+    if (notice.open) {
+        if (job != Job::None) return;               // (working: nothing to press yet)
+        if (b == BA || b == BB || b == BStart) {
+            void (*go)() = b == BA ? notice.on_yes : nullptr;
+            notice.open = false;
+            if (go) go();
+        }
+        return;
+    }
+    if (prompt_open) {
+        if (b == BA) prompt_key(keys[key_sel].ch);
+        else if (b == BB) prompt_key('\b');
+        else if (b == BY || b == BStart) prompt_key('\n');
+        else if (b <= BRight) keys_move(b == BLeft ? -1 : b == BRight ? 1 : 0, b == BUp ? -1 : b == BDown ? 1 : 0);
+        return;
+    }
     if (menu_open) {
         menu_press(b);
         return;
@@ -1023,6 +1248,7 @@ Uint32                   script_next = 0;
 void script_tick(Uint32 now)
 {
     if (script_at >= script.size() || static_cast<Sint32>(now - script_next) < 0) return;
+    if (job != Job::None) return;                   // (a network job runs: the script waits for it)
     const std::string& t = script[script_at++];
     script_next = now + 150;
     if (t.compare(0, 5, "wait:") == 0) {
@@ -1034,7 +1260,10 @@ void script_tick(Uint32 now)
         int x = 0, y = 0;
         if (sscanf(t.c_str() + 4, "%d:%d", &x, &y) == 2) pointer_tap(x, y);
     } else if (t.compare(0, 5, "type:") == 0) {
-        for (const char* p = t.c_str() + 5; *p && playing; ++p) play::input_key(*p == '_' ? ' ' : *p, cv);
+        for (const char* p = t.c_str() + 5; *p; ++p) {
+            if (prompt_open) prompt_key(*p);
+            else if (playing) play::input_key(*p == '_' ? ' ' : *p, cv);
+        }
     } else if (t == "quit") {
         quit = true;
     } else {
@@ -1062,6 +1291,7 @@ void script_tick(Uint32 now)
         }
         if (!found) plat::log("[script] unknown step '%s'\n", t.c_str());
     }
+    if (notice.open) plat::log("[script] %-12s notice: %s / %s\n", t.c_str(), notice.title.c_str(), notice.body.c_str());
     if (playing)
         plat::log("[script] %-12s walking=%d fight=%d input=%d\n", t.c_str(), play::walking() ? 1 : 0,
                   play::fighting() ? 1 : 0, static_cast<int>(play::input()));
@@ -1072,6 +1302,7 @@ void usage()
     printf("Gold Box Game Engine for PortMaster %s\n"
            "  --games <dir>    the folder holding the player's game folders (default: games)\n"
            "  --conf <dir>     where settings are kept (default: conf)\n"
+           "  --tools <dir>    the port's helper scripts (default: tools)\n"
            "  --window <WxH>   a window instead of the whole screen\n"
            "  --game <n>       start game n of the list at once (from 1)\n"
            "  --script <steps> inputs to play back (checks)\n",
@@ -1088,6 +1319,7 @@ int main(int argc, char** argv)
         const char* v = i + 1 < argc ? argv[i + 1] : nullptr;
         if (a == "--games" && v) pm::games_root() = argv[++i];
         else if (a == "--conf" && v) conf_dir = argv[++i];
+        else if (a == "--tools" && v) tools_dir = argv[++i];
         else if (a == "--window" && v) sscanf(argv[++i], "%dx%d", &win_w, &win_h);
         else if (a == "--game" && v) auto_game = atoi(argv[++i]);
         else if (a == "--script" && v) {
@@ -1144,6 +1376,8 @@ int main(int argc, char** argv)
         pointer_tick(dt > 0.1f ? 0.1f : dt);
         if (ptr_on && now - ptr_seen > 6000) ptr_on = false;        // (left alone: out of the way)
         script_tick(now);
+        job_tick();
+        if (restart_wanted) quit = true;
         if (playing && screen == Screen::Play && !menu_open) {
             play::tick(plat::now_ms(), cv);
             after_input();
@@ -1151,7 +1385,7 @@ int main(int argc, char** argv)
         if (playing) {
             sync_palette(false);
             const play::Input in = play::input();
-            if (in != keys_for) keys_build(in);
+            if (in != keys_for && !prompt_open) keys_build(in);
             int y0, y1;
             play::take_dirty(y0, y1);       // (every frame shows the whole canvas)
         }

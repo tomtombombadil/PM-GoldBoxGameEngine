@@ -34,9 +34,10 @@ and maintains it; it is the primary output of the Claude Project
   raise it again until the port is ready for submission.
 - **Primary test device: Tom's Anbernic RG40XX H running ROCKNIX** (640 x
   480, every button and both sticks, no touch screen). ROCKNIX's card is
-  ext4 - Windows can't read it: files go over the network share or from a
-  USB drive / second card with ROCKNIX's file manager. Installing a build:
-  README "Installing".
+  ext4 - Windows can't read it. **Don't give Tom multi-step file-copy
+  procedures for getting builds onto it** (2026-11-14: "I don't understand
+  your install instructions and it's kinda a pain"): builds reach the
+  device by the installer once, then Check for Updates.
 - **Tom's game files are in this Project's files** (2026-11-14): the GOG
   release of each of the nine games ("<Game Name>.zip") and the Steam
   release ("<SHORT>_SNEG_VERSION.zip" - SNEG is the Steam publisher; **the
@@ -147,11 +148,45 @@ and maintains it; it is the primary output of the Claude Project
 ## Versions and releases
 - Semantic versioning from `VERSION` (started 0.1.0, 2026-11-14): bump it
   in every push to main that changes the port (fix = Z, feature = Y).
-- Every push to main: CI checks, builds aarch64 + x86_64 and the package
-  (artifact `goldbox-portmaster`). Check CI's result after every push.
+- Every push to main: CI checks (incl. the install / update / send-logs
+  tests against pretend servers), builds aarch64 + x86_64 and the package.
+  Check CI's result after every push.
 - `git fetch` and merge origin/main before every push; never force-push;
   never push over Tom's edits.
-- **Don't publish a release unless Tom asks.** Releases: Actions -> Build ->
-  Run workflow with `release_tag` = `v` + VERSION.
+- **Releases as Pocket Curator's** (Tom, 2026-11-14: "package up the file
+  into a pre-release until we're ready for an actual release ... lookup a
+  new version and download and install it right from the test device";
+  his `tomtombombadil/PocketCurator` is the model - read it when in doubt):
+  every version Tom is to test is published as a **pre-release** - Claude
+  does it, without asking, once the push's CI is green: the Build workflow
+  dispatched with `release_tag` = `v` + VERSION
+  (`gh api -X POST repos/tomtombombadil/PM-GoldBoxGameEngine/actions/workflows/build.yml/dispatches
+  -f ref=main -f 'inputs[release_tag]=vX.Y.Z'`), then check the release
+  has its three assets. A **stable** release (`inputs[stable]=true`) only
+  when Tom says the port is ready for one.
+  - Assets: `goldbox_port-vX.Y.Z.zip` (the names the installer and updater
+    look for - never rename), its `.sha256`, `GoldBox.Installer.sh`.
+  - `port/GoldBox.Installer.sh`: copied once into `roms/ports`, installs
+    the newest release (pre-releases included).
+  - The port's **Check for Updates** (`port/goldbox/tools/update.sh` +
+    `src/main.cpp`'s jobs): stages the newest release in `.update/`, READY
+    last; the launch script applies it at the next launch (Restart Now
+    does that at once). Network only through the firmware's `curl` from
+    the helper scripts - no network code in the binary. conf/ and games/
+    are never in a release.
+  - **An update is installed by the OLD version's launch script and
+    updater**: a mistake there strands testers on that version (Pocket
+    Curator met this). Never publish a release whose smoke test's update
+    path (`tools/smoke_test.py` update_test) fails, and keep that test
+    covering install -> update -> restart.
+  - `CHANGELOG.md`: a section a version, written for Tom - it is the
+    release's notes.
+- **Send Logs** (Tom, 2026-11-14): Start menu - Log Server (a WebDAV
+  address, typed once, kept in conf/settings.cfg - never an address in the
+  repo) and Send Logs (`tools/sendlogs.sh`: log.txt, log.prev.txt,
+  update.log, settings.cfg, the engine's `_CYD/*.TXT` - text only, never
+  game files) into `goldbox-logs/` on the server. Tom gets them on his PC
+  that way and passes them to Claude. When asking Tom for a log, ask for
+  Send Logs - not for files fetched off the card.
 - Submitting to PortMaster's own catalogue (a PR to PortsMaster/PortMaster-New)
   is Tom's call and needs things only he can supply (TODO).

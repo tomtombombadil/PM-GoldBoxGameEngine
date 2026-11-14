@@ -15,6 +15,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS ON)
 
 find_package(SDL2 REQUIRED)
+find_package(Threads REQUIRED)
 
 # The engine: plain C++ (cyd/src/engine), the games (cyd/src/game/play.cpp;
 # its .inc files are part of it). The boards' own front end and drivers
@@ -28,14 +29,14 @@ target_compile_options(gbengine PRIVATE -O2 -Wno-format-truncation
 
 add_executable(goldbox
     src/main.cpp src/video.cpp src/library.cpp src/settings.cpp
-    src/platform_sdl.cpp src/audio_sdl.cpp)
+    src/platform_sdl.cpp src/audio_sdl.cpp src/task.cpp)
 target_compile_definitions(goldbox PRIVATE PM_VERSION="${PM_VERSION}")
 target_compile_options(goldbox PRIVATE -Wall -Wextra)
 if(TARGET SDL2::SDL2)
-    target_link_libraries(goldbox PRIVATE gbengine SDL2::SDL2)
+    target_link_libraries(goldbox PRIVATE gbengine SDL2::SDL2 Threads::Threads)
 else()
     target_include_directories(goldbox PRIVATE ${SDL2_INCLUDE_DIRS})
-    target_link_libraries(goldbox PRIVATE gbengine ${SDL2_LIBRARIES})
+    target_link_libraries(goldbox PRIVATE gbengine ${SDL2_LIBRARIES} Threads::Threads)
 endif()
 # (the handhelds' firmwares differ in their C++ runtime: carry ours)
 option(PM_STATIC_RUNTIME "Link libstdc++ / libgcc statically" ON)

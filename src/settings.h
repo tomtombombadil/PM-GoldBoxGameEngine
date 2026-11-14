@@ -11,6 +11,7 @@ struct Settings {
     uint8_t font = 0;           // the game's text: 0 its own, 1 Clear, 2 Darkness's, 3 Clear Caps
     bool    swap_ab = false;    // Confirm / Back the other way round
     bool    pad_moves = true;   // exploring: the D-pad walks (off: it always moves the highlight)
+    std::string log_url;        // Send Logs' WebDAV server ("" none)
 };
 
 bool settings_load(const std::string& dir, Settings& s);

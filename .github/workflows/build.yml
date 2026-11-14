@@ -4,15 +4,21 @@ on:
   push:
     branches: [main]
   pull_request:
-  # "Run workflow" on the Actions tab. Fill in a tag (v + the VERSION file,
-  # e.g. v0.2.0) to publish a release from the current main; leave empty
-  # for a plain build.
+  # "Run workflow" on the Actions tab (or the API). Fill in a tag (v + the
+  # VERSION file, e.g. v0.3.0) to publish a release from the current main -
+  # a PRE-release unless "stable" is ticked; leave empty for a plain build.
+  # The installer and the port's own Check for Updates take the newest
+  # release, pre-releases included.
   workflow_dispatch:
     inputs:
       release_tag:
-        description: 'Release tag to create = v + the VERSION file, e.g. v0.2.0. Leave empty to just build.'
+        description: 'Release tag to create = v + the VERSION file, e.g. v0.3.0. Leave empty to just build.'
         required: false
         default: ''
+      stable:
+        description: 'A stable release (not a pre-release)'
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -36,10 +42,10 @@ jobs:
           fi
       - name: Launch script has Unix line ends
         run: |
-          if grep -q $'\r' "port/Gold Box Game Engine.sh"; then
-            echo "::error::the launch script has Windows line ends"; exit 1
-          fi
-          bash -n "port/Gold Box Game Engine.sh"
+          for f in "port/Gold Box Game Engine.sh" port/GoldBox.Installer.sh port/goldbox/tools/*.sh; do
+            if grep -q $'\r' "$f"; then echo "::error::$f has Windows line ends"; exit 1; fi
+            bash -n "$f"
+          done
       - name: Build
         run: |
           cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-fsanitize=address,undefined" -DPM_STATIC_RUNTIME=OFF
@@ -85,15 +91,24 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: goldbox-portmaster
-          path: dist/goldbox.zip
+          path: |
+            dist/goldbox_port-v*.zip
+            dist/goldbox_port-v*.zip.sha256
+            dist/GoldBox.Installer.sh
       - name: Release
         if: inputs.release_tag != ''
         env:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ inputs.release_tag }}
+          STABLE: ${{ inputs.stable }}
         run: |
           V="v$(tr -d ' \r\n' < VERSION)"
-          if [[ "$TAG" != "$V" && "$TAG" != "$V"-* ]]; then
+          if [[ "$TAG" != "$V" ]]; then
             echo "::error::the release tag must be $V - bump VERSION first"; exit 1
           fi
-          gh release create "$TAG" dist/goldbox.zip --target "$GITHUB_SHA" --title "$TAG" --generate-notes
+          # This version's part of CHANGELOG.md as the release's notes
+          awk -v v="[${V#v}]" 'index($0, "## " v) == 1 {on = 1; next} /^## \[/ {on = 0} on' CHANGELOG.md > notes.md
+          [ -s notes.md ] || echo "Gold Box Game Engine for PortMaster $V" > notes.md
+          PRE="--prerelease"; [ "$STABLE" = "true" ] && PRE="--latest"
+          gh release create "$TAG" dist/goldbox_port-$V.zip dist/goldbox_port-$V.zip.sha256 dist/GoldBox.Installer.sh \
+            --target "$GITHUB_SHA" --title "Gold Box Game Engine $V" --notes-file notes.md $PRE

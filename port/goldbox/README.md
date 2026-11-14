@@ -20,7 +20,7 @@ Everything is done with the buttons; sticks are optional extras.
 | X | Area map |
 | Y | Look |
 | Select | Pointer Mode: the D-Pad moves a pointer, A taps there, B ends it |
-| Start | The port's menu (display, sound, font, controls, exit game) |
+| Start | The port's menu (display, sound, font, controls, updates, logs, exit game) |
 | Select + Start | Quit |
 
 In a fight, while a fighter moves or aims: the D-Pad steps (two directions together = a diagonal), L1 / R1 / L2 / R2 are the four diagonals, A ends the move or picks the target.

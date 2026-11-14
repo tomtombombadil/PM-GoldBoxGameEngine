@@ -14,6 +14,12 @@
   - **QR Code generator library (C)**, Copyright (c) Project Nayuki, MIT
     License, https://www.nayuki.io/page/qr-code-generator-library.
 
+## From Tom's own projects (MIT)
+- **Pocket Curator** (tomtombombadil/PocketCurator): the one-file
+  installer, the staged self-update (download, verify, READY flag, applied
+  by the launch script) and the launch script's line-end self-heal follow
+  its design; `port/GoldBox.Installer.sh` is adapted from its installer.
+
 ## Libraries (linked, not copied)
 - **SDL2** - zlib license, https://www.libsdl.org. Linked dynamically: the
   handheld's own SDL2 is used.

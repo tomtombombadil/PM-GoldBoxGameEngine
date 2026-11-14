@@ -107,8 +107,8 @@ handheld has the speed).
 - **Loading** message at once when a game is chosen.
 - **Menu** (Start): Back to Game, Controls, Display, Game Sound (Tandy /
   PC Speaker / Off), Volume, Game Font (Original / Clear / Darkness / Clear
-  Caps), D-Pad Walks, Confirm Button, Look for Games Again, Exit Game,
-  Quit. The game is paused while it is open.
+  Caps), D-Pad Walks, Confirm Button, Look for Games Again, Check for
+  Updates, Send Logs, Log Server, Exit Game, Quit. The game is paused while it is open.
 - **On-screen keyboard** over the top of the game screen (the game's own
   text area stays visible) while `play::input()` asks.
 - **Messages** stay until a button.
@@ -123,6 +123,24 @@ x86_64 in an Ubuntu 20.04 container (glibc 2.31, SDL 2.0.10 headers);
 reads the controller through SDL's game controller API with PortMaster's
 mapping (`SDL_GAMECONTROLLERCONFIG`); gptokeyb runs only for the quit
 hotkey.
+
+## 7b. Installing, updating, logs (as Pocket Curator)
+- **Releases**: GitHub releases of this repo, pre-releases while in
+  development. Assets `goldbox_port-vX.Y.Z.zip`, `.sha256`,
+  `GoldBox.Installer.sh`.
+- **Installer**: one file copied into `roms/ports` and run from Ports;
+  finds the newest release (pre-releases included), downloads, checks the
+  SHA-256 and the zip, unpacks into the ports folder.
+- **Check for Updates** (Start menu): `tools/update.sh check` (curl, the
+  releases list; the first `goldbox_port-v*.zip` is the newest) -> a newer
+  version is offered -> `update.sh fetch` stages it in `.update/staged`,
+  READY last -> Restart Now (or the next launch): the launch script copies
+  the staged port over the installed one, replaces itself last, removes
+  `.update`, starts the new version. `update.log` records it.
+- **Send Logs** (Start menu): Log Server (typed on the port's keyboard,
+  kept in settings) + `tools/sendlogs.sh` (curl -T to WebDAV).
+- The helper scripts run on a thread (`src/task.*`); the screen shows a
+  notice until they end. Buttons only: all of it from the Start menu.
 
 ## 8. Roadmap
 1. **v0.1 - first run** (this): engine built in, game list, play, buttons,

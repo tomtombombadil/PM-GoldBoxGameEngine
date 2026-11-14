@@ -31,33 +31,43 @@ or code from the games - and never will. You need your own copy of each game
 
 ## Installing
 
-1. Install PortMaster on your handheld if it isn't there already.
-2. Get `goldbox.zip`: on this repository's **Actions** tab open the latest
-   green *Build* run and download the `goldbox-portmaster` artifact
-   (GitHub needs you signed in). The download is a zip **containing**
-   `goldbox.zip` - take that inner file out.
-3. Put `goldbox.zip` (still zipped) in PortMaster's `autoinstall` folder
-   and start PortMaster once - it installs it. On ROCKNIX that folder is
-   `roms/ports/PortMaster/autoinstall/`. (By hand instead: unzip it into
-   the `ports` folder, giving `ports/Gold Box Game Engine.sh` and
-   `ports/goldbox/`.)
-4. Copy each game's whole install folder into `ports/goldbox/games/` - one
-   folder a game, keeping the game's name in the folder's name:
+You need PortMaster on the handheld, and Wi-Fi.
 
-       ports/goldbox/games/Pool of Radiance/
-       ports/goldbox/games/Curse of the Azure Bonds/
+1. From the newest entry on this repository's
+   [Releases page](https://github.com/tomtombombadil/PM-GoldBoxGameEngine/releases)
+   download **`GoldBox.Installer.sh`** (one small file).
+2. Copy it into the handheld's **`roms/ports`** folder.
+3. On the handheld: Start - Game Settings - Update Gamelists, then open
+   **Ports** and run **GoldBox.Installer**. It downloads and installs the
+   newest release.
+4. Copy each game's whole install folder into `roms/ports/goldbox/games/` -
+   one folder a game, keeping the game's name in the folder's name:
 
-5. Start **Gold Box Game Engine** from your Ports menu.
+       roms/ports/goldbox/games/Pool of Radiance/
+       roms/ports/goldbox/games/Curse of the Azure Bonds/
+
+5. Start **Gold Box Game Engine** from Ports.
+
+That is the only time a file has to be carried over for the port itself.
+From then on: **Start - Check for Updates** in the port finds a newer
+release, downloads it and installs it when the port restarts. Games, saves
+and settings are kept. While the port is in development the releases are
+pre-releases; the installer and the updater take the newest one.
 
 Saved games go in each game's own folder, as the originals wrote them.
 
-**Getting files onto the handheld from Windows.** Many firmwares (ROCKNIX
-among them) format their card as ext4, which Windows can't read. Either
-connect the handheld to your Wi-Fi and open its network share from File
-Explorer (type `\\` and the handheld's IP address in the address bar; on
-ROCKNIX the games folder is the `games-roms` share, so the port is
-`games-roms\ports\goldbox`), or copy from a USB drive / second card with
-the firmware's own file manager.
+**Copying files to the handheld from Windows.** Many firmwares (ROCKNIX
+among them) format their card as ext4, which Windows can't read. With the
+handheld on your Wi-Fi, type `\\` and the handheld's IP address into File
+Explorer's address bar (on ROCKNIX: Start - Network Settings shows the
+address; the `roms` folder is the `games-roms` share, so step 2's folder is
+`games-roms\ports`).
+
+**Sending logs.** Start - Log Server: the address of a WebDAV server on
+your network (for example rclone on a PC:
+`rclone serve webdav "C:\GoldBoxLogs" --addr :5006`, address
+`http://<the PC's IP>:5006`). Then Start - Send Logs puts the port's logs
+there, in a `goldbox-logs` folder.
 
 ## Controls
 
@@ -74,7 +84,7 @@ Start, Select. Sticks and touch screens are optional extras.
 | X | Area map |
 | Y | Look |
 | Select | Pointer Mode: the D-Pad moves a pointer, A taps there, B ends it |
-| Start | The port's menu: display, sound, font, controls, exit game |
+| Start | The port's menu: display, sound, font, controls, updates, logs, exit game |
 | Select + Start | Quit (PortMaster's usual) |
 
 In a fight, while a fighter moves or aims: the D-Pad steps (two directions
@@ -85,9 +95,8 @@ on-screen keyboard appears (D-Pad, A types, B deletes, X space, Y done).
 ## Building
 
 The builds are made by GitHub Actions on every push (aarch64 and x86_64, in
-an Ubuntu 20.04 container so they run on older firmwares): the
-`goldbox-portmaster` artifact of the latest *Build* run is the installable
-zip. To build it yourself on Linux:
+an Ubuntu 20.04 container so they run on older firmwares); a release is the
+same build published with its installer. To build it yourself on Linux:
 
     git clone --recursive https://github.com/tomtombombadil/PM-GoldBoxGameEngine.git
     cd PM-GoldBoxGameEngine
