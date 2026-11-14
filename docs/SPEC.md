@@ -56,7 +56,7 @@ direction keys (`play::fight_dir`, `fight_select`), typed keys
 |--|--|--|--|--|
 | D-Pad | forward, turn left / right, turn around | move the highlight | step / aim; two together = diagonal | move over the keys |
 | A | choose the highlighted menu word | choose / continue | end the move / Target | type the key |
-| B | back out of a question | back out of a question | - | delete |
+| B | Back (below) | Back (below) | - | delete |
 | L1 / R1 | menu word left / right | highlight left / right | up-left / up-right | - |
 | L2 / R2 | side-step left / right | - | down-left / down-right | - |
 | X | Area map | - | - | space |
@@ -64,6 +64,13 @@ direction keys (`play::fight_dir`, `fight_select`), typed keys
 | Select | Pointer Mode | Pointer Mode | Pointer Mode | Pointer Mode |
 | Start | the port's menu | the port's menu | the port's menu | the port's menu |
 
+- **Back** (B; Tom, 2026-11-14: "Using B as an Exit button is a great
+  idea"): first the engine's own Esc (`play::back` - out of View, Modify,
+  a shop, Load Which Game, a Yes / No as No ...); when that has nothing to
+  back out of, a tap on the menu line's **Exit** word if it has one
+  (`play::exit_point`, added to the engine for this in CYD v0.196.52).
+  Never the party menu's "Exit to DOS" - leaving a game is the Start
+  menu's Exit Game.
 - **D-Pad Walks** (menu switch, on): off = the D-Pad always moves the
   highlight (walking then needs the menu words).
 - **Pointer Mode** (Select; acts when Select is let go, so Select + Start

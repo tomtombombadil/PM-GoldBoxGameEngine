@@ -14,7 +14,7 @@ Everything is done with the buttons; sticks are optional extras.
 |--|--|
 | D-Pad | Walk (forward, turn, turn around) / move the highlight in menus and lists |
 | A | Choose the highlighted thing / continue |
-| B | Back / delete a letter |
+| B | Back: out of a screen or question, or the menu's Exit / delete a letter |
 | L1 / R1 | Menu word left / right while walking |
 | L2 / R2 | Side-step left / right |
 | X | Area map |

@@ -26,6 +26,28 @@ and maintains it; it is the primary output of the Claude Project
 - Game names to Tom (as in the CYD repo): PoolRad, Curse, Secret, Darkness,
   Gateway, Treasures, Champions, Knights, Queen - never "Pool" alone.
 
+## Decisions (Tom, 2026-11-14)
+- The port's name is "Gold Box Game Engine", its folder `goldbox` - settled.
+- B = Back / Exit (SPEC 4).
+- It is to be submitted to PortMaster's catalogue **eventually**; that
+  needs a gameplay screenshot - "don't worry about that for now". Don't
+  raise it again until the port is ready for submission.
+- **Primary test device: Tom's Anbernic RG40XX H running ROCKNIX** (640 x
+  480, every button and both sticks, no touch screen). ROCKNIX's card is
+  ext4 - Windows can't read it: files go over the network share or from a
+  USB drive / second card with ROCKNIX's file manager. Installing a build:
+  README "Installing".
+- **Tom's game files are in this Project's files** (2026-11-14): the GOG
+  release of each of the nine games ("<Game Name>.zip") and the Steam
+  release ("<SHORT>_SNEG_VERSION.zip" - SNEG is the Steam publisher; **the
+  two releases' files differ**, so check both), each game's journal PDFs
+  in zips ("<SHORT> - ... Journal.zip" GOG, "<SHORT> SNEG - ....zip"
+  Steam; zipped so the PDF's bytes come through - they are processed on
+  the device), and "Launcher Steam.zip" (the Steam launcher: its box art
+  is wanted on the game selection screen, made on the device from the
+  player's copy as the CYD scan does). Fetch with `project_read`, unpack
+  under `/tmp/claude-0/pmgames/` (never under a repo).
+
 ## Bring your own game - hard rules (the CYD project's, unchanged)
 - The repo and the package contain nothing from the games: no DAX / TLB /
   GLB files, no extracted pictures, text, journal entries or code. Tests
@@ -108,6 +130,10 @@ and maintains it; it is the primary output of the Claude Project
 - `tools/smoke_test.py <binary>` runs the port with SDL's dummy drivers and
   a `--script` of button presses (no game files). CI runs it on an
   ASan / UBSan build. Extend it with every new screen.
+- `tools/play_shots.py <binary> <games dir> <out.png> steps...` plays a
+  script and puts a screenshot per step on one sheet (scratch only - real
+  game screens). Titles run on their own: give waits between presses
+  (`a! wait:700!`), and keep sheets small - a shot per step that matters.
 - `--script` steps: button names (`up down left right a b x y l1 r1 l2 r2
   start select`), `hold:<dir>` / `let:<dir>`, `wait:<ms>`, `tap:x:y`,
   `type:TEXT`, `shot:<file.bmp>`, `quit`. `--game <n>` starts a game at

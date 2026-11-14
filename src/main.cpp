@@ -278,7 +278,7 @@ void draw_help()
     const Line lines[] = {
         {"D-Pad", "Walk / move the highlight"},
         {a, "Choose the highlighted thing"},
-        {b, "Back / delete a letter"},
+        {b, "Back / the menu's Exit"},
         {"L1 R1", "Menu word left / right"},
         {"L2 R2", "Side-step left / right"},
         {"X", "Area map"},
@@ -731,7 +731,13 @@ void press(int b)
     case BLeft:
     case BRight: game_dir(b); break;
     case BA: confirm(); break;
-    case BB: play::back(cv); break;
+    case BB: {
+        // Back: out of a question or screen (the engine's Esc); else the
+        // menu line's Exit word
+        int x, y;
+        if (!play::back(cv) && play::exit_point(&x, &y)) canvas_tap(x, y);
+        break;
+    }
     case BX: play::act(play::Act::Area, cv); break;
     case BY: play::act(play::Act::Look, cv); break;
     case BL1:
@@ -994,7 +1000,9 @@ void handle(const SDL_Event& e)
     }
     case SDL_MOUSEMOTION: {
         int cx, cy;
-        if (e.motion.which != SDL_TOUCH_MOUSEID && video::to_canvas(e.motion.x, e.motion.y, cx, cy)) {
+        // (a real move only: some drivers report a pointer at 0, 0 as they start)
+        if (e.motion.which != SDL_TOUCH_MOUSEID && (e.motion.xrel || e.motion.yrel) && (e.motion.x || e.motion.y) &&
+            video::to_canvas(e.motion.x, e.motion.y, cx, cy)) {
             ptr_x = static_cast<float>(cx);
             ptr_y = static_cast<float>(cy);
             ptr_on = true;

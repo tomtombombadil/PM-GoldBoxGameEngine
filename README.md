@@ -9,8 +9,9 @@ This is the handheld version of the
 the same engine (it is built in from that repository, unchanged) with a new
 front end made for a handheld's buttons and screen.
 
-**Status: early development.** The port builds, starts, finds the games and
-runs them through the engine; it has not been play-tested on a handheld yet.
+**Status: early development.** The port builds, finds the games and plays
+them (checked on a PC with scripted button presses); it has not been
+play-tested on a handheld yet.
 See [docs/TODO.md](docs/TODO.md).
 
 ## The games
@@ -31,19 +32,32 @@ or code from the games - and never will. You need your own copy of each game
 ## Installing
 
 1. Install PortMaster on your handheld if it isn't there already.
-2. Get `goldbox.zip` (this repository's Actions builds / Releases) and
-   install it as any PortMaster port: the zip's contents go in your
-   `ports` folder, giving `ports/Gold Box Game Engine.sh` and
-   `ports/goldbox/`.
-3. Copy each game's whole install folder into `ports/goldbox/games/` - one
+2. Get `goldbox.zip`: on this repository's **Actions** tab open the latest
+   green *Build* run and download the `goldbox-portmaster` artifact
+   (GitHub needs you signed in). The download is a zip **containing**
+   `goldbox.zip` - take that inner file out.
+3. Put `goldbox.zip` (still zipped) in PortMaster's `autoinstall` folder
+   and start PortMaster once - it installs it. On ROCKNIX that folder is
+   `roms/ports/PortMaster/autoinstall/`. (By hand instead: unzip it into
+   the `ports` folder, giving `ports/Gold Box Game Engine.sh` and
+   `ports/goldbox/`.)
+4. Copy each game's whole install folder into `ports/goldbox/games/` - one
    folder a game, keeping the game's name in the folder's name:
 
        ports/goldbox/games/Pool of Radiance/
        ports/goldbox/games/Curse of the Azure Bonds/
 
-4. Start **Gold Box Game Engine** from your Ports menu.
+5. Start **Gold Box Game Engine** from your Ports menu.
 
 Saved games go in each game's own folder, as the originals wrote them.
+
+**Getting files onto the handheld from Windows.** Many firmwares (ROCKNIX
+among them) format their card as ext4, which Windows can't read. Either
+connect the handheld to your Wi-Fi and open its network share from File
+Explorer (type `\\` and the handheld's IP address in the address bar; on
+ROCKNIX the games folder is the `games-roms` share, so the port is
+`games-roms\ports\goldbox`), or copy from a USB drive / second card with
+the firmware's own file manager.
 
 ## Controls
 
@@ -54,7 +68,7 @@ Start, Select. Sticks and touch screens are optional extras.
 |--|--|
 | D-Pad | Walk (forward, turn left / right, turn around) / move the highlight in menus and lists |
 | A | Choose the highlighted thing / continue |
-| B | Back / delete a letter |
+| B | Back: out of a screen or question, or the menu's Exit / delete a letter |
 | L1 / R1 | Menu word left / right while walking |
 | L2 / R2 | Side-step left / right |
 | X | Area map |

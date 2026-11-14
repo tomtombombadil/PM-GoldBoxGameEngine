@@ -3,46 +3,49 @@
 Tick off with the version that did it. Never ask Tom the same thing twice.
 
 ## Tom
-- [ ] **Game files for testing here**: this Project has no files yet, so
-      Claude has only tested the port's own screens (no real game has been
-      run through it). Add the game zips to this Project (as in the CYD
-      Project: one zip a game, GOG files) - Curse or PoolRad first.
-- [ ] **First run on a handheld**: install the `goldbox-portmaster`
-      artifact from the latest Build run, add a game, and report (each
-      problem its own message, as with the CYD): does it start; are A / B
-      the right way round (Start menu - Confirm Button swaps them); do
-      L2 / R2 work; sound; speed; how the picture fits; which device and
-      firmware.
-- [ ] Which handhelds / firmwares do you have to test on? (PortMaster asks
-      for AmberELEC, ArkOS-family, muOS, ROCKNIX, Knulli and 640 x 480 +
-      other resolutions before a submission.)
-- [ ] The port's name: `goldbox` / "Gold Box Game Engine" - OK?
-- [ ] Do you want it submitted to PortMaster's catalogue eventually? It
-      needs a gameplay screenshot in the package - a picture of a real game
-      screen, which the CYD rules keep out of the repo. Your call how to
-      square that (a screenshot only in the PortMaster PR, not here?).
-- [ ] B button: the engine has no "Esc" (the CYD has none on purpose); B
-      only backs out of questions (`play::back`). Should B also pick a
-      menu's Exit word? That would be a new `play::` call in the CYD repo -
-      not a bug fix, so it needs your OK.
+- [ ] **First run on the RG40XX H (ROCKNIX)**: install the
+      `goldbox-portmaster` artifact of the latest Build run (README
+      "Installing"), add a game, and report - each problem its own
+      message: does it start; are A / B the right way round (Start menu -
+      Confirm Button swaps them); do L2 / R2 work; sound; speed; how the
+      picture fits.
+- [ ] Other handhelds / firmwares you can test on, when it matters (a
+      PortMaster submission wants several).
 - [ ] `cyd/src/app/library.cpp` (the game scan) is tied to Arduino's
       files, so the port has its own copy of its rules (`src/library.cpp`).
       Moving the CYD's onto the platform layer would let both share it -
       not a bug fix; your OK needed.
 
 ## Claude
-- [ ] Play a real game through the port headless once game files are
-      here (SPEC roadmap 3); record which screens were reached by buttons.
-- [ ] Journal viewer; auto-map / Companion views; Cheats; Quick Actions;
-      comfort switches; lent sounds (SPEC roadmap 4).
-- [ ] Game art in the game list (roadmap 5).
-- [ ] Check `port.json` against PortMaster's generator / `build_release.py
-      --do-check` before any submission (`availability`, `store`,
-      `min_glibc` values are from their packaging page, unverified).
-- [ ] An armhf build if any of Tom's devices need one.
-- [ ] Keep the `cyd` pin current (built on CYD 0.196.51, commit 57259df).
+- [ ] **Buttons through every screen kind** with the game files (SPEC
+      roadmap 3). Checked so far, Curse (GOG), v0.2.0: titles, party
+      menu, Load, Modify, Create Character to the name's keyboard (type,
+      delete, Done), Add Character lists, Begin, story text and pictures,
+      the exploring menu, Back out of each, Pointer Mode, the Start menu.
+      **Not yet**: walking through doors, Area, camp / spells / items,
+      shops, a fight (moving, aiming, diagonals), saving, the icon
+      gallery and editor (may need D-pad support beyond Pointer Mode),
+      and every other game; the Steam (SNEG) folders; the VGA games.
+- [ ] While "press a key" text waits only A continues; the D-pad does
+      nothing there. Decide after Tom's first play whether any button
+      should go on.
+- [ ] Game selection screen with the player's box art (Steam Launcher) /
+      GOG icon, made on the device (roadmap 5) - Tom wants this.
+- [ ] Journal: process the player's journal PDFs on the device and show
+      entries with buttons (roadmap 4; the GOG and Steam PDFs differ).
+- [ ] Auto-map / Companion views; Cheats; Quick Actions; comfort
+      switches; lent sounds (roadmap 4).
+- [ ] Before a PortMaster submission: `port.json` against their
+      generator / checks (`availability`, `store`, `min_glibc` unverified),
+      the gameplay screenshot (Tom: later), an armhf build if wanted.
+- [ ] Keep the `cyd` pin current (built on CYD 0.196.52, commit a1ee0ea).
 
 ## Done
+- [x] v0.2.0 (2026-11-14): B = Back / the menu's Exit (CYD v0.196.52
+      `play::exit_point`); first real game run through the port (Curse,
+      GOG files, headless); stray pointer at start fixed;
+      `tools/play_shots.py`. Tom: name OK, test device RG40XX H / ROCKNIX,
+      game files in the Project.
 - [x] v0.1.0 (2026-11-14): repo set up; engine as submodule; SDL2 platform
       layer and front end; buttons-only controls incl. Pointer Mode;
       PortMaster package; CI.
