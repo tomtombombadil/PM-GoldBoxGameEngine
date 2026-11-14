@@ -12,7 +12,15 @@ struct Settings {
     bool    swap_ab = false;    // Confirm / Back the other way round
     bool    music = true;       // the games' own music (the later games)
     bool    pad_moves = true;   // exploring: the D-pad walks (off: it always moves the highlight)
+    uint16_t comforts_off = 0;  // the engine's comforts switched off (kOff* bits; 0: all on)
+    bool    max_hp = false;     // the Max Hit Points cheat
     std::string log_url;        // Send Logs' WebDAV server ("" none)
+};
+
+// comforts_off's bits - play::Options' switches
+enum : uint16_t {
+    kOffGallery = 1, kOffDemoTap = 2, kOffMoreGuys = 4, kOffPortrait = 8, kOffFixes = 16, kOffRolls = 32,
+    kOffCampFix = 64, kOffCheats = 128, kOffQuick = 256, kOffReadTime = 512, kOffAll = 1023
 };
 
 bool settings_load(const std::string& dir, Settings& s);

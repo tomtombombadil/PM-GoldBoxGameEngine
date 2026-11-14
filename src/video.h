@@ -64,6 +64,14 @@ constexpr int kBackW = kW * 2, kBackH = kH * 2;
 int pixel_aspect();
 void set_backdrop(const uint32_t* argb, int top = 0);
 
+// A wide panel (16:9 and the like): the room beside the 4:3 game picture
+// shows the Companion - two pictures of kSideW x kSideH (0xAARRGGBB), one
+// above the other, the game moved to the left. side_room: the panel has
+// that room (Original 4:3 fit only). set_side(nullptr, nullptr): none.
+constexpr int kSideW = 208, kSideH = kH;
+bool side_room();
+void set_side(const uint32_t* top, const uint32_t* bottom);
+
 // The pointer's arrow, its tip at (x, y)
 void pointer(int x, int y);
 

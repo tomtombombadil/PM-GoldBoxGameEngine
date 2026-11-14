@@ -6,7 +6,8 @@ needs Pillow and the player's game files in scratch space).
     python3 tools/play_shots.py <binary> <games dir> <out.png> [--game N] step step ...
 
 A step is a --script step (a, down, hold:up, wait:500, type:BOB ...); a
-trailing '!' (a!) means "no screenshot after this one". The sheet shows
+trailing '!' (a!) means "no screenshot after this one". WINDOW=1280x720:
+a panel of that size (a wide one: the Companion beside the game). The sheet shows
 real game screens: it stays in scratch, never in the repo.
 """
 import os
@@ -37,13 +38,17 @@ def main():
         steps.append("quit")
         env = dict(os.environ, SDL_VIDEODRIVER="dummy", SDL_AUDIODRIVER="dummy")
         conf = os.environ.get("CONF", t + "/conf")
-        r = subprocess.run([exe, "--games", games, "--conf", conf, "--game", game, "--script", ",".join(steps)],
+        window = ["--window", os.environ["WINDOW"]] if os.environ.get("WINDOW") else []
+        r = subprocess.run([exe, "--games", games, "--conf", conf, "--game", game, *window, "--script", ",".join(steps)],
                            env=env, capture_output=True, text=True, timeout=900)
         log = [l for l in (r.stdout + r.stderr).splitlines() if not l.startswith("[script] ")]
         print("\n".join(log[-int(os.environ.get("LOG", "12")):]))
         print("exit code", r.returncode)
         cols = int(os.environ.get("COLS", "4"))
         w, h = 480, 360
+        if window:      # (WINDOW=1280x720: the sheet's cells in that shape)
+            ww, wh = (int(v) for v in os.environ["WINDOW"].split("x"))
+            w = h * ww // wh
         rows = (len(shots) + cols - 1) // cols
         sheet = Image.new("RGB", (cols * w, rows * (h + 14)), (40, 40, 40))
         d = ImageDraw.Draw(sheet)

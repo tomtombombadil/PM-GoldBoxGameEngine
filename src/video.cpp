@@ -13,6 +13,9 @@ SDL_Window*   win = nullptr;
 SDL_Renderer* ren = nullptr;
 SDL_Texture*  tex = nullptr;        // 320 x 200, the frame as composed
 SDL_Texture*  big = nullptr;        // the frame at a whole multiple (sharp pixels, then smoothed to the panel)
+SDL_Texture*  side[2] = {nullptr, nullptr};     // the Companion beside the game (wide panels)
+bool          side_on = false;
+SDL_Rect      strip{0, 0, 0, 0};    // the room beside the game
 SDL_Texture*  back = nullptr;       // the backdrop picture
 bool          back_on = false;
 int           back_top = 0;
@@ -50,6 +53,11 @@ void layout()
         }
     }
     dst = SDL_Rect{(ow - w) / 2, (oh - h) / 2, w, h};
+    strip = SDL_Rect{0, 0, 0, 0};
+    if (side_on && fit == Fit::Original && ow - w >= 200) {
+        dst.x = 0;                              // (the game at the left, the Companion in the rest)
+        strip = SDL_Rect{w, 0, ow - w, oh};
+    }
     // The in-between texture: the next whole multiple at or above the
     // picture's size, so uneven scaling doesn't make uneven pixels
     int k = (dst.w + kW - 1) / kW;
@@ -108,6 +116,52 @@ void text_big(int x, int y, const char* s, uint32_t fg)
     }
 }
 
+bool side_room()
+{
+    if (!ren || fit != Fit::Original) return false;
+    int ow = 0, oh = 0;
+    SDL_GetRendererOutputSize(ren, &ow, &oh);
+    const int w = ow * 3 / 4 > oh ? oh * 4 / 3 : ow;
+    return ow - w >= 200;
+}
+
+void set_side(const uint32_t* top, const uint32_t* bottom)
+{
+    const bool want = top != nullptr && side_room();
+    if (want) {
+        const uint32_t* px[2] = {top, bottom};
+        for (int i = 0; i < 2; ++i) {
+            if (!side[i]) {
+                SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "linear");
+                side[i] = SDL_CreateTexture(ren, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, kSideW, kSideH);
+                SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "nearest");
+            }
+            if (side[i] && px[i]) SDL_UpdateTexture(side[i], nullptr, px[i], kSideW * 4);
+        }
+    }
+    if (want != side_on) {
+        side_on = want;
+        layout();
+    }
+}
+
+// The Companion's two pictures in the strip: as wide as it is, rows 1.2
+// tall as the game's (so its squares stay square), both fitting its height
+void draw_side()
+{
+    if (!side_on || strip.w <= 0) return;
+    int w = strip.w, h = w * kSideH * 6 / (kSideW * 5);
+    if (h * 2 > strip.h) {
+        h = strip.h / 2;
+        w = h * kSideW * 5 / (kSideH * 6);
+    }
+    for (int i = 0; i < 2; ++i) {
+        if (!side[i]) continue;
+        const SDL_Rect to{strip.x + (strip.w - w) / 2, strip.y + i * h, w, h};
+        SDL_RenderCopy(ren, side[i], nullptr, &to);
+    }
+}
+
 int pixel_aspect()
 {
     if (dst.w <= 0 || dst.h <= 0) return 1000;
@@ -153,6 +207,11 @@ bool begin(int window_w, int window_h)
 
 void end()
 {
+    for (auto& t : side) {
+        if (t) SDL_DestroyTexture(t);
+        t = nullptr;
+    }
+    side_on = false;
     if (back) SDL_DestroyTexture(back);
     back = nullptr;
     back_on = false;
@@ -270,6 +329,7 @@ void present(const pic::Canvas* game)
             SDL_SetTextureBlendMode(tex, SDL_BLENDMODE_BLEND);
             SDL_RenderCopy(ren, tex, nullptr, &dst);
         }
+        draw_side();
         SDL_RenderPresent(ren);
         return;
     }
@@ -283,6 +343,7 @@ void present(const pic::Canvas* game)
         SDL_RenderClear(ren);
         SDL_RenderCopy(ren, tex, nullptr, &dst);
     }
+    draw_side();
     SDL_RenderPresent(ren);
 }
 

@@ -53,9 +53,13 @@ You need PortMaster on the handheld, and Wi-Fi.
    With the Steam release, copy its `Launcher` folder there too
    (`games/Launcher/`): the game list then shows each game's box art, and
    the Pools of Darkness, Gateway and Treasures folders give the older
-   games their recorded sound effects (Start - Game Sound).
+   games their recorded sound effects (Start - Settings - Game Sound).
+   Without it (GOG) the list shows each game's own logo from its folder.
 
-5. Start **Gold Box Game Engine** from Ports.
+5. Start **Gold Box Game Engine** from Ports. The first time it sees a
+   game it makes that game's journal and music from your files - it lists
+   what it does and can take a few minutes, once. (Start - Settings -
+   Look for Games Again makes them anew.)
 
 That is the only time a file has to be carried over for the port itself.
 From then on: **Start - Check for Updates** in the port finds a newer
@@ -72,7 +76,7 @@ Explorer's address bar (on ROCKNIX: Start - Network Settings shows the
 address; the `roms` folder is the `games-roms` share, so step 2's folder is
 `games-roms\ports`).
 
-**Sending logs.** Start - Log Server: the address of a WebDAV server on
+**Sending logs.** Start - Settings - Log Server: the address of a WebDAV server on
 your network (for example rclone on a PC:
 `rclone serve webdav "C:\GoldBoxLogs" --addr :5006`, address
 `http://<the PC's IP>:5006`). Then Start - Send Logs puts the port's logs
@@ -91,7 +95,7 @@ Start, Select. Sticks and touch screens are optional extras.
 | L1 / R1 | Menu word left / right while walking |
 | L2 / R2 | List line up / down (the party list while walking) |
 | X | Area map |
-| Y | The Companion: auto-map, party, a fight's battlefield (press again for the next, then away) |
+| Y | The Companion, from the right: auto-map, party, a fight's battlefield (press again for the next, then away; on a wide screen it stands beside the game - Y hides it) |
 | Select | Pointer Mode: the D-Pad moves a pointer, A taps there, B ends it |
 | Start | The port's menu: display, sound, font, controls, updates, logs, exit game |
 | Select + Start | Quit (PortMaster's usual) |

@@ -30,6 +30,24 @@ and maintains it; it is the primary output of the Claude Project
 - The port's name is "Gold Box Game Engine", its folder `goldbox` - settled.
 - B = Back / Exit (SPEC 4). L2 / R2 = list up / down, no side-step
   buttons; Y = the Companion slide-out; no Look button (SPEC 4).
+- **The Companion slides in from the RIGHT** (Tom, 2026-11-14: he had
+  said left and meant right - the 3D view / fight field stay in sight).
+  On wide panels (16:9 and the like) it stands beside the game instead
+  (SPEC 4) - Tom's idea, as the CYD's bigger boards.
+- **Journals and music are made when a game is FOUND** (Tom, 2026-11-14:
+  "I don't want to journal to be built on game start") - the first run
+  that sees its folder, and anew on Look for Games Again; never at a
+  game's start (SPEC 6, `discover()`). New made-from-the-game files go
+  there too.
+- **Game list pictures** (Tom, 2026-11-14): Steam box art when the
+  Launcher folder is there, else the game's own logo from its folder's
+  `goggame-*.ico` / `.dll` as the CYD. If a picture of our own is ever
+  needed: mock it up for Tom first.
+- **Every engine extra has its switch here** (Tom, 2026-11-14: "The
+  cheats, quick actions, game fixes, and all that extra functionality
+  needs to be added"): a new `play::Options` field or Game-menu tab in
+  the CYD gets a Settings line / menu page in the same version that
+  moves the pin, with its words at the page's foot.
 - **What the CYD version has, this port must have** (Tom, 2026-11-14,
   after v0.3: the journals "a very big deal", the launcher's box art on
   the game chooser, the Darkness / Gateway / Treasures sound sets were all
@@ -123,8 +141,8 @@ and maintains it; it is the primary output of the Claude Project
 - `src/art.*` (the game list's box art), `src/panel.*` (the Companion),
   `src/jour.*` (the journal: made and shown), `src/task.*` (the helper
   scripts' thread).
-- `src/main.cpp` - the screens (game list, play, menu, keyboard, messages)
-  and the buttons. The game is driven only through `play.h`.
+- `src/main.cpp` - the screens (game list, the scan, play, the menu's
+  pages, Quick Actions, keyboard, messages) and the buttons. The game is driven only through `play.h`.
 - The engine's folder inside `games/` is `_CYD` (its game code writes
   there by that name) - don't rename it.
 - `src/compat.*` - strlcpy / strlcat of the port's own, force-included

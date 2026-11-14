@@ -28,6 +28,10 @@ def run(exe, games, conf, script):
 
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
+# Settings' lines (each changed and changed back by the first test)
+SETTINGS = ("Display", "Game_Sound", "Music", "Volume", "Game_Font", "D-Pad_Walks", "Confirm_Button", "Game_Fixes",
+            "Show_Rolls", "Readable", "Camp_Fix", "Icon_Gallery", "Icon_Portrait", "More_Char", "Button_Stops",
+            "Quick_Actions", "Cheats", "Max_Hit")
 MENU_UPDATE = "start,menu:Check_for_Updates,"   # the Start menu's line
 
 
@@ -134,8 +138,8 @@ def logs_test(exe):
         (t / "log.prev.txt").write_text("the run before\n")
         env = dict(os.environ, SDL_VIDEODRIVER="dummy", SDL_AUDIODRIVER="dummy")
         steps = (f"wait:100,start,menu:Send_Logs,a,wait:100,shot:{t}/nolog.bmp,a,"     # Send Logs with no server set
-                 f"menu:Log_Server,a,type:127.0.0.1:{srv.server_port},y,"               # Log Server: typed
-                 f"menu:Send_Logs,a,wait:200,quit")                                     # Send Logs
+                 f"menu:Settings,a,menu:Log_Server,a,type:127.0.0.1:{srv.server_port},y,"   # Settings - Log Server: typed
+                 f"b,menu:Send_Logs,a,wait:200,quit")                                     # Send Logs
         r = subprocess.run([exe, "--games", str(t / "games"), "--conf", str(t / "conf"), "--tools", str(t / "tools"),
                             "--script", steps], env=env, capture_output=True, text=True, timeout=120)
         print(r.stdout, r.stderr, sep="")
@@ -156,12 +160,17 @@ def main():
         # 1. No games folder at all; the menu: every item changed once
         shot = t / "a.bmp"
         out = run(exe, t / "nothing", conf,
-                  f"wait:100,a,start,down,right,left,down,right,down,right,down,right,down,right,down,a,down,a,a,"
+                  f"wait:100,a,start,menu:Settings,a,"
+                  + "".join(f"menu:{m},right,left,a," for m in SETTINGS)
+                  + f"menu:As_Original,a,menu:All_On,a,l2,r2,menu:Back,a,"
                   f"menu:Controls,a,b,b,"
                   f"select,shot:{shot},quit")
         assert "0 game folder(s) found" in out, "expected no games"
         assert shot.stat().st_size > 320 * 200 * 3, "no screenshot"
         assert (conf / "settings.cfg").is_file(), "settings not saved"
+        cfg = (conf / "settings.cfg").read_text()
+        assert "comforts_off=0" in cfg and "max_hp=0" in cfg and "swap_ab=1" in cfg, cfg
+        (conf / "settings.cfg").unlink()
         # 2. Folders: lower-case names, files a folder down, an unknown one,
         # the engine's own folder
         g = t / "games"
@@ -169,12 +178,20 @@ def main():
                      ("Mystery", "A.DAX"), ("_CYD", "X.DAX"), ("Empty", "readme.txt")):
             (g / d).mkdir(parents=True)
             (g / d / f).write_bytes(b"not a game file")
-        out = run(exe, g, conf, "wait:100,a,wait:200,a,down,a,wait:200,a,down,a,a,up,quit")
+        # (the first run finds the two playable ones: the scan's list, until Continue)
+        out = run(exe, g, conf, f"wait:100,shot:{shot},a,wait:100,a,wait:200,a,down,a,wait:200,a,down,a,a,up,quit")
+        assert out.count("[scan] Found ") == 2 and "[scan] Done." in out, "the first run's scan"
+        assert (g / "_CYD" / "curse of the azure bonds" / "PMSCAN.TXT").is_file(), "the scan's mark"
         assert "3 game folder(s) found" in out, "expected 3 folders"
         assert "Pool of Radiance (1 files in games/Pool of Radiance/game)" in out
         assert "curse of the azure bonds: Curse of the Azure Bonds" in out
         assert "Mystery: Unknown" in out and "not playable" in out
         assert "playing" not in out, "a game without its files must not start"
+        # (found already: no scan the second time; Look for Games Again: all anew)
+        out = run(exe, g, conf, "wait:100,quit")
+        assert "[scan]" not in out, "a second scan of games already found"
+        out = run(exe, g, conf, "wait:100,start,menu:Settings,a,menu:Look_for,a,wait:100,a,right,quit")
+        assert out.count("[scan] Found ") == 2, "Look for Games Again"
     update_test(exe)
     logs_test(exe)
     print("smoke test passed")

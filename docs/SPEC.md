@@ -76,12 +76,23 @@ direction keys (`play::fight_dir`, `fight_select`), typed keys
   screen's highlights are at hand and the D-pad keeps walking. Look is on
   the game's menu (no button).
 - **The Companion** (Y; Tom, 2026-11-14; `src/panel.*`): slides in from
-  the left over the game screen (208 of 320 pixels), the game going on
+  the **right** over the game screen (208 of 320 pixels; from the right
+  the 3D view and a fight's field, at the screen's left, stay in sight -
+  Tom), the game going on
   under it - the D-pad still walks and the map follows. Y again: the next
   view, then away. Exploring: Map (walls, doors gold, locked red, secret
   doors S, the party's arrow), Party; in a fight: Battle, Party. Party
   and Battle are the engine's own views (`game/companion.*`) through its
   Painter, stretched across by 4 / 3 for 8-pixel letters.
+  **Wide panels** (Tom, 2026-11-14: "16:9 devices and similar ... to the
+  right of the regular game area, similar to how it works on the higher
+  resolution CYD screens"): when the Original 4:3 picture leaves 200
+  device pixels or more beside it (`video::side_room` - 16:9, 16:10, 3:2
+  at 1.5 or wider), the game stands at the left and the Companion fills
+  the rest all the time - Map (a fight: Battle) above Party
+  (`video::set_side`, two 208 x 200 pictures smoothed into the strip). Y
+  there takes it away (the game centred) and brings it back; no slide-out.
+  Other fits (Square Pixels, Stretch) and 4:3 panels: the slide-out.
 - "Press a key" text goes on with A only - not the D-pad (a held Forward
   would skip the story).
 - **D-Pad Walks** (menu switch, on): off = the D-Pad always moves the
@@ -120,25 +131,59 @@ handheld has the speed).
   the engine's `jpeg_thumb`, fitted to the page at twice the canvas's
   sharpness, `src/art.*`, `video::set_backdrop`), the name big across the
   foot; Left / Right (or L1 / R1) turn the pages, round; A plays. No
-  Launcher folder: the name on black. With no games, how to add them.
+  Launcher folder (a GOG player; Tom, 2026-11-14: "the logo from the DLL,
+  just like the CYD version"): the game's own logo from its folder - the
+  best of `goggame-*.ico`, `goggame-*.dll`, another `.ico` (Steam's
+  `game.ico`; the CYD library's order), read by the engine's
+  `icon::find` / `render` (`art::icon`), square on the screen, centred
+  above the name. Neither: the name on black. With no games, how to add
+  them.
+- **Finding the games** (the CYD's card scan; Tom, 2026-11-14: "built on
+  the first time the game is discovered ... rebuilt if the user chooses
+  to rediscover the games"): what the engine makes from a game's files -
+  its journal, its music - is made when the game is **found**: at the
+  start, every playable game folder without the mark
+  `_CYD/<folder>/PMSCAN.TXT` (`discover()` in main.cpp). The screen lists
+  what it does ("Found ...", "Processing the ... journal: page n of m",
+  "Making its music...") and stays until A. **Settings - Look for Games
+  Again** does every game anew (journal files removed first, music
+  forced). Never at a game's start.
 - **Music** (the engine's, v0.197): a later game's songs are made into
-  files in `_CYD/<folder>/` at that game's first start ("Making the game's
-  music" on the loading screen - the CYD does it in its card scan), then
-  played by the engine; Start - Music: On / Off.
+  files in `_CYD/<folder>/` by that scan, then
+  played by the engine; Settings - Music: On / Off.
 - **Game Sound**: Tandy, PC Speaker, then Darkness / Gateway / Treasures
   (that game's recordings lent to the older games, when its folder is in
   games/), Off; those three games always their own (or Off).
 - **Loading** message at once when a game is chosen.
-- **Menu** (Start): Back to Game, Controls, Display, Game Sound (Tandy /
-  PC Speaker / Off), Volume, Game Font (Original / Clear / Darkness / Clear
-  Caps), D-Pad Walks, Confirm Button, Look for Games Again, Check for
-  Updates, Send Logs, Log Server, Exit Game, Quit. The game is paused while it is open.
+- **Menu** (Start; `menu_*` in main.cpp): Back to Game, Journal, Quick
+  Actions, Cheats, Settings, Controls, Check for Updates, Send Logs, Exit
+  Game, Quit. The game is paused while it is open. Every line's meaning
+  is at the page's foot (the CYD's "?" keys). Up / Down a line, L2 / R2 a
+  page, Left / Right change a value, A choose, B back a page.
+  - **Settings** (a page, scrolling; one set for all games, as the CYD):
+    Display, Game Sound, Music, Volume, Game Font (Original / Clear /
+    Darkness / Clear Caps), D-Pad Walks, Confirm Button; the engine's
+    comforts (`play::Options`, `settings.cfg` `comforts_off` bits) - Game
+    Fixes, Show Rolls, Readable Messages, Camp Fix, Icon Gallery, Icon
+    Portrait, More Characters, Button Stops Demo, Quick Actions, Cheats -
+    all on by default; Max Hit Points (off by default); As Original (all
+    off), All On; Log Server; Look for Games Again (outside a game).
+  - **Cheats** (a page; only with a game open and Cheats on): Healer,
+    Merchant, Sanctuary, Trainer (`play::cheat_open` - the game's own
+    screens, driven as any other; only at the exploring menu, else a
+    message says so), Max Hit Points.
+  - **Quick Actions** (a screen; `play::quick_*`): the party down the
+    left (NPCs marked), the chosen member's eight switches down the right
+    (Melee, Missile, Spells, Items, Bandage First, Move, Turn Undead,
+    Guard - the engine's names and words). Up / Down a switch, L1 / R1 or
+    Left / Right a member, A flips it (kept at once in `_CYD/QUICK.TXT`
+    by the engine), B back.
 - **On-screen keyboard** over the top of the game screen (the game's own
   text area stays visible) while `play::input()` asks.
 - **Messages** stay until a button.
 - **The Adventurer's Journal** (`src/jour.*`; Tom, 2026-11-14: "a very
   big deal"):
-  - *Made* at a game's first start (the loading screen says so), with the
+  - *Made* when the game is found (Finding the games, above), with the
     engine's own code and by the CYD scan's three routes: a scanned PDF
     the engine's tables know (GOG: the PDF in the game's folder) ->
     `journal::make`, the entries cut from the pages' pictures; the Steam /
@@ -195,10 +240,10 @@ hotkey.
    editor, shops, camp and spells, fights and aiming, saving / loading.
 4. **The engine's own features the CYD front end hosts** (each needs a
    button-driven screen here): done - the journal's entries, the
-   Companion (map, party, battle), the sound sets, music; still to do -
-   the journal as a whole book, Cheats, Quick Actions, the comfort
-   switches (Game Fixes, Show Rolls, ...).
-5. **Game art in the list** (the player's GOG icon / Steam box art, made
-   on the device as the CYD scan does).
+   Companion (map, party, battle; beside the game on wide panels), the
+   sound sets, music, Cheats, Quick Actions, the comfort switches (v0.6);
+   still to do - the journal as a whole book.
+5. **Game art in the list** - done (Steam box art v0.4, the GOG logo
+   v0.6).
 6. **PortMaster submission** (Tom's call): screenshot, testing thread,
    their checks.

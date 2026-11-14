@@ -17,6 +17,7 @@
 
 #include "engine/journal.h"
 #include "game/music_make.h"
+#include "engine/quickacts.h"
 #include "game/play.h"
 #include "platform/audio.h"
 #include "platform/file.h"
@@ -42,7 +43,7 @@ enum Btn : uint8_t { BUp, BDown, BLeft, BRight, BA, BB, BX, BY, BL1, BR1, BL2, B
 const char* const kBtnNames[BCount] = {"up", "down", "left", "right", "a", "b", "x", "y",
                                        "l1", "r1", "l2", "r2", "start", "select"};
 
-enum class Screen : uint8_t { Games, Play, Message };
+enum class Screen : uint8_t { Games, Play, Message, Scan };
 
 Settings                      cfg;
 std::string                   conf_dir = "conf";
@@ -222,9 +223,6 @@ void draw_games()
     const int n = static_cast<int>(games_found.size());
     const library::GameDir& g = games_found[game_sel];
     const bool can = play::available(g.game);
-    const uint32_t* picture = art::box(g.game, (video::kH - kHeaderH) * 2);
-    if (picture) video::set_backdrop(picture, kHeaderH);
-    else video::fill(0, kHeaderH, video::kW, video::kH - kHeaderH, video::kBlack);
     // The name: big, across the foot (two lines when it's long)
     const char* title = g.game == games::Game::Unknown ? g.folder.c_str() : games::title(g.game);
     std::string l1 = title, l2;
@@ -234,6 +232,13 @@ void draw_games()
         l2 = l1.substr(cut + (l1[cut] == ' ' ? 1 : 0), 19);
         l1 = l1.substr(0, cut);
     }
+    // Its picture: the box art (the Launcher folder's), else the game's own
+    // logo from its folder (GOG's goggame-*.ico / .dll, Steam's game.ico)
+    // above the name
+    const uint32_t* picture = art::box(g.game, (video::kH - kHeaderH) * 2);
+    if (!picture) picture = art::icon(g, (video::kH - kHeaderH) * 2, ((l2.empty() ? 162 : 144) - 4 - kHeaderH) * 2);
+    if (picture) video::set_backdrop(picture, kHeaderH);
+    else video::fill(0, kHeaderH, video::kW, video::kH - kHeaderH, video::kBlack);
     const int ty = picture ? (l2.empty() ? 162 : 144) : (l2.empty() ? 92 : 82);
     video::text_big((video::kW - static_cast<int>(l1.size()) * 16) / 2, ty, l1.c_str(), can ? video::kCream : video::kMuted);
     if (!l2.empty())
@@ -272,6 +277,7 @@ void draw_message()
 }
 
 void        draw_jlist();
+void        draw_scan();
 uint8_t     sound_shown();
 const char* sound_name(uint8_t m);
 void        sound_cycle(int step);
@@ -426,40 +432,101 @@ void draw_notice()
 }
 
 // ---- The menu --------------------------------------------------------------
+// Start: the menu; its Settings and Cheats are pages of their own. Every
+// line says what it does at the page's foot.
 enum MenuItem : uint8_t {
-    MResume, MJournal, MControls, MDisplay, MSound, MMusic, MVolume, MFont, MPadMoves, MSwap, MRescan, MUpdate, MSendLogs, MLogServer,
-    MLeaveGame, MExit
+    MResume, MJournal, MQuick, MCheats, MSettings, MControls, MUpdate, MSendLogs, MLeaveGame, MExit,
+    // Settings
+    MDisplay, MSound, MMusic, MVolume, MFont, MPadMoves, MSwap,
+    MFixes, MRolls, MReadTime, MCampFix, MGallery, MPortrait, MMoreGuys, MDemoTap, MQuickOn, MCheatsOn, MMaxHp,
+    MAsOriginal, MAllOn, MLogServer, MRescan,
+    // Cheats
+    MHealer, MMerchant, MSanctuary, MTrainer,
+    MBack
 };
+enum class Page : uint8_t { Main, Settings, Cheats };
 std::vector<MenuItem> menu_items;
+Page                  menu_page = Page::Main;
+int                   menu_top = 0;         // the first line shown
+int                   menu_main_sel = 0;    // where the main page was left
+
+// The engine comfort a Settings line switches (0: not one)
+uint16_t comfort_bit(MenuItem m)
+{
+    switch (m) {
+    case MFixes: return kOffFixes;
+    case MRolls: return kOffRolls;
+    case MReadTime: return kOffReadTime;
+    case MCampFix: return kOffCampFix;
+    case MGallery: return kOffGallery;
+    case MPortrait: return kOffPortrait;
+    case MMoreGuys: return kOffMoreGuys;
+    case MDemoTap: return kOffDemoTap;
+    case MQuickOn: return kOffQuick;
+    case MCheatsOn: return kOffCheats;
+    default: return 0;
+    }
+}
 
 void menu_build()
 {
     menu_items.clear();
-    if (playing) menu_items.push_back(MResume);
-    if (playing && play::journal_seen_count() > 0) menu_items.push_back(MJournal);
-    menu_items.push_back(MControls);
-    menu_items.push_back(MDisplay);
-    menu_items.push_back(MSound);
-    menu_items.push_back(MMusic);
-    menu_items.push_back(MVolume);
-    menu_items.push_back(MFont);
-    menu_items.push_back(MPadMoves);
-    menu_items.push_back(MSwap);
-    if (!playing) menu_items.push_back(MRescan);
-    menu_items.push_back(MUpdate);
-    menu_items.push_back(MSendLogs);
-    menu_items.push_back(MLogServer);
-    if (playing) menu_items.push_back(MLeaveGame);
-    menu_items.push_back(MExit);
+    if (menu_page == Page::Settings) {
+        for (MenuItem m : {MDisplay, MSound, MMusic, MVolume, MFont, MPadMoves, MSwap, MFixes, MRolls, MReadTime, MCampFix,
+                           MGallery, MPortrait, MMoreGuys, MDemoTap, MQuickOn, MCheatsOn, MMaxHp, MAsOriginal, MAllOn,
+                           MLogServer})
+            menu_items.push_back(m);
+        if (!playing) menu_items.push_back(MRescan);
+        menu_items.push_back(MBack);
+    } else if (menu_page == Page::Cheats) {
+        for (MenuItem m : {MHealer, MMerchant, MSanctuary, MTrainer, MMaxHp, MBack}) menu_items.push_back(m);
+    } else {
+        if (playing) menu_items.push_back(MResume);
+        if (playing && play::journal_seen_count() > 0) menu_items.push_back(MJournal);
+        if (playing && !(cfg.comforts_off & kOffQuick)) menu_items.push_back(MQuick);
+        if (playing && !(cfg.comforts_off & kOffCheats)) menu_items.push_back(MCheats);
+        menu_items.push_back(MSettings);
+        menu_items.push_back(MControls);
+        menu_items.push_back(MUpdate);
+        menu_items.push_back(MSendLogs);
+        if (playing) menu_items.push_back(MLeaveGame);
+        menu_items.push_back(MExit);
+    }
     if (menu_sel >= static_cast<int>(menu_items.size())) menu_sel = 0;
+}
+
+void menu_go(Page p, int sel = 0)
+{
+    if (menu_page == Page::Main) menu_main_sel = menu_sel;
+    menu_page = p;
+    menu_sel = p == Page::Main ? menu_main_sel : sel;
+    menu_top = 0;
+    menu_build();
 }
 
 void menu_label(MenuItem m, char* out, size_t cap)
 {
     static const char* const kFont[] = {"Original", "Clear", "Darkness", "Clear Caps"};
+    if (const uint16_t bit = comfort_bit(m)) {
+        const char* name = m == MFixes     ? "Game Fixes"
+                         : m == MRolls     ? "Show Rolls"
+                         : m == MReadTime  ? "Readable Messages"
+                         : m == MCampFix   ? "Camp Fix"
+                         : m == MGallery   ? "Icon Gallery"
+                         : m == MPortrait  ? "Icon Portrait"
+                         : m == MMoreGuys  ? "More Characters"
+                         : m == MDemoTap   ? "Button Stops Demo"
+                         : m == MQuickOn   ? "Quick Actions"
+                                           : "Cheats";
+        snprintf(out, cap, "%s: %s", name, cfg.comforts_off & bit ? "Off" : "On");
+        return;
+    }
     switch (m) {
     case MResume: snprintf(out, cap, "Back to Game"); break;
     case MJournal: snprintf(out, cap, "Journal"); break;
+    case MQuick: snprintf(out, cap, "Quick Actions..."); break;
+    case MCheats: snprintf(out, cap, "Cheats..."); break;
+    case MSettings: snprintf(out, cap, "Settings..."); break;
     case MControls: snprintf(out, cap, "Controls"); break;
     case MDisplay: snprintf(out, cap, "Display: %s", video::fit_name(static_cast<video::Fit>(cfg.fit))); break;
     case MSound: snprintf(out, cap, "Game Sound: %s", sound_name(sound_shown())); break;
@@ -468,12 +535,68 @@ void menu_label(MenuItem m, char* out, size_t cap)
     case MFont: snprintf(out, cap, "Game Font: %s", kFont[cfg.font]); break;
     case MPadMoves: snprintf(out, cap, "D-Pad Walks: %s", cfg.pad_moves ? "On" : "Off"); break;
     case MSwap: snprintf(out, cap, "Confirm Button: %s", confirm_name()); break;
+    case MMaxHp: snprintf(out, cap, "Max Hit Points: %s", cfg.max_hp ? "On" : "Off"); break;
+    case MAsOriginal: snprintf(out, cap, "As Original"); break;
+    case MAllOn: snprintf(out, cap, "All On"); break;
     case MRescan: snprintf(out, cap, "Look for Games Again"); break;
     case MUpdate: snprintf(out, cap, "%s", update_staged.empty() ? "Check for Updates" : "Restart to Update"); break;
     case MSendLogs: snprintf(out, cap, "Send Logs"); break;
-    case MLogServer: snprintf(out, cap, "Log Server: %.14s", cfg.log_url.empty() ? "Not Set" : cfg.log_url.c_str()); break;
+    case MLogServer: snprintf(out, cap, "Log Server: %.20s", cfg.log_url.empty() ? "Not Set" : cfg.log_url.c_str()); break;
     case MLeaveGame: snprintf(out, cap, "Exit Game"); break;
     case MExit: snprintf(out, cap, "Quit"); break;
+    case MHealer: snprintf(out, cap, "Healer"); break;
+    case MMerchant: snprintf(out, cap, "Merchant"); break;
+    case MSanctuary: snprintf(out, cap, "Sanctuary"); break;
+    case MTrainer: snprintf(out, cap, "Trainer"); break;
+    case MBack: snprintf(out, cap, "Back"); break;
+    default: out[0] = 0; break;
+    }
+}
+
+// What the highlighted line does (the page's foot: 3 lines of 36)
+const char* menu_help(MenuItem m)
+{
+    switch (m) {
+    case MResume: return "Close this menu.";
+    case MJournal: return "The journal entries the game has told you to read so far.";
+    case MQuick: return "What Quick may do for each member of the party in a fight.";
+    case MCheats: return "Healer, Merchant, Sanctuary, Trainer and Max Hit Points.";
+    case MSettings: return "The picture, sound, buttons and the engine's extras.";
+    case MControls: return "What each button does.";
+    case MUpdate: return "Looks for a newer version of the port and installs it (needs Wi-Fi).";
+    case MSendLogs: return "Sends the port's logs to the Log Server set in Settings.";
+    case MLeaveGame: return "Back to the list of games. Save in the game first.";
+    case MExit: return "Leaves the port.";
+    case MDisplay: return "Original 4:3 as the games' monitors showed them, Square Pixels, or Stretch to the whole screen.";
+    case MSound:
+        return "The games' sound effects: Tandy or PC Speaker, or the Darkness / Gateway / Treasures recordings "
+               "when that game is here.";
+    case MMusic: return "The later games' own music (made from your game files when the games are found).";
+    case MVolume: return "How loud. Left / Right change it.";
+    case MFont: return "The game's letters: its own, the engine's Clear (easier to read), Darkness's, or Clear Caps.";
+    case MPadMoves: return "On: exploring, the D-pad walks and L1 R1 L2 R2 move the highlights. Off: the D-pad moves them.";
+    case MSwap: return "Which of A and B chooses; the other goes back.";
+    case MFixes: return "The original games' mistakes made as AD&D has them. Off: as the originals.";
+    case MRolls: return "Fights show the dice behind each message: to hit, needed, damage, saves.";
+    case MReadTime: return "The games' timed messages stay at least a second. Off: the games' own timing.";
+    case MCampFix: return "Pool of Radiance's camp gets Fix, as the later games have it.";
+    case MGallery: return "The icon editor opens on pages of ready-made combat icons. Off: the game's editor.";
+    case MPortrait: return "View Character shows the combat icon large where a portrait would go.";
+    case MMoreGuys: return "Add Character also lists your saved games' members and the earlier game's characters.";
+    case MDemoTap: return "A button stops the game's demo. In the originals it can't be stopped.";
+    case MQuickOn: return "Per-character Quick Actions and their page in this menu. Off: Quick as the originals.";
+    case MCheatsOn: return "The Cheats page in this menu.";
+    case MMaxHp: return "Training gives the highest hit points the dice allow. A cheat: off unless you turn it on.";
+    case MAsOriginal: return "Every extra off: the games as they were.";
+    case MAllOn: return "Every extra on (Max Hit Points stays as it is).";
+    case MLogServer: return "The WebDAV address Send Logs uploads to. Typed once, kept on this device only.";
+    case MRescan: return "Looks through the games folder again and makes every game's journal and music anew.";
+    case MHealer: return "The game's temple, wherever you are: cures, all free.";
+    case MMerchant: return "All the game's shops' goods in one shop; Id free.";
+    case MSanctuary: return "The game's camp: rests are never interrupted.";
+    case MTrainer: return "The game's training hall: every class, free; Modify for anyone.";
+    case MBack: return "Back to the menu.";
+    default: return "";
     }
 }
 
@@ -512,6 +635,26 @@ void draw_help()
     centred(21, line, video::kMuted);
 }
 
+// Text wrapped into cols columns at pixel (x, y), lines 9 apart, max_lines at most
+void wrap_at(int x, int y, int cols, const char* text, uint32_t fg, int max_lines)
+{
+    const std::string s = text;
+    size_t i = 0;
+    for (int line = 0; line < max_lines && i < s.size(); ++line) {
+        while (i < s.size() && s[i] == ' ') ++i;
+        size_t end = i + static_cast<size_t>(cols);
+        if (end >= s.size()) end = s.size();
+        else {
+            size_t brk = s.rfind(' ', end);
+            if (brk != std::string::npos && brk > i) end = brk;
+        }
+        video::text_at(x, y + line * 9, s.substr(i, end - i).c_str(), fg);
+        i = end;
+    }
+}
+
+constexpr int kMenuLines = 12, kMenuPitch = 11;
+
 void draw_menu()
 {
     if (help_open) {
@@ -519,17 +662,69 @@ void draw_menu()
         return;
     }
     const int n = static_cast<int>(menu_items.size());
-    const int pitch = n > 11 ? 12 : 14, h = n * pitch + 8, y0 = (video::kH - h) / 2;
-    video::fill(52, y0, 216, h, video::kNavy);
-    video::frame(52, y0, 216, h, video::kGold);
-    for (int i = 0; i < n; ++i) {
-        char line[40];
-        menu_label(menu_items[i], line, sizeof line);
-        const int y = y0 + 4 + i * pitch;
-        const bool sel = i == menu_sel;
-        if (sel) video::fill(54, y, 212, pitch, video::kLit);
-        video::text_at(62, y + (pitch - 8) / 2, line, sel ? video::kCream : video::kMuted);
+    if (menu_sel < menu_top) menu_top = menu_sel;
+    if (menu_sel >= menu_top + kMenuLines) menu_top = menu_sel - kMenuLines + 1;
+    if (menu_top > n - kMenuLines) menu_top = n > kMenuLines ? n - kMenuLines : 0;
+    const int x0 = 32, w = 256;
+    video::fill(x0, 2, w, 196, video::kNavy);
+    video::frame(x0, 2, w, 196, video::kGold);
+    const char* title = menu_page == Page::Settings ? "Settings" : menu_page == Page::Cheats ? "Cheats" : "Menu";
+    video::text_at(x0 + (w - static_cast<int>(strlen(title)) * 8) / 2, 7, title, video::kGold);
+    if (n > kMenuLines) {
+        // (more above / below: small arrowheads at the right)
+        for (int k = 0; k < 4; ++k) {
+            if (menu_top > 0) video::fill(x0 + w - 14 - k, 20 + k, 2 * k + 1, 1, video::kCream);
+            if (menu_top + kMenuLines < n) video::fill(x0 + w - 14 - k, 150 - k, 2 * k + 1, 1, video::kCream);
+        }
     }
+    for (int i = menu_top; i < n && i < menu_top + kMenuLines; ++i) {
+        char line[48];
+        menu_label(menu_items[i], line, sizeof line);
+        const int y = 19 + (i - menu_top) * kMenuPitch;
+        const bool sel = i == menu_sel;
+        if (sel) video::fill(x0 + 4, y, w - 24, kMenuPitch, video::kLit);
+        video::text_at(x0 + 10, y + 2, line, sel ? video::kCream : video::kMuted);
+    }
+    video::fill(x0 + 4, 155, w - 8, 1, video::kEdge);
+    wrap_at(x0 + 8, 159, 30, menu_help(menu_items[menu_sel]), video::kCream, 4);
+}
+
+// ---- Quick Actions ---------------------------------------------------------
+// The CYD's Quick tab by buttons: the party down the left, the chosen
+// member's eight switches down the right - Up / Down a switch, L1 / R1 (or
+// Left / Right) a member, Confirm flips it (kept at once), Back leaves
+bool quick_open = false;
+int  q_rows = 0, q_row = 0, q_col = 0;
+
+void draw_quick()
+{
+    video::fill(8, 2, 304, 196, video::kNavy);
+    video::frame(8, 2, 304, 196, video::kGold);
+    video::text_at(108, 7, "Quick Actions", video::kGold);
+    for (int r = 0; r < q_rows && r < 9; ++r) {
+        char nm[24], line[24];
+        if (!play::quick_name(r, nm, sizeof nm)) nm[0] = 0;
+        snprintf(line, sizeof line, "%.15s", nm);
+        const int y = 22 + r * 11;
+        if (r == q_row) video::fill(12, y, 148, 11, video::kKey);
+        video::text_at(16, y + 2, line, r == q_row ? video::kGold : video::kMuted);
+        if (play::quick_npc(r)) video::text_at(136, y + 2, "NPC", video::kMuted);
+    }
+    const uint8_t mask = play::quick_get(q_row);
+    for (int k = 0; k < quickacts::kCols; ++k) {
+        const int y = 22 + k * 11;
+        const bool sel = k == q_col;
+        if (sel) video::fill(164, y, 144, 11, video::kLit);
+        // (the switch: a box, filled when ticked)
+        video::frame(168, y + 1, 9, 9, video::kCream);
+        if (mask >> k & 1) video::fill(170, y + 3, 5, 5, video::kGold);
+        video::text_at(182, y + 2, quickacts::kName[k], sel ? video::kCream : video::kMuted);
+    }
+    video::fill(12, 124, 296, 1, video::kEdge);
+    wrap_at(16, 129, 36, quickacts::kDesc[q_col], video::kCream, 4);
+    char hint[44];
+    snprintf(hint, sizeof hint, "L1 R1: Member  %s: Flip  %s: Back", confirm_name(), back_name());
+    video::text_at((video::kW - static_cast<int>(strlen(hint)) * 8) / 2, 184, hint, video::kMuted);
 }
 
 // ---- The on-screen keyboard ------------------------------------------------
@@ -651,6 +846,8 @@ void draw_frame()
 {
     if (screen == Screen::Games) {
         draw_games();
+    } else if (screen == Screen::Scan) {
+        draw_scan();
     } else if (screen == Screen::Message) {
         draw_message();
     } else {
@@ -667,6 +864,7 @@ void draw_frame()
         return;
     }
     if (menu_open) draw_menu();
+    if (quick_open) draw_quick();
     if (jlist_open) draw_jlist();
     if (prompt_open) draw_prompt();
     if (notice.open) draw_notice();
@@ -772,20 +970,135 @@ void apply_sound()
     play::set_music(cfg.music);
 }
 
-// A line under "Loading ..." while a game's first start makes its files
-void loading_line(const char* line, bool, void*)
+void apply_options()
 {
-    video::fill(0, 14 * 8 - 2, video::kW, 40, video::kBlack);
-    wrapped(2, 14, 36, line, video::kMuted);
+    play::Options o;
+    const uint16_t off = cfg.comforts_off;
+    o.gallery = !(off & kOffGallery);
+    o.demo_tap = !(off & kOffDemoTap);
+    o.more_guys = !(off & kOffMoreGuys);
+    o.portrait = !(off & kOffPortrait);
+    o.item_fixes = !(off & kOffFixes);
+    o.rolls = !(off & kOffRolls);
+    o.camp_fix = !(off & kOffCampFix);
+    o.cheats = !(off & kOffCheats);
+    o.quick_acts = !(off & kOffQuick);
+    o.read_time = !(off & kOffReadTime);
+    o.max_hp = cfg.max_hp;
+    o.font = cfg.font;
+    play::set_options(o);
+}
+
+// ---- Finding the games -----------------------------------------------------
+// As the CYD's card scan (Tom, 2026-11-14): what the engine makes from a
+// game's files - its Adventurer's Journal, its music - is made when the
+// game is FOUND (the first run that sees its folder), never at a game's
+// start; Settings' Look for Games Again makes everything anew. The screen
+// lists what it does and stays until Continue.
+constexpr char kScanMark[] = "PMSCAN.TXT";      // in the game's _CYD folder: found and its files made
+constexpr char kScanTag[] = "scan 1";
+std::vector<std::string> scan_log;
+bool                     scan_done = false, scan_progress = false;
+
+void draw_scan()
+{
+    video::clear(video::kBlack);
+    video::set_backdrop(nullptr);
+    video::fill(0, 0, video::kW, kHeaderH, video::kNavy);
+    video::text_at(8, 6, "Looking for Games", video::kGold);
+    // The newest lines that fit, wrapped at 38
+    std::vector<std::string> rows;
+    for (const std::string& l : scan_log) {
+        size_t i = 0;
+        do {
+            size_t end = i + 38;
+            if (end >= l.size()) end = l.size();
+            else {
+                const size_t brk = l.rfind(' ', end);
+                if (brk != std::string::npos && brk > i) end = brk;
+            }
+            rows.push_back((i ? "  " : "") + l.substr(i, end - i));
+            i = end;
+            while (i < l.size() && l[i] == ' ') ++i;
+        } while (i < l.size());
+    }
+    const int fit = 16;
+    const size_t from = rows.size() > static_cast<size_t>(fit) ? rows.size() - fit : 0;
+    for (size_t k = from; k < rows.size(); ++k)
+        video::text_at(4, 26 + static_cast<int>(k - from) * 10, rows[k].c_str(), video::kCream);
+    char line[41];
+    if (scan_done) snprintf(line, sizeof line, "%s: Continue", confirm_name());
+    else snprintf(line, sizeof line, "Working - this can take minutes.");
+    centred(24, line, scan_done ? video::kGold : video::kMuted);
+}
+
+void scan_say(const char* line, bool replace, void*)
+{
+    if (replace && scan_progress && !scan_log.empty()) scan_log.back() = line;
+    else scan_log.push_back(line);
+    scan_progress = replace;
+    plat::log("[scan] %s\n", line);
+    draw_scan();
     video::present(nullptr);
     SDL_PumpEvents();           // (minutes may pass: the window stays alive)
 }
 
-void apply_options()
+bool scan_marked(const std::string& cache)
 {
-    play::Options o;
-    o.font = cfg.font;
-    play::set_options(o);
+    plat::File f = plat::open((cache + "/" + kScanMark).c_str());
+    if (!f) return false;
+    char buf[16] = {};
+    f.read(reinterpret_cast<uint8_t*>(buf), sizeof kScanTag - 1);
+    f.close();
+    return strcmp(buf, kScanTag) == 0;
+}
+
+// Makes the new games' files (all: every game's, anew). True: something
+// was done - the scan's screen is up, waiting for Continue.
+bool discover(bool all)
+{
+    bool any = false;
+    for (const library::GameDir& g : games_found) {
+        if (!play::available(g.game)) continue;
+        const std::string cache = library::cache_dir(g);
+        if (!all && scan_marked(cache)) continue;
+        if (!any) {
+            scan_log.clear();
+            scan_done = scan_progress = false;
+            screen = Screen::Scan;
+            scan_say("Searching for Gold Box games...", false, nullptr);
+        }
+        any = true;
+        char line[120];
+        snprintf(line, sizeof line, "Found %s", games::title(g.game));
+        scan_say(line, false, nullptr);
+        // Its Adventurer's Journal, from the player's own PDF
+        if (all) {
+            plat::remove((cache + "/JOURNAL.DAT").c_str());
+            plat::remove((cache + "/BOOK.TXT").c_str());
+        }
+        jour::prepare(g, cache, scan_say);
+        snprintf(line, sizeof line, "%s", plat::exists((cache + "/JOURNAL.DAT").c_str())
+                                              ? "  Its journal is ready."
+                                              : "  No journal: its Adventurer's Journal PDF isn't in the game's folder.");
+        scan_say(line, false, nullptr);
+        // Its music (the later games), from its own files
+        if (!g.hlib && musicfiles::songs(g.data_dir.c_str()) && (all || !musicfiles::ready(g.data_dir.c_str(), cache.c_str()))) {
+            scan_say("  Making its music...", false, nullptr);
+            const int failed = musicfiles::make(g.data_dir.c_str(), cache.c_str(), games::short_title(g.game), all, scan_say, nullptr);
+            scan_say(failed ? "  Some of its music couldn't be made." : "  Its music is ready.", false, nullptr);
+        }
+        plat::File f = plat::open((cache + "/" + kScanMark).c_str(), "w");
+        if (f) {
+            f.write(reinterpret_cast<const uint8_t*>(kScanTag), sizeof kScanTag - 1);
+            f.close();
+        }
+    }
+    if (any) {
+        scan_done = true;
+        scan_say("Done.", false, nullptr);
+    }
+    return any;
 }
 
 std::string card_dir(const library::GameDir& g) { return std::string(games::kRootDir) + "/" + g.data_dir; }
@@ -798,7 +1111,8 @@ void leave_game()
     jlist_open = false;
     audio_stop();
     play::close();
-    panel::close();
+    panel::leave();
+    quick_open = false;
     playing = false;
     menu_open = false;
     keys_build(play::Input::None);
@@ -860,16 +1174,6 @@ void start_game()
     cv.paper = -1;
     memset(pixels.data(), 0, pixels.size());
     const std::string cache = library::cache_dir(g);
-    // The game's music (the later games): made once from its own files -
-    // the CYD's card scan does this; here a game's first start
-    if (!g.hlib && musicfiles::songs(g.data_dir.c_str()) && !musicfiles::ready(g.data_dir.c_str(), cache.c_str())) {
-        loading_line("Making the game's music (once; it can take a few minutes)...", false, nullptr);
-        const int failed = musicfiles::make(g.data_dir.c_str(), cache.c_str(), games::short_title(g.game), false, loading_line, nullptr);
-        plat::log("[port] music made for %s (%d failed)\n", games::title(here), failed);
-    }
-    // Its Adventurer's Journal: made once from the player's own PDF (the
-    // CYD's card scan does this too)
-    jour::prepare(g, cache, loading_line);
     cur_cache = cache;
     const char* err = play::open(g.data_dir.c_str(), here, cv, cache.c_str());
     if (err) {
@@ -1081,7 +1385,17 @@ void menu_change(int step)
         break;
     case MPadMoves: cfg.pad_moves = !cfg.pad_moves; break;
     case MSwap: cfg.swap_ab = !cfg.swap_ab; break;
-    default: return;
+    case MMaxHp:
+        cfg.max_hp = !cfg.max_hp;
+        if (playing) apply_options();
+        break;
+    default:
+        if (const uint16_t bit = comfort_bit(m)) {
+            cfg.comforts_off ^= bit;
+            if (playing) apply_options();
+            break;
+        }
+        return;
     }
     settings_save(conf_dir, cfg);
 }
@@ -1090,6 +1404,51 @@ void rescan()
 {
     have_root = library::scan(games_found);
     if (game_sel >= static_cast<int>(games_found.size())) game_sel = 0;
+}
+
+// A cheat's screen, on the game's own (only at the exploring menu)
+void cheat_go(int which)
+{
+    if (!play::cheats_ready() || !play::cheat_open(which, cv)) {
+        show_notice("Cheats", "The cheats open while the party is exploring, at the game's menu (Area, Cast, View ...) - "
+                              "not in a fight, a shop, a camp or a conversation.");
+        return;
+    }
+    menu_open = false;
+    after_input();
+}
+
+void quick_begin()
+{
+    q_rows = play::quick_ready() ? play::quick_begin() : 0;
+    if (q_rows <= 0) {
+        show_notice("Quick Actions", "Quick Actions need a party: load a saved game or make characters first.");
+        return;
+    }
+    q_row = q_col = 0;
+    quick_open = true;
+    menu_open = false;
+}
+
+void quick_press(int b)
+{
+    switch (b) {
+    case BUp: q_col = (q_col + quickacts::kCols - 1) % quickacts::kCols; break;
+    case BDown: q_col = (q_col + 1) % quickacts::kCols; break;
+    case BLeft:
+    case BL1:
+    case BL2: q_row = (q_row + q_rows - 1) % q_rows; break;
+    case BRight:
+    case BR1:
+    case BR2: q_row = (q_row + 1) % q_rows; break;
+    case BA:
+        if (!play::quick_toggle(q_row, q_col))
+            show_notice("Quick Actions", "The change couldn't be kept: the games folder can't be written.");
+        break;
+    case BB:
+    case BStart: quick_open = false; break;
+    default: break;
+    }
 }
 
 void menu_press(int b)
@@ -1102,9 +1461,14 @@ void menu_press(int b)
     switch (b) {
     case BUp: menu_sel = (menu_sel + n - 1) % n; break;
     case BDown: menu_sel = (menu_sel + 1) % n; break;
+    case BL2: menu_sel = menu_sel >= kMenuLines ? menu_sel - kMenuLines : 0; break;
+    case BR2: menu_sel = menu_sel + kMenuLines < n ? menu_sel + kMenuLines : n - 1; break;
     case BLeft: menu_change(-1); break;
     case BRight: menu_change(1); break;
     case BB:
+        if (menu_page != Page::Main) menu_go(Page::Main);
+        else menu_open = false;
+        break;
     case BStart: menu_open = false; break;
     case BA:
         switch (menu_items[menu_sel]) {
@@ -1114,9 +1478,25 @@ void menu_press(int b)
             jlist_open = true;
             jlist_sel = play::journal_seen_count() - 1;         // (the newest)
             break;
+        case MQuick: quick_begin(); break;
+        case MCheats: menu_go(Page::Cheats); break;
+        case MSettings: menu_go(Page::Settings); break;
+        case MBack: menu_go(Page::Main); break;
+        case MHealer: cheat_go(0); break;
+        case MMerchant: cheat_go(1); break;
+        case MSanctuary: cheat_go(2); break;
+        case MTrainer: cheat_go(3); break;
+        case MAsOriginal:
+        case MAllOn:
+            cfg.comforts_off = menu_items[menu_sel] == MAsOriginal ? kOffAll : 0;
+            if (menu_items[menu_sel] == MAsOriginal) cfg.max_hp = false;
+            if (playing) apply_options();
+            settings_save(conf_dir, cfg);
+            break;
         case MRescan:
-            rescan();
             menu_open = false;
+            rescan();
+            if (!discover(true)) screen = Screen::Games;
             break;
         case MUpdate: update_check(); break;
         case MSendLogs: send_logs(); break;
@@ -1154,6 +1534,14 @@ void press(int b)
         jlist_press(b);
         return;
     }
+    if (quick_open) {
+        quick_press(b);
+        return;
+    }
+    if (screen == Screen::Scan) {
+        if (scan_done && (b == BA || b == BB || b == BStart)) screen = Screen::Games;
+        return;
+    }
     if (menu_open) {
         menu_press(b);
         return;
@@ -1164,6 +1552,8 @@ void press(int b)
     }
     if (b == BStart) {
         ptr_mode = false;
+        menu_page = Page::Main;
+        menu_top = 0;
         menu_build();
         menu_open = true;
         help_open = false;
@@ -1175,8 +1565,10 @@ void press(int b)
     }
     if (screen == Screen::Games) {
         const int n = static_cast<int>(games_found.size());
-        if (b == BA && n == 0) rescan();
-        else if (b == BA) start_game();
+        if (b == BA && n == 0) {
+            rescan();
+            discover(false);
+        } else if (b == BA) start_game();
         else if ((b == BUp || b == BLeft || b == BL1) && n) game_sel = (game_sel + n - 1) % n;
         else if ((b == BDown || b == BRight || b == BR1) && n) game_sel = (game_sel + 1) % n;
         return;
@@ -1631,7 +2023,9 @@ int main(int argc, char** argv)
     for (const auto& g : games_found)
         plat::log("[port]   %s: %s (%d files in games/%s)%s\n", g.folder.c_str(), games::title(g.game), g.files,
                   g.data_dir.c_str(), play::available(g.game) ? "" : " - not playable");
+    discover(false);
     if (auto_game >= 1 && auto_game <= static_cast<int>(games_found.size())) {
+        screen = Screen::Games;         // (--game: straight in, the scan's list not waited at)
         game_sel = auto_game - 1;
         start_game();
     }

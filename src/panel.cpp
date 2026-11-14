@@ -17,8 +17,11 @@ constexpr int kH = video::kH;
 
 enum class View : uint8_t { None, Map, Party, Battle };
 View     view = View::None;
-uint32_t pixels[kW * kH];                   // the panel, drawn only when it changes
-uint32_t sig = 0;
+uint32_t buf[2][kW * kH];                   // the panel (0), drawn only when it changes; 1: the party under it, beside the game
+uint32_t* pixels = buf[0];                  // the one being drawn
+uint32_t sig = 0, sig2 = 0;
+bool     side_wanted = true;                // beside the game on a wide panel (Y: off / on)
+bool     side_shown = false;
 float    shown = 0;                         // how far out it is: 0 closed, 1 fully
 uint32_t last_ms = 0;
 
@@ -75,6 +78,8 @@ uint16_t plain_walls(const geo::Map& m)
         if (solid[w] && solid[w] >= open[w] * 4) bits |= static_cast<uint16_t>(1u << w);
     return bits;
 }
+
+View first() { return play::fighting() ? View::Battle : View::Map; }
 
 // The auto-map: walls a pixel wide, doors a band on the wall line (gold;
 // red: locked), a secret door an S, the party a green arrow
@@ -141,33 +146,96 @@ void draw_map()
     letters(20, ly + 10, "Secret Door", video::kMuted);
 }
 
-void redraw(bool blink_on)
+void redraw(View v, bool blink_on, bool edge)
 {
     Paint p;
     const companion::Area a{0, 0, kVW, kH};
-    if (view == View::Map) draw_map();
-    else if (view == View::Party) companion::draw_party(p, a, true, true);
+    if (v == View::Map) draw_map();
+    else if (v == View::Party) companion::draw_party(p, a, true, true);
     else companion::draw_battle(p, a, blink_on, false, true);
-    put(kW - 1, 0, 1, kH, video::kGold);
+    if (edge) put(0, 0, 1, kH, video::kGold);
 }
 
-View first() { return play::fighting() ? View::Battle : View::Map; }
+// What a view shows, as a number: it is drawn again only when this changes
+uint32_t signature(View v, bool blink_on)
+{
+    uint32_t s = static_cast<uint32_t>(v) * 0x9E3779B1u;
+    if (v == View::Map) {
+        const geo::Map* m = play::map();
+        s ^= static_cast<uint32_t>(reinterpret_cast<uintptr_t>(m)) ^ static_cast<uint32_t>(play::pos_x() << 8) ^
+             static_cast<uint32_t>(play::pos_y() << 16) ^ static_cast<uint32_t>(play::dir() << 24) ^ (m ? 1u : 0u);
+        // (a door opened shows too: the map's own bytes)
+        if (m)
+            for (int i = 0; i < m->squares(); ++i) s = s * 31 + m->pl(3)[i];
+    } else if (v == View::Party) {
+        s ^= play::panel_party_sig(true);
+    } else {
+        s ^= play::panel_field_sig() ^ (companion::battle_blinks() && blink_on ? 0x55u : 0u);
+    }
+    return s | 1;
+}
+
+// Beside the game: the map / battlefield above, the party below
+void draw_side(uint32_t now_ms)
+{
+    const bool blink_on = (now_ms / 400) & 1;
+    const View top = first();
+    const uint32_t s = signature(top, blink_on), s2 = signature(View::Party, blink_on);
+    const bool fresh = !side_shown;
+    if (fresh || s != sig) {
+        sig = s;
+        pixels = buf[0];
+        redraw(top, blink_on, false);
+    }
+    if (fresh || s2 != sig2) {
+        sig2 = s2;
+        pixels = buf[1];
+        redraw(View::Party, blink_on, false);
+    }
+    pixels = buf[0];
+    side_shown = true;
+    video::set_side(buf[0], buf[1]);
+}
 
 } // namespace
 
 bool open() { return view != View::None; }
 void close() { view = View::None; }
 
+void leave()
+{
+    close();
+    shown = 0;
+    if (side_shown) video::set_side(nullptr, nullptr);
+    side_shown = false;
+}
+
 void next()
 {
+    sig = sig2 = 0;
+    if (video::side_room()) {
+        side_wanted = !side_wanted;
+        view = View::None;
+        return;
+    }
     if (view == View::None) view = first();
     else if (view == View::Party) view = View::None;
     else view = View::Party;
-    sig = 0;
 }
 
 void draw(uint32_t now_ms)
 {
+    if (video::side_room() && side_wanted) {
+        view = View::None;
+        shown = 0;
+        draw_side(now_ms);
+        return;
+    }
+    if (side_shown) {
+        video::set_side(nullptr, nullptr);
+        side_shown = false;
+        sig = 0;
+    }
     const uint32_t dt = now_ms - last_ms;
     last_ms = now_ms;
     const float step = (dt > 100 ? 100 : dt) / 140.0f;        // (out or in within 140 ms)
@@ -180,26 +248,14 @@ void draw(uint32_t now_ms)
         if (view == View::Map && play::fighting()) view = View::Battle;
         if (view == View::Battle && !play::fighting()) view = View::Map;
         const bool blink_on = (now_ms / 400) & 1;
-        uint32_t s = static_cast<uint32_t>(view) * 0x9E3779B1u;
-        if (view == View::Map) {
-            const geo::Map* m = play::map();
-            s ^= static_cast<uint32_t>(reinterpret_cast<uintptr_t>(m)) ^ static_cast<uint32_t>(play::pos_x() << 8) ^
-                 static_cast<uint32_t>(play::pos_y() << 16) ^ static_cast<uint32_t>(play::dir() << 24) ^ (m ? 1u : 0u);
-            // (a door opened shows too: the map's own bytes)
-            if (m)
-                for (int i = 0; i < m->squares(); ++i) s = s * 31 + m->pl(3)[i];
-        } else if (view == View::Party) {
-            s ^= play::panel_party_sig(true);
-        } else {
-            s ^= play::panel_field_sig() ^ (companion::battle_blinks() && blink_on ? 0x55u : 0u);
-        }
-        s |= 1;
+        const uint32_t s = signature(view, blink_on);
         if (s != sig) {
             sig = s;
-            redraw(blink_on);
+            redraw(view, blink_on, true);
         }
     }
-    video::blit(static_cast<int>(kW * shown) - kW, 0, kW, kH, pixels);
+    // From the right: the 3D view and the fight's field stay in sight
+    video::blit(video::kW - static_cast<int>(kW * shown), 0, kW, kH, pixels);
 }
 
 } // namespace panel

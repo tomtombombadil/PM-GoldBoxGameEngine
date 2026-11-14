@@ -18,7 +18,7 @@ Everything is done with the buttons; sticks are optional extras.
 | L1 / R1 | Menu word left / right while walking |
 | L2 / R2 | List line up / down (the party list while walking) |
 | X | Area map |
-| Y | The Companion: auto-map, party, a fight's battlefield (press again for the next, then away) |
+| Y | The Companion, from the right: auto-map, party, a fight's battlefield (press again for the next, then away; on a wide screen it stands beside the game - Y hides it) |
 | Select | Pointer Mode: the D-Pad moves a pointer, A taps there, B ends it |
 | Start | The port's menu (display, sound, font, controls, updates, logs, exit game) |
 | Select + Start | Quit |
@@ -27,7 +27,9 @@ In a fight, while a fighter moves or aims: the D-Pad steps (two directions toget
 
 When a game asks for a name or a number an on-screen keyboard appears: D-Pad to a key, A types it, B deletes, X is a space, Y is Done.
 
-Confirm and Back can be swapped in the Start menu.
+Confirm and Back can be swapped in Start - Settings.
+
+Start - Settings also has the engine's extras (Game Fixes, Show Rolls, Readable Messages ... - As Original turns them all off); Start - Cheats: Healer, Merchant, Sanctuary, Trainer, Max Hit Points; Start - Quick Actions: what Quick may do for each member of the party in a fight.
 
 ## Compile
 

@@ -27,9 +27,16 @@ Tick off with the version that did it. Never ask Tom the same thing twice.
       shops, a fight (moving, aiming, diagonals), saving, the icon
       gallery and editor (may need D-pad support beyond Pointer Mode),
       and every other game; the Steam (SNEG) folders; the VGA games.
-- [ ] Game list: the GOG icon when there is no Steam Launcher folder
-      (the CYD shows it); the box art is decoded each time a page is first
-      shown - cache it if that is slow on the device.
+- [ ] Game list: the box art / logo is decoded each time a page is first
+      shown - cache it if that is slow on the device (Tom: is turning
+      the pages quick on the RG40XX H?).
+- [ ] v0.6.0, checked headless with Curse (GOG): the scan's screen and
+      its mark, the logo page, the Companion from the right and beside
+      the game at 1280 x 720, Quick Actions (a switch flipped, kept),
+      Cheats - Healer and Trainer opened, every Settings line.
+      **Not yet**: Merchant / Sanctuary used through, Max Hit Points at a
+      real level-up, the Battle view beside a fight, the other games'
+      logos (each GOG folder's .ico / .dll), a wide panel on a device.
 - [ ] Journal, checked so far (v0.5.0, headless): Curse GOG (121 entries
       from the scanned PDF) and Curse Steam (Companion + PDF text) - made,
       entries 1 / 12 / 33 and a tavern tale opened, scrolled, zoomed.
@@ -37,9 +44,9 @@ Tick off with the version that did it. Never ask Tom the same thing twice.
       whole-book view (BOOK.TXT is made, no screen for it); a real mention
       reached by playing (opened by the test hook `journal:K:N` so far);
       how long the making takes on the device.
-- [ ] From the CYD, still missing here: Cheats; Quick Actions; the comfort
-      switches (Game Fixes, Show Rolls, Camp Fix, Max HP, Readable
-      Messages ...); the icon gallery by buttons (unchecked); logs screen.
+- [ ] From the CYD, still missing here: the journal as a whole book; the
+      icon gallery by buttons (unchecked); a logs screen (Send Logs
+      instead); the Game menu's Sounds tab if it has one worth having.
 - [ ] Updater: a stable / pre-release choice (as Pocket Curator's A / Y)
       once there is a stable release; show the changelog of the version
       offered.
@@ -51,6 +58,11 @@ Tick off with the version that did it. Never ask Tom the same thing twice.
 - [ ] Keep the `cyd` pin current (built on CYD 0.197.1).
 
 ## Done
+- [x] v0.6.0 (2026-11-14, Tom): the Companion from the right, and beside
+      the game on wide panels; journals and music made when a game is
+      found (Look for Games Again: anew), not at its start; the GOG logo
+      on the game list; Settings page with every engine comfort, Cheats,
+      Quick Actions.
 - [x] v0.5.0 (2026-11-14): the Adventurer's Journal - made on the device,
       shown in the game, the Start menu's list.
 - [x] v0.4.0 (2026-11-14, Tom's first run on the RG40XX H: installer OK,
