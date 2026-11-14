@@ -58,8 +58,8 @@ You need PortMaster on the handheld, and Wi-Fi.
 
 5. Start **Gold Box Game Engine** from Ports. The first time it sees a
    game it makes that game's journal and music from your files - it lists
-   what it does and can take a few minutes, once. (Start - Settings -
-   Look for Games Again makes them anew.)
+   what it does and can take a few minutes, once. (Start -
+   Rescan Game Files makes them anew.)
 
 That is the only time a file has to be carried over for the port itself.
 From then on: **Start - Check for Updates** in the port finds a newer

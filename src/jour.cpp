@@ -185,6 +185,9 @@ bool read_book(const std::string& pdf, const std::string& cache, journal::Sectio
     if (bo.f) bo.f.close();
     if (so.f) so.f.close();
     pf.close();
+    plat::log("[journal] the book's text, games/%s: %s - %d page(s) read, %d failed, %u letters, %d section(s)%s\n", pdf.c_str(),
+              ok ? "read" : "NOT read", info.pages, info.failed, static_cast<unsigned>(info.chars), info.sections,
+              info.no_memory ? ", out of memory" : "");
     if (ok && info.chars < 400) ok = false;         // (a scanned book has no text)
     if (!ok) {
         plat::remove((cache + "/BOOK.TXT").c_str());
@@ -201,7 +204,7 @@ void make_from_gbc(const library::GameDir& g, const std::string& cache, const st
     const char* title = games::title(g.game);
     const std::string dat = card(gbc + "/Game.dat"), out_path = cache + "/JOURNAL.DAT";
     char id[48];
-    snprintf(id, sizeof id, "gbc4:%u:%u", file_size(dat), pdf.empty() ? 0u : file_size(card(pdf)));
+    snprintf(id, sizeof id, "gbc5:%u:%u", file_size(dat), pdf.empty() ? 0u : file_size(card(pdf)));
     if (made_id(out_path) == id && (pdf.empty() || book_ready(cache))) return;
     Prog pr{say, title, "Processing"};
     std::vector<journal::Section> secs(pdf.empty() ? 0 : journal::kMaxSections);
@@ -240,7 +243,7 @@ void make_from_text(const library::GameDir& g, const std::string& cache, const s
     const char* title = games::title(g.game);
     const std::string out_path = cache + "/JOURNAL.DAT";
     char id[32];
-    snprintf(id, sizeof id, "text1:%u", file_size(card(pdf)));
+    snprintf(id, sizeof id, "text2:%u", file_size(card(pdf)));
     if (made_id(out_path) == id && book_ready(cache)) return;
     Prog pr{say, title, "Processing"};
     std::vector<journal::Section> secs(journal::kMaxSections);
@@ -342,12 +345,20 @@ bool                  game_look = false;        // text on the game's own text s
 std::string           text;
 std::vector<uint32_t> line_at, line_len;        // (len 0: a paragraph's gap)
 int                   top = 0;                  // the first line shown / the page's top row
-int                   big = 0;                  // 0 Normal, 1 Large (kept)
+constexpr int         big = 0;                  // (text entries: one size - Tom, 2026-11-14: "it doesn't need a zoom")
 std::vector<uint8_t>  saved;                    // the game screen meanwhile
 uint8_t               saved_bpp = 4;
 // Pictures: the entry as one tall page, video::kBackW wide a zoom
 std::vector<uint32_t> doc;
-int                   doc_w = 0, doc_h = 0, pan_x = 0, pic_zoom = 1;
+int                   doc_w = 0, doc_h = 0, pan_x = 0;
+// A picture entry's zoom (Tom, 2026-11-14): Width - the picture as wide as
+// the screen (the start); Double - twice that; Whole - all of it on the
+// screen (only when it is taller than the screen); Turned - a very long
+// one on its side, its length across the screen (only for those)
+enum class Zoom : uint8_t { Width, Double, Whole, Turned };
+Zoom                  pic_zoom = Zoom::Width;
+bool                  can_whole = false, can_turn = false;
+bool                  entry_map = false;        // the entry is a map (the engine's table says so; a Steam entry's picture)
 std::vector<uint32_t> view;                     // the backdrop's pixels
 char                  title[48];
 // (for building the page again at another zoom)
@@ -423,10 +434,9 @@ void doc_text(int y, const char* s, size_t n)
 // The entry's pieces stacked on one page doc_w wide: pictures scaled to
 // its width (the rows squeezed by how the screen will stretch them), text
 // in the port's letters
-bool build_doc(dax::ByteSource& src, const journal::Info& info, int first, int count)
+bool build_doc(dax::ByteSource& src, const journal::Info& info, int first, int count, int width, int aspect)
 {
-    const int aspect = video::pixel_aspect();
-    doc_w = video::kBackW * pic_zoom;
+    doc_w = width;
     struct Part {
         journal::PieceInfo p;
         int                y, h;
@@ -435,7 +445,7 @@ bool build_doc(dax::ByteSource& src, const journal::Info& info, int first, int c
     };
     std::vector<Part> parts(static_cast<size_t>(count));
     int y = 8;
-    const int text_cols = doc_w / 16 - 2;
+    const int text_cols = doc_w / 16 - 2 > 8 ? doc_w / 16 - 2 : 8;
     for (int i = 0; i < count; ++i) {
         Part& q = parts[static_cast<size_t>(i)];
         if (!journal::piece(src, info, first + i, q.p)) return false;
@@ -541,6 +551,78 @@ bool build_doc(dax::ByteSource& src, const journal::Info& info, int first, int c
 
 constexpr int kViewRows = (video::kH - 10) * 2;         // the page's part of the backdrop (a hint line under it)
 
+// The page made smaller to fit the screen's height: each new pixel the
+// average of those it covers
+void shrink_doc(int to_h)
+{
+    if (doc_h <= to_h || doc_h <= 0) return;
+    const int nw = static_cast<int>(static_cast<long long>(doc_w) * to_h / doc_h) > 0
+                       ? static_cast<int>(static_cast<long long>(doc_w) * to_h / doc_h) : 1;
+    std::vector<uint32_t> out(static_cast<size_t>(nw) * to_h);
+    for (int y = 0; y < to_h; ++y) {
+        const int y0 = static_cast<int>(static_cast<long long>(y) * doc_h / to_h);
+        int y1 = static_cast<int>(static_cast<long long>(y + 1) * doc_h / to_h);
+        if (y1 <= y0) y1 = y0 + 1;
+        for (int x = 0; x < nw; ++x) {
+            const int x0 = static_cast<int>(static_cast<long long>(x) * doc_w / nw);
+            int x1 = static_cast<int>(static_cast<long long>(x + 1) * doc_w / nw);
+            if (x1 <= x0) x1 = x0 + 1;
+            uint32_t rr = 0, gg = 0, bb = 0, n = 0;
+            for (int j = y0; j < y1 && j < doc_h; ++j)
+                for (int i = x0; i < x1 && i < doc_w; ++i) {
+                    const uint32_t c = doc[static_cast<size_t>(j) * doc_w + i];
+                    rr += (c >> 16) & 0xFF;
+                    gg += (c >> 8) & 0xFF;
+                    bb += c & 0xFF;
+                    ++n;
+                }
+            if (!n) n = 1;
+            out[static_cast<size_t>(y) * nw + x] = 0xFF000000u | ((rr / n) << 16) | ((gg / n) << 8) | (bb / n);
+        }
+    }
+    doc.swap(out);
+    doc_w = nw;
+    doc_h = to_h;
+}
+
+// The page a quarter turn clockwise (its top to the right)
+void turn_doc()
+{
+    std::vector<uint32_t> out(static_cast<size_t>(doc_w) * doc_h);
+    const int nw = doc_h, nh = doc_w;
+    for (int y = 0; y < nh; ++y)
+        for (int x = 0; x < nw; ++x) out[static_cast<size_t>(y) * nw + x] = doc[static_cast<size_t>(doc_h - 1 - x) * doc_w + y];
+    doc.swap(out);
+    doc_w = nw;
+    doc_h = nh;
+}
+
+// The entry's page at a zoom
+bool make_doc(dax::ByteSource& src, const journal::Info& info, int first, int count, Zoom z)
+{
+    const int aspect = video::pixel_aspect() > 0 ? video::pixel_aspect() : 1000;
+    if (z == Zoom::Turned) {
+        // On its side its rows run across the screen: built with the
+        // pixels' shape the other way round, kBackW rows tall, then turned
+        if (!build_doc(src, info, first, count, video::kBackW, aspect)) return false;
+        const long long h_fit = doc_h;        // (its height at the screen's width)
+        int w = static_cast<int>(static_cast<long long>(video::kBackW) * video::kBackW * 1000000LL /
+                                 (h_fit * aspect * aspect));
+        if (w < 48) w = 48;
+        if (w > video::kBackW * 2) w = video::kBackW * 2;
+        if (!build_doc(src, info, first, count, w, 1000000 / aspect)) return false;
+        turn_doc();
+        return true;
+    }
+    if (!build_doc(src, info, first, count, z == Zoom::Double ? video::kBackW * 2 : video::kBackW, aspect)) return false;
+    if (z == Zoom::Width) {
+        can_whole = doc_h > kViewRows;
+        can_turn = entry_map && doc_h > kViewRows * 2;      // (a very long map: twice the screen and more)
+    }
+    if (z == Zoom::Whole) shrink_doc(kViewRows);
+    return true;
+}
+
 int doc_max_top() { return doc_h > kViewRows ? doc_h - kViewRows : 0; }
 
 void clamp()
@@ -549,7 +631,7 @@ void clamp()
         if (top > text_max_top()) top = text_max_top();
     } else {
         if (top > doc_max_top()) top = doc_max_top();
-        const int max_pan = doc_w - video::kBackW;
+        const int max_pan = doc_w > video::kBackW ? doc_w - video::kBackW : 0;
         if (pan_x > max_pan) pan_x = max_pan;
         if (pan_x < 0) pan_x = 0;
     }
@@ -613,7 +695,11 @@ bool load(pic::Canvas& game, std::string& why)
         game_look = ok;
         if (ok) layout_text();
     } else {
-        ok = build_doc(src, info, first, count);
+        // A map? The scanned editions' tables mark them; a Steam entry's
+        // picture (the Companion's JE_nnn.jpg) is one
+        const journal::Table* t = journal::find_table(info.pdf_id);
+        entry_map = t ? journal::is_map(*t, open_kind, open_number) : true;
+        ok = make_doc(src, info, first, count, Zoom::Width);
         if (ok) view.assign(static_cast<size_t>(video::kBackW) * video::kBackH, 0xFF000000u);
     }
     f.close();
@@ -630,7 +716,7 @@ bool open(const std::string& cache_dir, char kind, int number, pic::Canvas& game
     open_number = number;
     top = 0;
     pan_x = 0;
-    pic_zoom = 1;
+    pic_zoom = Zoom::Width;
     on = load(game, why);
     if (!on && !saved.empty()) close(game);
     return on;
@@ -675,34 +761,39 @@ void pan(int step)
 
 bool at_end() { return game_look ? top >= text_max_top() : top >= doc_max_top(); }
 
+// X: a text entry's next page, round to the top after the last (it has
+// one size); a picture entry's next zoom
 void zoom()
 {
     if (game_look) {
-        // (the line at the top stays the one at the top)
-        const uint32_t at = top < static_cast<int>(line_at.size()) ? line_at[static_cast<size_t>(top)] : 0;
-        big ^= 1;
-        layout_text();
-        top = 0;
-        for (size_t i = 0; i < line_at.size(); ++i)
-            if (line_at[i] <= at) top = static_cast<int>(i);
-    } else {
-        const int was = pic_zoom;
-        pic_zoom = pic_zoom == 1 ? 2 : 1;
-        plat::File f = plat::open((open_cache + "/JOURNAL.DAT").c_str());
-        if (!f) return;
-        plat::FileSource src(f);
-        journal::Info info;
-        int first = 0, count = 0;
-        if (!journal::read_info(src, info) || !journal::find(src, info, open_kind, open_number, &first, &count) ||
-            !build_doc(src, info, first, count)) {
-            pic_zoom = was;
-            if (journal::read_info(src, info) && journal::find(src, info, open_kind, open_number, &first, &count))
-                build_doc(src, info, first, count);
-        }
-        f.close();
-        top = top * pic_zoom / was;
-        pan_x = pic_zoom == 2 ? video::kBackW / 2 : 0;
+        if (top >= text_max_top()) top = 0;
+        else top += rows() - 1;
+        clamp();
+        return;
     }
+    const Zoom was = pic_zoom;
+    const int was_h = doc_h > 0 ? doc_h : 1, was_top = top;
+    Zoom z = was;
+    for (int k = 0; k < 4; ++k) {
+        z = static_cast<Zoom>((static_cast<int>(z) + 1) % 4);
+        if ((z == Zoom::Whole && !can_whole) || (z == Zoom::Turned && !can_turn)) continue;
+        break;
+    }
+    plat::File f = plat::open((open_cache + "/JOURNAL.DAT").c_str());
+    if (!f) return;
+    plat::FileSource src(f);
+    journal::Info info;
+    int first = 0, count = 0;
+    const bool found = journal::read_info(src, info) && journal::find(src, info, open_kind, open_number, &first, &count);
+    if (found && make_doc(src, info, first, count, z)) {
+        pic_zoom = z;
+        // (the same part of it stays in view; a turned one starts at its start)
+        top = z == Zoom::Turned || was == Zoom::Turned ? 0 : static_cast<int>(static_cast<long long>(was_top) * doc_h / was_h);
+        pan_x = doc_w > video::kBackW ? (doc_w - video::kBackW) / 2 : 0;
+    } else if (found) {
+        make_doc(src, info, first, count, was);
+    }
+    f.close();
     clamp();
 }
 
@@ -724,7 +815,7 @@ bool draw(pic::Canvas& game)
         snprintf(hint, sizeof hint, "%.20s  %d of %d", title, at % 1000, pages % 1000);
         video::fill(0, video::kH - 8, video::kW, 8, video::kBlack);
         video::text(0, 24, hint, video::kGold);
-        video::text(26, 24, "X Size  B Back", video::kMuted);
+        video::text(26, 24, "X Page  B Back", video::kMuted);
         return true;
     }
     // The picture page: the part of it in view, the backdrop
@@ -735,14 +826,24 @@ bool draw(pic::Canvas& game)
             for (int x = 0; x < video::kBackW; ++x) to[x] = y >= kViewRows ? 0xFF000000u : 0xFFFFFFFFu;
             continue;
         }
-        memcpy(to, &doc[static_cast<size_t>(sy) * doc_w + pan_x], static_cast<size_t>(video::kBackW) * 4);
+        if (doc_w >= video::kBackW) {
+            memcpy(to, &doc[static_cast<size_t>(sy) * doc_w + pan_x], static_cast<size_t>(video::kBackW) * 4);
+        } else {
+            // (narrower than the screen: in its middle, white beside it)
+            const int x0 = (video::kBackW - doc_w) / 2;
+            for (int x = 0; x < video::kBackW; ++x) to[x] = 0xFFFFFFFFu;
+            memcpy(to + x0, &doc[static_cast<size_t>(sy) * doc_w], static_cast<size_t>(doc_w) * 4);
+        }
     }
     video::set_backdrop(view.data(), 0);
     video::fill(0, video::kH - 10, video::kW, 10, video::kBlack);
     const int pct = doc_max_top() ? top * 100 / doc_max_top() : 100;
     snprintf(hint, sizeof hint, "%.18s %d%%", title, pct % 1000);
     video::text_at(0, video::kH - 9, hint, video::kGold);
-    video::text_at(26 * 8, video::kH - 9, pic_zoom == 1 ? "X Zoom  B Back" : "X Fit   B Back", video::kMuted);
+    static const char* const kZoom[4] = {"Width", "Double", "Whole", "Turned"};
+    char keys[24];
+    snprintf(keys, sizeof keys, "X %s  B Back", kZoom[static_cast<int>(pic_zoom)]);
+    video::text_at(video::kW - static_cast<int>(strlen(keys)) * 8, video::kH - 9, keys, video::kMuted);
     return false;
 }
 

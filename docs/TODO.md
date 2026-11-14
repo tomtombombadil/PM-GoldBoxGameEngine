@@ -34,13 +34,20 @@ Tick off with the version that did it. Never ask Tom the same thing twice.
       **Not yet**: Merchant / Sanctuary used through, Max Hit Points at a
       real level-up, the Battle view beside a fight, the other games'
       logos (each GOG folder's .ico / .dll), a wide panel on a device.
-- [ ] Journal, checked so far (v0.5.0, headless): Curse GOG (121 entries
-      from the scanned PDF) and Curse Steam (Companion + PDF text) - made,
-      entries 1 / 12 / 33 and a tavern tale opened, scrolled, zoomed.
-      **Not yet**: the other eight games' journals in both releases; the
-      whole-book view (BOOK.TXT is made, no screen for it); a real mention
-      reached by playing (opened by the test hook `journal:K:N` so far);
-      how long the making takes on the device.
+- [ ] Journals (v0.7.0): every game's made and listed in both releases
+      (`build/jlist <games>`; engine 0.198.1 fixed the Steam Krynn PDFs,
+      Champions' tavern tales, Treasures' Introduction). Opened and
+      looked at: Curse GOG J 4 / 12 (every zoom), Curse Steam J 12 / 4,
+      Treasures Steam's Introduction. **Not yet**: entries of the other
+      games looked at one by one; the whole-book view (BOOK.TXT is made,
+      no screen for it); a real mention reached by playing (the test hook
+      `journal:K:N` so far). Known gaps (the CYD's TODO too): the Dark
+      Queen's Introduction is only its heading lines; GOG's Dark Queen
+      journal comes from the PDF's text (no table) and lacks entries 13
+      and 26; Death Knights has no entry 13 in any source.
+- [ ] Tom: after v0.7.0 on the RGB10 MAX3 - do the game list's pictures
+      show at once, at every start? If not: Send Logs (the log's
+      "[video] panel" lines say what sizes the panel reported).
 - [ ] From the CYD, still missing here: the journal as a whole book; the
       icon gallery by buttons (unchecked); a logs screen (Send Logs
       instead); the Game menu's Sounds tab if it has one worth having.
@@ -52,9 +59,16 @@ Tick off with the version that did it. Never ask Tom the same thing twice.
 - [ ] Before a PortMaster submission: `port.json` against their
       generator / checks (`availability`, `store`, `min_glibc` unverified),
       the gameplay screenshot (Tom: later), an armhf build if wanted.
-- [ ] Keep the `cyd` pin current (built on CYD 0.197.1).
+- [ ] Keep the `cyd` pin current (built on CYD 0.198.1).
 
 ## Done
+- [x] v0.7.0 (2026-11-14, Tom): journal viewer's X (text: next page;
+      pictures: Width / Double / Whole / Turned); the game list's
+      pictures checked once the panel's size has settled (RGB10 MAX3);
+      Rescan Game Files on the game list's first menu; "v" before the
+      version; the journal scan's misses fixed in the engine (CYD
+      0.198.1) and every game's journal checked in both releases; music
+      16-bit (CYD 0.198.0).
 - [x] v0.6.2 (2026-11-14, Tom on the RGB10 MAX3): game list and scan
       fill a 16:9 panel; smaller scan letters; no game counter; Game
       Fixes' words.

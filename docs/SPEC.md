@@ -161,15 +161,19 @@ on screen the overlay is 320 again.
   what it does ("Found ...", "Processing the ... journal: page n of m",
   "Making its music...") in smaller letters (12 x 12, smoothed, on the
   backdrop's sharper picture: 52 across on 4:3, 69 on 16:9) and stays
-  until A. **Settings - Look for Games
-  Again** does every game anew (journal files removed first, music
+  until A. **Start - Rescan Game Files** (on the game list's first menu - Tom, 2026-11-14) does every game anew (journal files removed first, music
   forced). Never at a game's start or on first use: a game starts with no
   loading screen, and the game list only reads `ART.BIN` (`art::load`).
   The picture is made for the screen's shape: a game found before whose
-  `ART.BIN` isn't this shape's (Display changed - done when the menu
-  closes, outside a game - or a Launcher folder copied in since) gets
-  just its picture made again on the scan's screen ("Preparing the ...
-  picture"), as the CYD's "Preparing Pictures".
+  `ART.BIN` isn't this shape's gets just its picture made again on the
+  scan's screen ("Preparing the picture for ...", no wait), as the CYD's
+  "Preparing Pictures". **When**: not at the start - a handheld's panel
+  can report its real size only after the first frames (Tom's RGB10 MAX3,
+  v0.6.2: pictures made for the wrong size at every start, then not
+  shown) - but by the game list (`pictures_follow`), once the picture's
+  shape (`video::shape_serial`) has stood still 300 ms and whenever it
+  changes after (Settings - Display, a window resized). The log has a
+  "[video] panel W x H" line for every change.
 - **Music** (the engine's, v0.197): a later game's songs are made into
   files in `_CYD/<folder>/` by that scan, then
   played by the engine; Settings - Music: On / Off.
@@ -188,7 +192,7 @@ on screen the overlay is 320 again.
     Fixes, Show Rolls, Readable Messages, Camp Fix, Icon Gallery, Icon
     Portrait, More Characters, Button Stops Demo, Quick Actions, Cheats -
     all on by default; Max Hit Points (off by default); As Original (all
-    off), All On; Log Server; Look for Games Again (outside a game).
+    off), All On; Log Server.
   - **Cheats** (a page; only with a game open and Cheats on): Healer,
     Merchant, Sanctuary, Trainer (`play::cheat_open` - the game's own
     screens, driven as any other; only at the exploring menu, else a
@@ -216,11 +220,20 @@ on screen the overlay is 320 again.
     A opens the entry (several: one after the other); closing returns to
     the game, still waiting. Text entries in the game's look - its text
     screen's border and font on the borrowed canvas (`play::text_screen` /
-    `text_line`), 38 x 22 letters or Large 19 x 11. Entries with pictures
-    on a page of their own on the backdrop layer (640 wide; scan rows
-    averaged down; X: twice the size, Left / Right pan).
+    `text_line`), 38 x 22 letters, one size. Entries with pictures
+    on a page of their own on the backdrop layer (scan rows averaged
+    down).
+  - **X** (Tom, 2026-11-14): a text entry has no zoom - X is the next
+    page, round to the top after the last. A picture entry's X steps its
+    zoom: **Width** (the start: the picture as wide as the screen),
+    **Double** (twice that; Left / Right pan), **Whole** (all of it on
+    the screen - only when it is taller than the screen), **Turned** (a
+    quarter turn, its length across the screen - only for a map more than
+    twice the screen's height: the engine's table marks the scanned
+    editions' maps, a Steam entry's picture is one). The key's line names
+    the zoom shown.
   - Keys: Up / Down, L2 / R2 or L1 / R1 a page, A a page then close at
-    the end, X (or Y) size, B close. Start - Journal: the entries met so
+    the end, X as above, B close. Start - Journal: the entries met so
     far (`play::journal_seen`).
   - An entry that can't be shown is named in a message instead, with why.
 

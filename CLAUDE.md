@@ -43,7 +43,7 @@ and maintains it; it is the primary output of the Claude Project
   or processing screens"). The scan (`discover()` in main.cpp, SPEC 6):
   the program's unpacked copy, the game list's picture (saved file; the
   list only reads it), the journal, the music - at the first run that
-  sees the folder, and anew on Look for Games Again. **No decoding,
+  sees the folder, and anew on Rescan Game Files (the game list's Start menu). **No decoding,
   converting or "Loading" screen at a game's start, on a list page, or
   the first time a feature is used.** Anything new the port or the
   engine makes from game files gets a scan step in the same version -
@@ -57,6 +57,25 @@ and maintains it; it is the primary output of the Claude Project
   1280 x 720 as well as 640 x 480 (`--window`) before a release. Only
   the game itself is 4:3. No "2 of 9" counter on the game list ("looks
   bad"). The scan's list uses the smaller letters (`video::small_text`).
+- **Journal viewer's X** (Tom, 2026-11-14): text entries - no zoom, X =
+  next page, round to the top; picture entries - Width (start), Double,
+  Whole, and Turned for very long maps (SPEC 6).
+- **Rescan Game Files** is on the game list's first Start menu - "Don't
+  bury it at the bottom of the Settings menu". The game list's version
+  reads "v0.6.2" (with the v).
+- **Nothing made for the screen's shape before the shape has settled**
+  (Tom's RGB10 MAX3, v0.6.2: pictures remade at every start and not
+  shown): a panel's real size can arrive after the first frames - check
+  `video::shape_serial` and wait (`pictures_follow`), never trust the
+  size at start-up. The smoke test's `resize:` runs cover it.
+- **Journals are checked for every game in both releases** (Tom,
+  2026-11-14: "Check the other games to make sure they're detecting the
+  journals properly"): after any change to the journal making - here or
+  in the engine - scan all eighteen folders (GOG with its PDF in the game
+  folder, Steam with it in `Documentation`) and compare `build/jlist
+  <games>` (target `jlist`; counts by kind, gaps, the shortest section)
+  with the last run; a section far shorter than its neighbours is a miss.
+  A miss in the engine's reading is an engine bug: fixed in the CYD repo.
 - **Tom's devices**: RG40XX H / ROCKNIX (4:3, primary), PowKiddy RGB10
   MAX3 (16:9).
 - **Game list pictures** (Tom, 2026-11-14): Steam box art when the

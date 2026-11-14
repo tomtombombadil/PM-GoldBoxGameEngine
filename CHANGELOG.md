@@ -3,6 +3,15 @@
 Every version of Gold Box Game Engine for PortMaster. A release's notes are
 its part of this file.
 
+## [0.7.0] - 2026-11-14
+
+- Pre-release. **Journals read properly from every game, both releases.** The scan missed things in several Steam journals: Treasures' Introduction, all of Champions' 57 tavern tales, and the whole text of the three Krynn journals (their PDFs were refused). Fixed in the engine (0.198.1) and checked game by game. This version's first start runs the scan once more to rebuild them (and the music, now 16-bit).
+- **Journal viewer, X button.** Text entries have no zoom any more: X is the next page, and goes round to the top after the last. Picture entries (maps, GOG's scanned entries): X steps Width (the start - as wide as the screen), Double, Whole (all of it on screen), and for very long maps Turned (on its side, its length across the screen).
+- **Game list pictures show at every start** without a rescan: they are now checked only once the screen has reported its real size (the RGB10 MAX3 problem).
+- **Rescan Game Files** is on the game list's Start menu itself (was Look for Games Again, at the bottom of Settings).
+- The game list shows the version with a "v" (v0.7.0).
+- Known: the Dark Queen's Introduction comes out as its heading only; GOG's Dark Queen journal lacks entries 13 and 26 (the Steam release has them).
+
 ## [0.6.2] - 2026-11-14
 
 - Pre-release. **The game list and the Looking for Games screen fill the whole screen** on 16:9 and other wide handhelds (box art across the full width) instead of sitting in a 4:3 box. This version's first start remakes the list pictures once for the screen's width.

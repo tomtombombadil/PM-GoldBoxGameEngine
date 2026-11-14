@@ -20,6 +20,8 @@ SDL_Texture*  back = nullptr;       // the backdrop picture
 bool          back_on = false;
 int           back_top = 0;
 int           big_k = 0, big_uw = 0;
+unsigned      serial = 0;           // counts the picture's changes of shape
+int           shape_uw = 0;
 Fit           fit = Fit::Original;
 uint32_t      pal[256];
 // The port's own pages (the game list, the scan) fill a wide panel: the
@@ -71,7 +73,14 @@ void layout()
         }
     }
     ox = (uw - kW) / 2;
+    const SDL_Rect was = dst;
+    const int was_uw = shape_uw;
     dst = SDL_Rect{(ow - w) / 2, (oh - h) / 2, w, h};
+    shape_uw = uw;
+    if (was.w != dst.w || was.h != dst.h || was_uw != uw) {
+        ++serial;
+        SDL_Log("[video] panel %d x %d: picture %d x %d, %d across%s", ow, oh, dst.w, dst.h, uw, wide ? " (a page of the port's)" : "");
+    }
     strip = SDL_Rect{0, 0, 0, 0};
     if (uw == kW && side_on && fit == Fit::Original && ow - w >= 200) {
         dst.x = 0;                              // (the game at the left, the Companion in the rest)
@@ -142,6 +151,8 @@ void set_wide(bool on)
     wide = on;
     if (ren) layout();
 }
+
+unsigned shape_serial() { return serial; }
 
 int margin() { return ox; }
 int back_w() { return uw * 2; }
@@ -264,6 +275,13 @@ void set_fit(Fit f)
 void resized()
 {
     if (ren) layout();
+}
+
+void set_window(int w, int h)
+{
+    if (!win || w <= 0 || h <= 0) return;
+    SDL_SetWindowSize(win, w, h);
+    resized();
 }
 
 void set_palette(int i, const pic::Rgb& c)

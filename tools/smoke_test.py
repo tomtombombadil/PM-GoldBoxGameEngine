@@ -15,9 +15,10 @@ import sys
 import tempfile
 
 
-def run(exe, games, conf, script):
+def run(exe, games, conf, script, window=None):
     env = dict(os.environ, SDL_VIDEODRIVER="dummy", SDL_AUDIODRIVER="dummy")
-    r = subprocess.run([exe, "--games", str(games), "--conf", str(conf), "--script", script],
+    r = subprocess.run([exe, "--games", str(games), "--conf", str(conf), "--script", script]
+                       + (["--window", window] if window else []),
                        env=env, capture_output=True, text=True, timeout=60)
     print(r.stdout, r.stderr, sep="")
     if r.returncode != 0:
@@ -188,15 +189,22 @@ def main():
         assert "curse of the azure bonds: Curse of the Azure Bonds" in out
         assert "Mystery: Unknown" in out and "not playable" in out
         assert "playing" not in out, "a game without its files must not start"
-        # (found already: no scan the second time; Look for Games Again: all anew)
+        # (found already: no scan the second time; Rescan Game Files: all anew)
         out = run(exe, g, conf, "wait:100,quit")
         assert "[scan]" not in out, "a second scan of games already found"
         # (another Display shape: the list's pictures are made again when the menu closes - and only they)
         out = run(exe, g, conf, "wait:100,start,menu:Settings,a,menu:Display,right,b,b,wait:100,a,"
                                 "start,menu:Settings,a,menu:Display,left,b,b,wait:100,a,quit")
         assert out.count("[scan] Preparing the ") == 4 and "[scan] Found" not in out, "pictures after a Display change"
-        out = run(exe, g, conf, "wait:100,start,menu:Settings,a,menu:Look_for,a,wait:100,a,right,quit")
-        assert out.count("[scan] Found ") == 2, "Look for Games Again"
+        # (a panel whose real size arrives after the start - Tom's RGB10 MAX3, v0.6.2: the pictures are made
+        # for the shape it settles at, once; the next start finds them ready)
+        late = "wait:100,resize:1280x720,wait:700,right,wait:100,quit"
+        out = run(exe, g, conf, late, "640x480")
+        assert out.count("[scan] Preparing the ") == 2, "pictures for the panel's late size"
+        out = run(exe, g, conf, late, "640x480")
+        assert "[scan]" not in out, "pictures made again at the next start"
+        out = run(exe, g, conf, "wait:100,start,menu:Rescan,a,wait:100,a,right,quit")
+        assert out.count("[scan] Found ") == 2, "Rescan Game Files"
     update_test(exe)
     logs_test(exe)
     print("smoke test passed")

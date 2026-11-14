@@ -215,7 +215,7 @@ void draw_games()
     video::set_backdrop(nullptr);
     video::fill(left, 0, wide, kHeaderH, video::kNavy);
     video::text_at(left + 8, 6, "Gold Box Game Engine", video::kGold);
-    video::text_at(right - 8 - static_cast<int>(strlen(PM_VERSION)) * 8, 6, PM_VERSION, video::kMuted);
+    video::text_at(right - 8 - static_cast<int>(strlen("v" PM_VERSION)) * 8, 6, "v" PM_VERSION, video::kMuted);
     if (games_found.empty()) {
         video::fill(left, kHeaderH, wide, video::kH - kHeaderH, video::kBlack);
         int row = 4;
@@ -482,7 +482,6 @@ void menu_build()
                            MGallery, MPortrait, MMoreGuys, MDemoTap, MQuickOn, MCheatsOn, MMaxHp, MAsOriginal, MAllOn,
                            MLogServer})
             menu_items.push_back(m);
-        if (!playing) menu_items.push_back(MRescan);
         menu_items.push_back(MBack);
     } else if (menu_page == Page::Cheats) {
         for (MenuItem m : {MHealer, MMerchant, MSanctuary, MTrainer, MMaxHp, MBack}) menu_items.push_back(m);
@@ -492,6 +491,7 @@ void menu_build()
         if (playing && !(cfg.comforts_off & kOffQuick)) menu_items.push_back(MQuick);
         if (playing && !(cfg.comforts_off & kOffCheats)) menu_items.push_back(MCheats);
         menu_items.push_back(MSettings);
+        if (!playing) menu_items.push_back(MRescan);       // (Tom, 2026-11-14: on the game list's first menu, not buried in Settings)
         menu_items.push_back(MControls);
         menu_items.push_back(MUpdate);
         menu_items.push_back(MSendLogs);
@@ -544,7 +544,7 @@ void menu_label(MenuItem m, char* out, size_t cap)
     case MMaxHp: snprintf(out, cap, "Max Hit Points: %s", cfg.max_hp ? "On" : "Off"); break;
     case MAsOriginal: snprintf(out, cap, "As Original"); break;
     case MAllOn: snprintf(out, cap, "All On"); break;
-    case MRescan: snprintf(out, cap, "Look for Games Again"); break;
+    case MRescan: snprintf(out, cap, "Rescan Game Files"); break;
     case MUpdate: snprintf(out, cap, "%s", update_staged.empty() ? "Check for Updates" : "Restart to Update"); break;
     case MSendLogs: snprintf(out, cap, "Send Logs"); break;
     case MLogServer: snprintf(out, cap, "Log Server: %.20s", cfg.log_url.empty() ? "Not Set" : cfg.log_url.c_str()); break;
@@ -596,7 +596,7 @@ const char* menu_help(MenuItem m)
     case MAsOriginal: return "Every extra off: the games as they were.";
     case MAllOn: return "Every extra on (Max Hit Points stays as it is).";
     case MLogServer: return "The WebDAV address Send Logs uploads to. Typed once, kept on this device only.";
-    case MRescan: return "Looks through the games folder again and makes every game's journal and music anew.";
+    case MRescan: return "Looks through the games folder again and makes every game's picture, journal and music anew.";
     case MHealer: return "The game's temple, wherever you are: cures, all free.";
     case MMerchant: return "All the game's shops' goods in one shop; Id free.";
     case MSanctuary: return "The game's camp: rests are never interrupted.";
@@ -1001,10 +1001,11 @@ void apply_options()
 // As the CYD's card scan (Tom, 2026-11-14): what the engine makes from a
 // game's files - its Adventurer's Journal, its music - is made when the
 // game is FOUND (the first run that sees its folder), never at a game's
-// start; Settings' Look for Games Again makes everything anew. The screen
+// start; the menu's Rescan Game Files makes everything anew. The screen
 // lists what it does and stays until Continue.
+unsigned shape_seen = ~0u;      // (the picture shape the game list's pictures were last checked for: pictures_follow)
 constexpr char kScanMark[] = "PMSCAN.TXT";      // in the game's _CYD folder: found and its files made
-constexpr char kScanTag[] = "scan 1";
+constexpr char kScanTag[] = "scan 2";       // (2: engine 0.198.1 - journals read anew, music 16-bit)
 std::vector<std::string> scan_log;
 bool                     scan_done = false, scan_progress = false;
 
@@ -1095,9 +1096,9 @@ void scan_picture(const library::GameDir& g, const std::string& cache)
 // isn't this screen's (another Display shape, a Launcher folder copied in
 // since) gets its picture made again. True: something was done - the
 // scan's screen is up, waiting for Continue.
-bool discover(bool all)
+bool discover(bool all, bool pictures = true)
 {
-    bool any = false;
+    bool any = false, found_new = false;
     for (const library::GameDir& g : games_found) {
         if (!play::available(g.game)) continue;
         const std::string cache = library::cache_dir(g);
@@ -1106,7 +1107,7 @@ bool discover(bool all)
             // (found by a version whose scan didn't make these yet)
             if (!g.hlib && !plat::exists((cache + "/PROGRAM.BIN").c_str()))
                 play::prepare_program(g.data_dir.c_str(), g.game, cache.c_str());
-            if (!art::ready(g, cache, art_want(g))) {
+            if (pictures && !art::ready(g, cache, art_want(g))) {
                 scan_begin(any);
                 snprintf(line, sizeof line, "Preparing the picture for %s", games::title(g.game));
                 scan_say(line, false, nullptr);
@@ -1115,6 +1116,7 @@ bool discover(bool all)
             continue;
         }
         scan_begin(any);
+        found_new = true;
         snprintf(line, sizeof line, "Found %s", games::title(g.game));
         scan_say(line, false, nullptr);
         // Its program's tables, unpacked (the game's start reads this copy)
@@ -1145,7 +1147,10 @@ bool discover(bool all)
     if (any) {
         scan_done = true;
         scan_say("Done.", false, nullptr);
+        // (pictures alone: nothing to read - straight back to the list)
+        if (!found_new) screen = Screen::Games;
     }
+    if (pictures) shape_seen = video::shape_serial();
     return any;
 }
 
@@ -1397,14 +1402,25 @@ void game_dir(int b)
     play::nav(b == BUp ? play::Nav::Up : b == BDown ? play::Nav::Down : b == BLeft ? play::Nav::Left : play::Nav::Right, cv);
 }
 
-bool fit_changed = false;
-
-// The menu went away: a Display change made outside a game remakes the
-// game list's pictures now (in a game: when it is left), on the scan's screen
+// The game list's pictures are made for the picture's shape on this panel.
+// Whenever that changes - the panel's real size arriving after the start
+// (Tom's RGB10 MAX3, v0.6.2: no pictures until a rescan), Settings -
+// Display, a PC window resized - the list checks them again and makes the
+// ones that don't fit (the scan's screen, no wait)
 void pictures_follow()
 {
-    if (!fit_changed || playing || menu_open) return;
-    fit_changed = false;
+    // (only once the shape has stood still a moment: a panel can change
+    // it more than once as it starts)
+    static unsigned last = ~0u;
+    static Uint32   since = 0;
+    const unsigned now_serial = video::shape_serial();
+    if (now_serial != last) {
+        last = now_serial;
+        since = SDL_GetTicks();
+    }
+    if (screen != Screen::Games || playing || menu_open || notice.open) return;
+    if (now_serial == shape_seen || SDL_GetTicks() - since < 300) return;
+    shape_seen = now_serial;
     discover(false);
 }
 
@@ -1415,7 +1431,7 @@ void menu_change(int step)
     case MDisplay:
         cfg.fit = static_cast<uint8_t>((cfg.fit + (step < 0 ? 2 : 1)) % 3);
         video::set_fit(static_cast<video::Fit>(cfg.fit));
-        fit_changed = true;         // (the game list's pictures are made for a shape: see menu_closed)
+        // (the game list's pictures follow the shape: pictures_follow)
         break;
     case MSound:
         sound_cycle(step);
@@ -1965,6 +1981,9 @@ void script_tick(Uint32 now)
         // (journal:J:12 - that entry opened, as if the game had just mentioned it)
         journal_queue.push_back(JRef{t[8], atoi(t.c_str() + 10)});
         journal_next();
+    } else if (t.compare(0, 7, "resize:") == 0) {
+        int w = 0, h = 0;
+        if (sscanf(t.c_str() + 7, "%dx%d", &w, &h) == 2) video::set_window(w, h);
     } else if (t.compare(0, 5, "menu:") == 0) {
         // (menu:Send Logs - the open menu's line that starts so, '_' for a space)
         std::string want = t.substr(5);
@@ -2077,7 +2096,19 @@ int main(int argc, char** argv)
     for (const auto& g : games_found)
         plat::log("[port]   %s: %s (%d files in games/%s)%s\n", g.folder.c_str(), games::title(g.game), g.files,
                   g.data_dir.c_str(), play::available(g.game) ? "" : " - not playable");
-    discover(false);
+    // (a handheld's panel can report its real size only after the first
+    // frames: let it settle before anything is made for its shape)
+    for (int k = 0; k < 6; ++k) {
+        SDL_Event e;
+        while (SDL_PollEvent(&e)) handle(e);
+        video::resized();
+        video::clear(video::kBlack);
+        video::present(nullptr);
+        SDL_Delay(20);
+    }
+    // (new games now; the pictures of games found before are checked by the
+    // game list once the panel's shape has stood still - pictures_follow)
+    discover(false, false);
     if (auto_game >= 1 && auto_game <= static_cast<int>(games_found.size())) {
         screen = Screen::Games;         // (--game: straight in, the scan's list not waited at)
         game_sel = auto_game - 1;

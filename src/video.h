@@ -28,6 +28,9 @@ void end();
 void set_fit(Fit f);
 // The window changed size (a PC)
 void resized();
+// Makes the window that size (the test script's "resize:WxH": a panel
+// whose real size arrives after the start)
+void set_window(int w, int h);
 
 // The palette the canvas's values are shown in
 void set_palette(int index, const pic::Rgb& c);
@@ -40,6 +43,10 @@ void set_ega_palette();
 // the 320 columns, which now stand in the middle: x runs from -margin()
 // to kW + margin(). Off (a game on screen): 320 across, as the games are.
 void set_wide(bool on);
+// Goes up whenever the picture's size or shape on the panel changes (the
+// panel's real size can arrive after the start; a PC window resized): what
+// was made for a shape - the game list's pictures - is checked again then
+unsigned shape_serial();
 int margin();           // the columns beside the 320, each side (0: a 4:3 panel, or not wide)
 int back_w();           // the backdrop picture's width now: twice (kW + 2 * margin())
 // Smaller letters for a backdrop picture (12 x 12, smoothed; black behind):

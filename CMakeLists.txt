@@ -44,3 +44,13 @@ option(PM_STATIC_RUNTIME "Link libstdc++ / libgcc statically" ON)
 if(PM_STATIC_RUNTIME)
     target_link_options(goldbox PRIVATE -static-libstdc++ -static-libgcc)
 endif()
+
+# Claude's check tool (not in the package): what each made journal holds
+add_executable(jlist EXCLUDE_FROM_ALL tools/jlist.cpp src/library.cpp src/platform_sdl.cpp src/audio_sdl.cpp)
+target_include_directories(jlist PRIVATE src)
+if(TARGET SDL2::SDL2)
+    target_link_libraries(jlist PRIVATE gbengine SDL2::SDL2 Threads::Threads)
+else()
+    target_include_directories(jlist PRIVATE ${SDL2_INCLUDE_DIRS})
+    target_link_libraries(jlist PRIVATE gbengine ${SDL2_LIBRARIES} Threads::Threads)
+endif()

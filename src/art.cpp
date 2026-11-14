@@ -144,7 +144,9 @@ bool read_head(const std::string& cache, Head& h, plat::File* keep = nullptr)
 
 bool fits(const Head& h, const library::GameDir& g, Want w)
 {
-    if (h.width != video::back_w() || h.rows != w.rows || h.aspect != video::pixel_aspect()) return false;
+    // (the shape to within 2%: a pixel's rounding isn't another shape)
+    const int da = h.aspect - video::pixel_aspect();
+    if (h.width != video::back_w() || h.rows != w.rows || da > 24 || da < -24) return false;
     if (h.kind == 1 && h.icon_rows != w.icon_rows) return false;
     return (h.kind == 2) == box_there(g.game);
 }

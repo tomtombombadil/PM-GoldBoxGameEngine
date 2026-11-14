@@ -13,7 +13,7 @@
 // menu's Journal list). Text entries in the game's own look - its border,
 // its font, on the borrowed game canvas - as on the CYD; entries with
 // scanned pictures on a page of their own at twice the canvas's sharpness.
-// Buttons only: Up / Down a line, L2 / R2 a page, X the size, Left /
+// Buttons only: Up / Down a line, L2 / R2 a page, X the next page (text) or zoom (pictures), Left /
 // Right across a zoomed picture, B (or A at the end) back.
 #pragma once
 
