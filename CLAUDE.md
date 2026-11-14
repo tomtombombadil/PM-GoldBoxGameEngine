@@ -77,7 +77,8 @@ and maintains it; it is the primary output of the Claude Project
   with the last run; a section far shorter than its neighbours is a miss.
   A miss in the engine's reading is an engine bug: fixed in the CYD repo.
 - **Tom's devices**: RG40XX H / ROCKNIX (4:3, primary), PowKiddy RGB10
-  MAX3 (16:9).
+  MAX3 (16:9), an R36S on ROCKNIX (4:3, 640 x 480; it reports itself as
+  "R33S (Game Console R33S)" - v0.8.0's Send Logs worked there).
 - **Game list pictures** (Tom, 2026-11-14): Steam box art when the
   Launcher folder is there, else the game's own logo from its folder's
   `goggame-*.ico` / `.dll` as the CYD. If a picture of our own is ever
@@ -271,7 +272,9 @@ and maintains it; it is the primary output of the Claude Project
   ever goes in the port (Tom asked about SMTP, SSH keys, GitHub tokens:
   each needs a secret in a public package). Sent: log.txt, log.prev.txt,
   device.txt, update.log, settings.cfg, the engine's `_CYD/*.TXT` - text
-  only, never game files, saves or BOOK.TXT.
+  only, never game files, saves, BOOK.TXT or the scan's PMSCAN.TXT marks.
+  The thank-you note lands in the player's spam folder (Tom's did,
+  v0.8.0): the port's message says to look there.
   - The **reply address** is asked for the first time (optional, X = No
     Thanks), kept in conf/settings.cfg, changed at Settings - Reply
     Address.

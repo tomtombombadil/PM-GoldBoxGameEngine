@@ -64,6 +64,9 @@ Tick off with the version that did it. Never ask Tom the same thing twice.
 - [ ] Keep the `cyd` pin current (built on CYD 0.198.1).
 
 ## Done
+- [x] v0.8.1: Tom's first real Send Logs (R36S / ROCKNIX, v0.8.0) worked,
+      every head line filled; the scan's PMSCAN.TXT marks no longer sent
+      (they crowded the 12 files); the message points to the spam folder.
 - [x] v0.8.0 (2026-11-14, Tom): Send Logs by the internet - the log
       relay (an Apps Script in the logs mailbox) emails them; the reply
       address prompt and the thank-you note; the WebDAV server and its

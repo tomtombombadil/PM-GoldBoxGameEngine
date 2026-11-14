@@ -3,6 +3,11 @@
 Every version of Gold Box Game Engine for PortMaster. A release's notes are
 its part of this file.
 
+## [0.8.1] - 2026-11-14
+
+- Pre-release. Send Logs no longer sends the scan's marker files (one per game, no use as logs - they were crowding out real ones).
+- After sending, the message says to look in your spam folder for the note.
+
 ## [0.8.0] - 2026-11-14
 
 - Pre-release. **Send Logs now sends the logs to the developer over the internet** - no server to set up. With Wi-Fi on, Start - Send Logs uploads them and they arrive by email. The Log Server setting and the WebDAV upload are gone.

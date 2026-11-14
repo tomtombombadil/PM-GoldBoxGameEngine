@@ -40,7 +40,8 @@ add "$game/update.log" "update.log" 60000
 add "$game/conf/settings.cfg" "settings.cfg" 8000
 for f in "$game"/games/_CYD/*.TXT "$game"/games/_CYD/*/*.TXT; do
   [ -f "$f" ] || continue
-  case "$f" in */BOOK.TXT) continue ;; esac     # (a journal's text: the player's game, not a log)
+  # (a journal's text is the player's game, the scan's marks say nothing: not logs)
+  case "$f" in */BOOK.TXT|*/PMSCAN.TXT) continue ;; esac
   rel="${f#"$game"/games/_CYD/}"
   add "$f" "engine_$(printf '%s' "$rel" | tr -c 'A-Za-z0-9._-' '_')" 60000
 done

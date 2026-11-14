@@ -418,7 +418,8 @@ void job_tick()
         const std::string sent = task::field(out, "SENT");
         std::string body = "The logs were sent to the developer. Thank you!";
         if (sent.find("thanks") != std::string::npos)
-            body += " A note is on its way to " + cfg.reply_email + " - a reply saying what you were doing helps a lot.";
+            body += " A note is on its way to " + cfg.reply_email + " (look in your spam folder too) - a reply saying what you "
+                    "were doing helps a lot.";
         show_notice("Send Logs", body);
         return;
     }

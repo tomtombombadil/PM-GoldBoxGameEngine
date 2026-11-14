@@ -161,6 +161,7 @@ def logs_test(exe):
         (t / "games" / "_CYD" / "Some Game").mkdir(parents=True)
         (t / "games" / "_CYD" / "Some Game" / "BOOK.TXT").write_text("a journal's text: never sent\n")
         (t / "games" / "_CYD" / "QUICK.TXT").write_text("engine text\n")
+        (t / "games" / "_CYD" / "Some Game" / "PMSCAN.TXT").write_text("scan 2")
         return t
 
     # 1. The first time: the address asked for, typed (a bad one refused), sent with the logs; the second time not asked
@@ -173,7 +174,7 @@ def logs_test(exe):
         assert f["app"] == "goldbox" and f["reply"] == "tester@example.com" and f["device"] == "TESTBOX (Test Maker Box)"
         assert f["firmware"] == "TestOS 1.2" and f["portmaster"] == "2026.01.01" and f["version"]
         assert f["file:log.txt"] == "a line of this run's log\n" and "file:log.prev.txt" in f and "file:device.txt" in f
-        assert "file:engine_QUICK.TXT" in f and not any("BOOK" in k for k in f), sorted(f)
+        assert "file:engine_QUICK.TXT" in f and not any("BOOK" in k or "PMSCAN" in k for k in f), sorted(f)
         assert posts[1]["reply"] == "tester@example.com"
         cfg = (t / "conf" / "settings.cfg").read_text()
         assert "reply_email=tester@example.com" in cfg and "reply_asked=1" in cfg, cfg
