@@ -34,11 +34,21 @@ and maintains it; it is the primary output of the Claude Project
   said left and meant right - the 3D view / fight field stay in sight).
   On wide panels (16:9 and the like) it stands beside the game instead
   (SPEC 4) - Tom's idea, as the CYD's bigger boards.
-- **Journals and music are made when a game is FOUND** (Tom, 2026-11-14:
-  "I don't want to journal to be built on game start") - the first run
-  that sees its folder, and anew on Look for Games Again; never at a
-  game's start (SPEC 6, `discover()`). New made-from-the-game files go
-  there too.
+- **EVERYTHING made from a game's files is made by the scan, when the
+  game is FOUND - the CYD's logic, follow it** (Tom, 2026-11-14, said
+  twice: "I don't want anything processed (such as journals, logos, etc.)
+  at game start up or upon first use. That ALL gets pre-processed during
+  the initial game discovery ... Do it once, and then after that
+  everything is smooth and fast and professional. No pausing, no loading
+  or processing screens"). The scan (`discover()` in main.cpp, SPEC 6):
+  the program's unpacked copy, the game list's picture (saved file; the
+  list only reads it), the journal, the music - at the first run that
+  sees the folder, and anew on Look for Games Again. **No decoding,
+  converting or "Loading" screen at a game's start, on a list page, or
+  the first time a feature is used.** Anything new the port or the
+  engine makes from game files gets a scan step in the same version -
+  before writing such code, read how the CYD's card scan does it
+  (`cyd/src/app/library.cpp`, CYD CLAUDE.md "Card scan") and do the same.
 - **Game list pictures** (Tom, 2026-11-14): Steam box art when the
   Launcher folder is there, else the game's own logo from its folder's
   `goggame-*.ico` / `.dll` as the CYD. If a picture of our own is ever
@@ -138,7 +148,8 @@ and maintains it; it is the primary output of the Claude Project
   Original 4:3 (default), Square Pixels, Stretch. Layout always from the
   panel's size - never assume a resolution.
 - `src/library.*` - finds the games (the CYD scan's rules on `plat::`).
-- `src/art.*` (the game list's box art), `src/panel.*` (the Companion),
+- `src/art.*` (the game list's pictures: made by the scan into
+  `_CYD/<folder>/ART.BIN`, only read by the list), `src/panel.*` (the Companion),
   `src/jour.*` (the journal: made and shown), `src/task.*` (the helper
   scripts' thread).
 - `src/main.cpp` - the screens (game list, the scan, play, the menu's

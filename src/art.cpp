@@ -112,7 +112,93 @@ void icon_row(int y, const uint8_t* rgba, int w, void* ctx)
     }
 }
 
+const uint32_t* box(games::Game g, int rows);
+const uint32_t* icon(const library::GameDir& g, int rows, int icon_rows);
+
+// ---- The saved picture -----------------------------------------------------
+constexpr char kFile[] = "ART.BIN";
+struct Head {
+    char    magic[4];           // "PMA1"
+    int32_t kind;               // 2 box art, 1 logo, 0 none
+    int32_t rows, icon_rows, aspect;
+};
+
+bool box_there(games::Game g)
+{
+    const char* name = games::box_art_file(g);
+    if (!name) return false;
+    char path[160];
+    snprintf(path, sizeof path, "%s/%s/%s", games::kRootDir, games::kLauncherArt, name);
+    return plat::exists(path);
+}
+
+bool read_head(const std::string& cache, Head& h, plat::File* keep = nullptr)
+{
+    plat::File f = plat::open((cache + "/" + kFile).c_str());
+    if (!f) return false;
+    const bool ok = static_cast<size_t>(f.read(reinterpret_cast<uint8_t*>(&h), sizeof h)) == sizeof h && memcmp(h.magic, "PMA1", 4) == 0;
+    if (ok && keep) *keep = std::move(f);
+    else f.close();
+    return ok;
+}
+
+bool fits(const Head& h, const library::GameDir& g, Want w)
+{
+    if (h.rows != w.rows || h.aspect != video::pixel_aspect()) return false;
+    if (h.kind == 1 && h.icon_rows != w.icon_rows) return false;
+    return (h.kind == 2) == box_there(g.game);
+}
+
+std::vector<uint32_t> shown;
+std::string           shown_for;
+bool                  shown_ok = false;
+
 } // namespace
+
+int make(const library::GameDir& g, const std::string& cache, Want w)
+{
+    Head h{{'P', 'M', 'A', '1'}, 0, w.rows, w.icon_rows, video::pixel_aspect()};
+    const uint32_t* px = box(g.game, w.rows);
+    if (px) h.kind = 2;
+    else if ((px = icon(g, w.rows, w.icon_rows)) != nullptr) h.kind = 1;
+    shown_for.clear();
+    plat::File f = plat::open((cache + "/" + kFile).c_str(), "w");
+    if (!f) return 0;
+    f.write(reinterpret_cast<const uint8_t*>(&h), sizeof h);
+    if (px) f.write(reinterpret_cast<const uint8_t*>(px), static_cast<size_t>(w.rows) * video::kBackW * 4);
+    f.close();
+    // (the decoders' own buffers aren't kept: the list reads the file)
+    pixels = std::vector<uint32_t>();
+    ipixels = std::vector<uint32_t>();
+    have = games::Game::Unknown;
+    ihave.clear();
+    return h.kind;
+}
+
+bool ready(const library::GameDir& g, const std::string& cache, Want w)
+{
+    Head h;
+    return read_head(cache, h) && fits(h, g, w);
+}
+
+const uint32_t* load(const library::GameDir& g, const std::string& cache, Want w)
+{
+    if (shown_for == g.folder) return shown_ok ? shown.data() : nullptr;
+    shown_for = g.folder;
+    shown_ok = false;
+    Head h;
+    plat::File f;
+    if (!read_head(cache, h, &f)) return nullptr;
+    const size_t bytes = static_cast<size_t>(w.rows) * video::kBackW * 4;
+    if (h.kind != 0 && h.rows == w.rows) {
+        shown.assign(static_cast<size_t>(video::kBackW) * video::kBackH, 0xFF000000u);
+        shown_ok = static_cast<size_t>(f.read(reinterpret_cast<uint8_t*>(shown.data()), bytes)) == bytes;
+    }
+    f.close();
+    return shown_ok ? shown.data() : nullptr;
+}
+
+namespace {
 
 const uint32_t* box(games::Game g, int rows)
 {
@@ -175,5 +261,7 @@ const uint32_t* icon(const library::GameDir& g, int rows, int icon_rows)
     f.close();
     return ihave_ok ? ipixels.data() : nullptr;
 }
+
+} // namespace
 
 } // namespace art

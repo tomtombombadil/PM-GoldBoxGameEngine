@@ -3,6 +3,11 @@
 Every version of Gold Box Game Engine for PortMaster. A release's notes are
 its part of this file.
 
+## [0.6.1] - 2026-11-14
+
+- Pre-release. **Everything is prepared when a game is found, nothing afterwards.** The scan now also makes each game's list picture (box art or logo) and its program tables, alongside the journal and music. After that the game list only shows saved pictures and a game starts straight away - no "Loading" screen, nothing decoded on first use.
+- Because this version adds those steps, its first start runs the picture step once for games already found. Changing Settings - Display remakes the pictures for the new shape when the menu closes.
+
 ## [0.6.0] - 2026-11-14
 
 - Pre-release. **The Companion comes in from the right** (Y), so the 3D view and a fight's field stay in sight.

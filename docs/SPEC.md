@@ -140,21 +140,30 @@ handheld has the speed).
   them.
 - **Finding the games** (the CYD's card scan; Tom, 2026-11-14: "built on
   the first time the game is discovered ... rebuilt if the user chooses
-  to rediscover the games"): what the engine makes from a game's files -
-  its journal, its music - is made when the game is **found**: at the
+  to rediscover the games"; "That ALL gets pre-processed during the
+  initial game discovery ... no loading or processing screens"):
+  everything made from a game's files - the program's unpacked copy
+  (`play::prepare_program`), the game list's picture (`art::make` ->
+  `ART.BIN`), its journal, its music - is made when the game is
+  **found**: at the
   start, every playable game folder without the mark
   `_CYD/<folder>/PMSCAN.TXT` (`discover()` in main.cpp). The screen lists
   what it does ("Found ...", "Processing the ... journal: page n of m",
   "Making its music...") and stays until A. **Settings - Look for Games
   Again** does every game anew (journal files removed first, music
-  forced). Never at a game's start.
+  forced). Never at a game's start or on first use: a game starts with no
+  loading screen, and the game list only reads `ART.BIN` (`art::load`).
+  The picture is made for the screen's shape: a game found before whose
+  `ART.BIN` isn't this shape's (Display changed - done when the menu
+  closes, outside a game - or a Launcher folder copied in since) gets
+  just its picture made again on the scan's screen ("Preparing the ...
+  picture"), as the CYD's "Preparing Pictures".
 - **Music** (the engine's, v0.197): a later game's songs are made into
   files in `_CYD/<folder>/` by that scan, then
   played by the engine; Settings - Music: On / Off.
 - **Game Sound**: Tandy, PC Speaker, then Darkness / Gateway / Treasures
   (that game's recordings lent to the older games, when its folder is in
   games/), Off; those three games always their own (or Off).
-- **Loading** message at once when a game is chosen.
 - **Menu** (Start; `menu_*` in main.cpp): Back to Game, Journal, Quick
   Actions, Cheats, Settings, Controls, Check for Updates, Send Logs, Exit
   Game, Quit. The game is paused while it is open. Every line's meaning

@@ -182,6 +182,7 @@ def main():
         out = run(exe, g, conf, f"wait:100,shot:{shot},a,wait:100,a,wait:200,a,down,a,wait:200,a,down,a,a,up,quit")
         assert out.count("[scan] Found ") == 2 and "[scan] Done." in out, "the first run's scan"
         assert (g / "_CYD" / "curse of the azure bonds" / "PMSCAN.TXT").is_file(), "the scan's mark"
+        assert (g / "_CYD" / "curse of the azure bonds" / "ART.BIN").is_file(), "the scan's picture file"
         assert "3 game folder(s) found" in out, "expected 3 folders"
         assert "Pool of Radiance (1 files in games/Pool of Radiance/game)" in out
         assert "curse of the azure bonds: Curse of the Azure Bonds" in out
@@ -190,6 +191,10 @@ def main():
         # (found already: no scan the second time; Look for Games Again: all anew)
         out = run(exe, g, conf, "wait:100,quit")
         assert "[scan]" not in out, "a second scan of games already found"
+        # (another Display shape: the list's pictures are made again when the menu closes - and only they)
+        out = run(exe, g, conf, "wait:100,start,menu:Settings,a,menu:Display,right,b,b,wait:100,a,"
+                                "start,menu:Settings,a,menu:Display,left,b,b,wait:100,a,quit")
+        assert out.count("[scan] Preparing the ") == 4 and "[scan] Found" not in out, "pictures after a Display change"
         out = run(exe, g, conf, "wait:100,start,menu:Settings,a,menu:Look_for,a,wait:100,a,right,quit")
         assert out.count("[scan] Found ") == 2, "Look for Games Again"
     update_test(exe)

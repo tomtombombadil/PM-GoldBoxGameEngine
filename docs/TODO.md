@@ -27,9 +27,6 @@ Tick off with the version that did it. Never ask Tom the same thing twice.
       shops, a fight (moving, aiming, diagonals), saving, the icon
       gallery and editor (may need D-pad support beyond Pointer Mode),
       and every other game; the Steam (SNEG) folders; the VGA games.
-- [ ] Game list: the box art / logo is decoded each time a page is first
-      shown - cache it if that is slow on the device (Tom: is turning
-      the pages quick on the RG40XX H?).
 - [ ] v0.6.0, checked headless with Curse (GOG): the scan's screen and
       its mark, the logo page, the Companion from the right and beside
       the game at 1280 x 720, Quick Actions (a switch flipped, kept),
@@ -58,6 +55,9 @@ Tick off with the version that did it. Never ask Tom the same thing twice.
 - [ ] Keep the `cyd` pin current (built on CYD 0.197.1).
 
 ## Done
+- [x] v0.6.1 (2026-11-14, Tom: nothing processed at start-up or first
+      use): the scan also makes the program's copy and the game list's
+      picture (ART.BIN, only read afterwards); no loading screen.
 - [x] v0.6.0 (2026-11-14, Tom): the Companion from the right, and beside
       the game on wide panels; journals and music made when a game is
       found (Look for Games Again: anew), not at its start; the GOG logo

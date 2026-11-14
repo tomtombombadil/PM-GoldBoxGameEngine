@@ -197,6 +197,16 @@ const char* back_name() { return cfg.swap_ab ? "A" : "B"; }
 // across the foot; Left / Right turn the pages, round. As the CYD's.
 constexpr int kHeaderH = 20;
 
+// How the game list wants a game's picture (the scan makes it so): the
+// page under the header at twice the canvas's sharpness; a logo above the
+// name's one or two lines
+art::Want art_want(const library::GameDir& g)
+{
+    const char* title = g.game == games::Game::Unknown ? g.folder.c_str() : games::title(g.game);
+    const bool two = strlen(title) > 19;
+    return art::Want{(video::kH - kHeaderH) * 2, ((two ? 144 : 162) - 4 - kHeaderH) * 2};
+}
+
 void draw_games()
 {
     video::clear(video::kClear);
@@ -232,11 +242,9 @@ void draw_games()
         l2 = l1.substr(cut + (l1[cut] == ' ' ? 1 : 0), 19);
         l1 = l1.substr(0, cut);
     }
-    // Its picture: the box art (the Launcher folder's), else the game's own
-    // logo from its folder (GOG's goggame-*.ico / .dll, Steam's game.ico)
-    // above the name
-    const uint32_t* picture = art::box(g.game, (video::kH - kHeaderH) * 2);
-    if (!picture) picture = art::icon(g, (video::kH - kHeaderH) * 2, ((l2.empty() ? 162 : 144) - 4 - kHeaderH) * 2);
+    // Its picture, as the scan made and saved it (box art, else the game's
+    // own logo above the name) - only read here, never decoded
+    const uint32_t* picture = art::load(g, library::cache_dir(g), art_want(g));
     if (picture) video::set_backdrop(picture, kHeaderH);
     else video::fill(0, kHeaderH, video::kW, video::kH - kHeaderH, video::kBlack);
     const int ty = picture ? (l2.empty() ? 162 : 144) : (l2.empty() ? 92 : 82);
@@ -1053,25 +1061,56 @@ bool scan_marked(const std::string& cache)
     return strcmp(buf, kScanTag) == 0;
 }
 
-// Makes the new games' files (all: every game's, anew). True: something
-// was done - the scan's screen is up, waiting for Continue.
+void scan_begin(bool& any)
+{
+    if (any) return;
+    any = true;
+    scan_log.clear();
+    scan_done = scan_progress = false;
+    screen = Screen::Scan;
+    video::set_backdrop(nullptr);
+    scan_say("Searching for Gold Box games...", false, nullptr);
+}
+
+void scan_picture(const library::GameDir& g, const std::string& cache)
+{
+    const int kind = art::make(g, cache, art_want(g));
+    scan_say(kind == 2 ? "  Its box art is ready." : kind == 1 ? "  Its logo is ready." : "  No picture: no box art or icon found.",
+             false, nullptr);
+}
+
+// The scan: EVERYTHING the port makes from a game's files is made here,
+// once - the program's unpacked copy, the game list's picture, the journal,
+// the music - so that nothing is processed when a game starts or a page is
+// first shown (all: every game's, anew). A game found before whose picture
+// isn't this screen's (another Display shape, a Launcher folder copied in
+// since) gets its picture made again. True: something was done - the
+// scan's screen is up, waiting for Continue.
 bool discover(bool all)
 {
     bool any = false;
     for (const library::GameDir& g : games_found) {
         if (!play::available(g.game)) continue;
         const std::string cache = library::cache_dir(g);
-        if (!all && scan_marked(cache)) continue;
-        if (!any) {
-            scan_log.clear();
-            scan_done = scan_progress = false;
-            screen = Screen::Scan;
-            scan_say("Searching for Gold Box games...", false, nullptr);
-        }
-        any = true;
         char line[120];
+        if (!all && scan_marked(cache)) {
+            // (found by a version whose scan didn't make these yet)
+            if (!g.hlib && !plat::exists((cache + "/PROGRAM.BIN").c_str()))
+                play::prepare_program(g.data_dir.c_str(), g.game, cache.c_str());
+            if (!art::ready(g, cache, art_want(g))) {
+                scan_begin(any);
+                snprintf(line, sizeof line, "Preparing the %s picture", games::short_title(g.game));
+                scan_say(line, false, nullptr);
+                scan_picture(g, cache);
+            }
+            continue;
+        }
+        scan_begin(any);
         snprintf(line, sizeof line, "Found %s", games::title(g.game));
         scan_say(line, false, nullptr);
+        // Its program's tables, unpacked (the game's start reads this copy)
+        if (!g.hlib) play::prepare_program(g.data_dir.c_str(), g.game, cache.c_str());
+        scan_picture(g, cache);
         // Its Adventurer's Journal, from the player's own PDF
         if (all) {
             plat::remove((cache + "/JOURNAL.DAT").c_str());
@@ -1131,15 +1170,8 @@ void start_game()
                                     : "The engine can't play this game yet.");
         return;
     }
-    // (on screen at once: the first load can take a few seconds)
+    // (no loading screen: the scan made everything a start needs)
     video::set_backdrop(nullptr);
-    video::clear(video::kBlack);
-    char line[80];
-    snprintf(line, sizeof line, "Loading %.28s...", games::title(g.game));
-    wrapped(2, 10, 36, line, video::kGold);
-    centred(14, "This can take a few seconds.", video::kMuted);
-    video::present(nullptr);
-
     video::set_ega_palette();
     fight_colours = 0;
     flash_index = flash_colour = -1;
@@ -1356,6 +1388,17 @@ void game_dir(int b)
     play::nav(b == BUp ? play::Nav::Up : b == BDown ? play::Nav::Down : b == BLeft ? play::Nav::Left : play::Nav::Right, cv);
 }
 
+bool fit_changed = false;
+
+// The menu went away: a Display change made outside a game remakes the
+// game list's pictures now (in a game: when it is left), on the scan's screen
+void pictures_follow()
+{
+    if (!fit_changed || playing || menu_open) return;
+    fit_changed = false;
+    discover(false);
+}
+
 void menu_change(int step)
 {
     const MenuItem m = menu_items[menu_sel];
@@ -1363,6 +1406,7 @@ void menu_change(int step)
     case MDisplay:
         cfg.fit = static_cast<uint8_t>((cfg.fit + (step < 0 ? 2 : 1)) % 3);
         video::set_fit(static_cast<video::Fit>(cfg.fit));
+        fit_changed = true;         // (the game list's pictures are made for a shape: see menu_closed)
         break;
     case MSound:
         sound_cycle(step);
@@ -2042,6 +2086,7 @@ int main(int argc, char** argv)
         if (ptr_on && now - ptr_seen > 6000) ptr_on = false;        // (left alone: out of the way)
         script_tick(now);
         job_tick();
+        pictures_follow();
         if (restart_wanted) quit = true;
         if (playing && screen == Screen::Play && !menu_open && !jour::active()) {
             play::tick(plat::now_ms(), cv);
