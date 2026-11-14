@@ -3,6 +3,12 @@
 Every version of Gold Box Game Engine for PortMaster. A release's notes are
 its part of this file.
 
+## [0.5.0] - 2026-11-14
+
+- Pre-release. **The Adventurer's Journal, in the game.** When a game tells you to read a journal entry, tavern tale or proclamation, the next press of A opens it. Made on the handheld from your own journal PDF the first time the game starts - GOG's scanned journal (the PDF in the game's folder) as pictures of the entry, the Steam release's (its `Documentation` folder and Gold Box Companion files) as text in the game's own look.
+  - Up / Down scroll, L2 / R2 (or A) a page, X the size / zoom, Left / Right across a zoomed picture, B back.
+  - Start - Journal lists the entries met so far, to read again.
+
 ## [0.4.0] - 2026-11-14
 
 - Pre-release. **Game list with box art**: a game a page, its picture from the Steam release's `Launcher` folder (copy that folder into `goldbox/games/`), Left / Right to turn the pages.

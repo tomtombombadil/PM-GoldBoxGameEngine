@@ -120,6 +120,9 @@ and maintains it; it is the primary output of the Claude Project
   Original 4:3 (default), Square Pixels, Stretch. Layout always from the
   panel's size - never assume a resolution.
 - `src/library.*` - finds the games (the CYD scan's rules on `plat::`).
+- `src/art.*` (the game list's box art), `src/panel.*` (the Companion),
+  `src/jour.*` (the journal: made and shown), `src/task.*` (the helper
+  scripts' thread).
 - `src/main.cpp` - the screens (game list, play, menu, keyboard, messages)
   and the buttons. The game is driven only through `play.h`.
 - The engine's folder inside `games/` is `_CYD` (its game code writes
@@ -145,6 +148,8 @@ and maintains it; it is the primary output of the Claude Project
   script and puts a screenshot per step on one sheet (scratch only - real
   game screens). Titles run on their own: give waits between presses
   (`a! wait:700!`), and keep sheets small - a shot per step that matters.
+- `journal:K:N` (script step, in a game): opens that journal entry as if
+  the game had mentioned it.
 - `--script` steps: button names (`up down left right a b x y l1 r1 l2 r2
   start select`), `hold:<dir>` / `let:<dir>`, `wait:<ms>`, `tap:x:y`,
   `type:TEXT`, `menu:<line's start, _ for a space>` (the open Start

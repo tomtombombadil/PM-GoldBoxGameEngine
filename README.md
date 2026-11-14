@@ -46,6 +46,10 @@ You need PortMaster on the handheld, and Wi-Fi.
        roms/ports/goldbox/games/Pool of Radiance/
        roms/ports/goldbox/games/Curse of the Azure Bonds/
 
+   Copy the **whole** folder: the journal PDF in it (GOG) or its
+   `Documentation` and `GBC` folders (Steam) are what the in-game
+   Adventurer's Journal is made from.
+
    With the Steam release, copy its `Launcher` folder there too
    (`games/Launcher/`): the game list then shows each game's box art, and
    the Pools of Darkness, Gateway and Treasures folders give the older

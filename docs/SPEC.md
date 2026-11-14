@@ -136,8 +136,27 @@ handheld has the speed).
 - **On-screen keyboard** over the top of the game screen (the game's own
   text area stays visible) while `play::input()` asks.
 - **Messages** stay until a button.
-- **Journal mentions**: for now a message naming the entry to read in the
-  player's own journal (section 8).
+- **The Adventurer's Journal** (`src/jour.*`; Tom, 2026-11-14: "a very
+  big deal"):
+  - *Made* at a game's first start (the loading screen says so), with the
+    engine's own code and by the CYD scan's three routes: a scanned PDF
+    the engine's tables know (GOG: the PDF in the game's folder) ->
+    `journal::make`, the entries cut from the pages' pictures; the Steam /
+    SNEG release (`<folder>/GBC/Games/<nn. Title>/Game.dat`, the PDF in
+    `<folder>/Documentation`) -> `make_gbc` + `make_book`; a typeset PDF
+    alone -> its sections' text. Result: `_CYD/<folder>/JOURNAL.DAT`
+    (+ `BOOK.TXT`), made again only when its source changed.
+  - *Shown* when the game mentions an entry: its screen stays up; the next
+    A opens the entry (several: one after the other); closing returns to
+    the game, still waiting. Text entries in the game's look - its text
+    screen's border and font on the borrowed canvas (`play::text_screen` /
+    `text_line`), 38 x 22 letters or Large 19 x 11. Entries with pictures
+    on a page of their own on the backdrop layer (640 wide; scan rows
+    averaged down; X: twice the size, Left / Right pan).
+  - Keys: Up / Down, L2 / R2 or L1 / R1 a page, A a page then close at
+    the end, X (or Y) size, B close. Start - Journal: the entries met so
+    far (`play::journal_seen`).
+  - An entry that can't be shown is named in a message instead, with why.
 
 ## 7. Building and packaging
 CMake. CI (GitHub Actions) on every push: a check build with sanitizers +
@@ -175,13 +194,10 @@ hotkey.
    runs): every screen kind reached by buttons - party creation, the icon
    editor, shops, camp and spells, fights and aiming, saving / loading.
 4. **The engine's own features the CYD front end hosts** (each needs a
-   button-driven screen here): the journal (entries and the book from the
-   player's PDF / Gold Box Companion - the engine's `journal::` code is
-   portable, the viewer is not), the auto-map and the Companion's Party /
-   Battle views (`game/companion.*` through its Painter; room beside the
-   game on wide panels), Cheats, Quick Actions, the comfort switches
-   (Game Fixes, Show Rolls, ...), later games' recorded sounds lent to the
-   older games, logs.
+   button-driven screen here): done - the journal's entries, the
+   Companion (map, party, battle), the sound sets, music; still to do -
+   the journal as a whole book, Cheats, Quick Actions, the comfort
+   switches (Game Fixes, Show Rolls, ...).
 5. **Game art in the list** (the player's GOG icon / Steam box art, made
    on the device as the CYD scan does).
 6. **PortMaster submission** (Tom's call): screenshot, testing thread,

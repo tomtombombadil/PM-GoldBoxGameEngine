@@ -30,8 +30,13 @@ Tick off with the version that did it. Never ask Tom the same thing twice.
 - [ ] Game list: the GOG icon when there is no Steam Launcher folder
       (the CYD shows it); the box art is decoded each time a page is first
       shown - cache it if that is slow on the device.
-- [ ] Journal: process the player's journal PDFs on the device and show
-      entries with buttons (roadmap 4; the GOG and Steam PDFs differ).
+- [ ] Journal, checked so far (v0.5.0, headless): Curse GOG (121 entries
+      from the scanned PDF) and Curse Steam (Companion + PDF text) - made,
+      entries 1 / 12 / 33 and a tavern tale opened, scrolled, zoomed.
+      **Not yet**: the other eight games' journals in both releases; the
+      whole-book view (BOOK.TXT is made, no screen for it); a real mention
+      reached by playing (opened by the test hook `journal:K:N` so far);
+      how long the making takes on the device.
 - [ ] From the CYD, still missing here: Cheats; Quick Actions; the comfort
       switches (Game Fixes, Show Rolls, Camp Fix, Max HP, Readable
       Messages ...); the icon gallery by buttons (unchecked); logs screen.
@@ -46,6 +51,8 @@ Tick off with the version that did it. Never ask Tom the same thing twice.
 - [ ] Keep the `cyd` pin current (built on CYD 0.197.1).
 
 ## Done
+- [x] v0.5.0 (2026-11-14): the Adventurer's Journal - made on the device,
+      shown in the game, the Start menu's list.
 - [x] v0.4.0 (2026-11-14, Tom's first run on the RG40XX H: installer OK,
       A / B right, L2 / R2, sound, picture fit all fine): box-art game
       list, sound sets, the Companion on Y, L2 / R2 = list up / down,

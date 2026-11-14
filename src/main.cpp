@@ -15,6 +15,7 @@
 #include <string>
 #include <vector>
 
+#include "engine/journal.h"
 #include "game/music_make.h"
 #include "game/play.h"
 #include "platform/audio.h"
@@ -22,6 +23,7 @@
 #include "platform/platform.h"
 
 #include "host.h"
+#include "jour.h"
 #include "art.h"
 #include "library.h"
 #include "panel.h"
@@ -57,6 +59,17 @@ pic::Canvas          cv{pixels.data(), video::kW, video::kH, 4};
 bool                 playing = false;
 int                  fight_colours = 0;
 int                  flash_index = -1, flash_colour = -1;
+
+// The journal: the entries the game just mentioned, shown one after the
+// other; the Start menu's list of those met so far
+struct JRef {
+    char kind;
+    int  number;
+};
+std::vector<JRef> journal_queue;
+std::string       cur_cache;            // the game's folder in games/_CYD (a card path)
+bool              jlist_open = false;
+int               jlist_sel = 0;
 
 // A message over everything, until a button (errors, journal mentions)
 std::string msg_title, msg_body;
@@ -258,6 +271,7 @@ void draw_message()
     centred(18, line, video::kMuted);
 }
 
+void        draw_jlist();
 uint8_t     sound_shown();
 const char* sound_name(uint8_t m);
 void        sound_cycle(int step);
@@ -413,7 +427,7 @@ void draw_notice()
 
 // ---- The menu --------------------------------------------------------------
 enum MenuItem : uint8_t {
-    MResume, MControls, MDisplay, MSound, MMusic, MVolume, MFont, MPadMoves, MSwap, MRescan, MUpdate, MSendLogs, MLogServer,
+    MResume, MJournal, MControls, MDisplay, MSound, MMusic, MVolume, MFont, MPadMoves, MSwap, MRescan, MUpdate, MSendLogs, MLogServer,
     MLeaveGame, MExit
 };
 std::vector<MenuItem> menu_items;
@@ -422,6 +436,7 @@ void menu_build()
 {
     menu_items.clear();
     if (playing) menu_items.push_back(MResume);
+    if (playing && play::journal_seen_count() > 0) menu_items.push_back(MJournal);
     menu_items.push_back(MControls);
     menu_items.push_back(MDisplay);
     menu_items.push_back(MSound);
@@ -444,6 +459,7 @@ void menu_label(MenuItem m, char* out, size_t cap)
     static const char* const kFont[] = {"Original", "Clear", "Darkness", "Clear Caps"};
     switch (m) {
     case MResume: snprintf(out, cap, "Back to Game"); break;
+    case MJournal: snprintf(out, cap, "Journal"); break;
     case MControls: snprintf(out, cap, "Controls"); break;
     case MDisplay: snprintf(out, cap, "Display: %s", video::fit_name(static_cast<video::Fit>(cfg.fit))); break;
     case MSound: snprintf(out, cap, "Game Sound: %s", sound_name(sound_shown())); break;
@@ -643,7 +659,15 @@ void draw_frame()
         if (!menu_open && !prompt_open) draw_keys();
         if (ptr_on && !menu_open) video::pointer(static_cast<int>(ptr_x), static_cast<int>(ptr_y));
     }
+    if (jour::active() && !menu_open) {
+        // (an entry: the viewer's own frame - the game's text screen or a page)
+        const bool canvas = jour::draw(cv);
+        if (notice.open) draw_notice();
+        video::present(canvas ? &cv : nullptr);
+        return;
+    }
     if (menu_open) draw_menu();
+    if (jlist_open) draw_jlist();
     if (prompt_open) draw_prompt();
     if (notice.open) draw_notice();
     video::present(playing ? &cv : nullptr);
@@ -769,6 +793,9 @@ std::string card_dir(const library::GameDir& g) { return std::string(games::kRoo
 void leave_game()
 {
     if (!playing) return;
+    if (jour::active()) jour::close(cv);
+    journal_queue.clear();
+    jlist_open = false;
     audio_stop();
     play::close();
     panel::close();
@@ -840,6 +867,10 @@ void start_game()
         const int failed = musicfiles::make(g.data_dir.c_str(), cache.c_str(), games::short_title(g.game), false, loading_line, nullptr);
         plat::log("[port] music made for %s (%d failed)\n", games::title(here), failed);
     }
+    // Its Adventurer's Journal: made once from the player's own PDF (the
+    // CYD's card scan does this too)
+    jour::prepare(g, cache, loading_line);
+    cur_cache = cache;
     const char* err = play::open(g.data_dir.c_str(), here, cv, cache.c_str());
     if (err) {
         play::close();
@@ -853,24 +884,100 @@ void start_game()
     plat::log("[port] playing %s from games/%s\n", games::title(here), g.data_dir.c_str());
 }
 
-// The game mentioned journal entries: named until the port has a journal
-// viewer of its own
+void message(const char* title, const std::string& body);
+
+// The next entry waiting to be shown (one that can't be: said instead)
+void journal_next()
+{
+    while (!journal_queue.empty()) {
+        const JRef r = journal_queue.front();
+        journal_queue.erase(journal_queue.begin());
+        std::string why;
+        if (jour::open(cur_cache, r.kind, r.number, cv, why)) return;
+        message("Adventurer's Journal", why);
+        return;
+    }
+}
+
+// The game mentioned journal entries (its screen stays up to be read; the
+// next press comes here): they open, one after the other
 bool journal_due()
 {
     char kind;
     int number;
     if (!play::journal_waiting() || !play::journal_request(&kind, &number)) return false;
-    std::string what;
-    do {
-        char one[48];
-        snprintf(one, sizeof one, "%s%s %d", what.empty() ? "" : ", ",
-                 kind == 'T' ? "Tavern Tale" : kind == 'P' ? "Proclamation" : kind == 'I' ? "the Introduction" : "Journal Entry",
-                 number);
-        if (kind == 'I') snprintf(one, sizeof one, "%sthe Introduction", what.empty() ? "" : ", ");
-        what += one;
-    } while (play::journal_request(&kind, &number));
-    message("Adventurer's Journal", "Read " + what + " in the journal that came with your game (its PDF).");
+    do journal_queue.push_back(JRef{kind, number});
+    while (play::journal_request(&kind, &number));
+    journal_next();
     return true;
+}
+
+// The entries met so far (the Start menu's Journal)
+void draw_jlist()
+{
+    const int n = play::journal_seen_count(), rows = 16;
+    box(8, 3, 24, rows + 3);
+    centred(3, "Journal", video::kGold);
+    int first = jlist_sel - rows / 2;
+    if (first > n - rows) first = n - rows;
+    if (first < 0) first = 0;
+    for (int i = first; i < n && i < first + rows; ++i) {
+        char kind, name[40];
+        int number;
+        if (!play::journal_seen(i, &kind, &number)) continue;
+        journal::mention_name(kind, number, name, sizeof name);
+        const bool sel = i == jlist_sel;
+        if (sel) video::fill(8 * 8 - 2, (5 + i - first) * 8 - 1, 24 * 8 + 4, 10, video::kLit);
+        video::text(9, 5 + i - first, name, sel ? video::kCream : video::kMuted);
+    }
+    char line[41];
+    snprintf(line, sizeof line, "%s: Read   %s: Back", confirm_name(), back_name());
+    centred(22, line, video::kMuted);
+}
+
+void jlist_press(int b)
+{
+    const int n = play::journal_seen_count();
+    if (b == BUp && n) jlist_sel = (jlist_sel + n - 1) % n;
+    else if (b == BDown && n) jlist_sel = (jlist_sel + 1) % n;
+    else if (b == BB || b == BStart) jlist_open = false;
+    else if (b == BA && n) {
+        char kind;
+        int number;
+        if (play::journal_seen(jlist_sel, &kind, &number)) {
+            jlist_open = false;
+            menu_open = false;
+            journal_queue.push_back(JRef{kind, number});
+            journal_next();
+        }
+    }
+}
+
+void journal_press(int b)
+{
+    switch (b) {
+    case BUp: jour::scroll(-1); break;
+    case BDown: jour::scroll(1); break;
+    case BLeft: jour::pan(-1); break;
+    case BRight: jour::pan(1); break;
+    case BL1:
+    case BL2: jour::page(-1); break;
+    case BR1:
+    case BR2: jour::page(1); break;
+    case BX:
+    case BY: jour::zoom(); break;
+    case BA:
+        if (!jour::at_end()) {
+            jour::page(1);
+            break;
+        }
+        // fall through
+    case BB:
+        jour::close(cv);
+        journal_next();         // (the next one mentioned, if there was one)
+        break;
+    default: break;
+    }
 }
 
 void after_input()
@@ -1003,6 +1110,10 @@ void menu_press(int b)
         switch (menu_items[menu_sel]) {
         case MResume: menu_open = false; break;
         case MControls: help_open = true; break;
+        case MJournal:
+            jlist_open = true;
+            jlist_sel = play::journal_seen_count() - 1;         // (the newest)
+            break;
         case MRescan:
             rescan();
             menu_open = false;
@@ -1039,8 +1150,16 @@ void press(int b)
         else if (b <= BRight) keys_move(b == BLeft ? -1 : b == BRight ? 1 : 0, b == BUp ? -1 : b == BDown ? 1 : 0);
         return;
     }
+    if (jlist_open) {
+        jlist_press(b);
+        return;
+    }
     if (menu_open) {
         menu_press(b);
+        return;
+    }
+    if (jour::active() && b != BStart) {
+        journal_press(b);
         return;
     }
     if (b == BStart) {
@@ -1397,6 +1516,10 @@ void script_tick(Uint32 now)
             if (prompt_open) prompt_key(*p);
             else if (playing) play::input_key(*p == '_' ? ' ' : *p, cv);
         }
+    } else if (t.compare(0, 8, "journal:") == 0 && t.size() > 10 && playing) {
+        // (journal:J:12 - that entry opened, as if the game had just mentioned it)
+        journal_queue.push_back(JRef{t[8], atoi(t.c_str() + 10)});
+        journal_next();
     } else if (t.compare(0, 5, "menu:") == 0) {
         // (menu:Send Logs - the open menu's line that starts so, '_' for a space)
         std::string want = t.substr(5);
@@ -1526,7 +1649,7 @@ int main(int argc, char** argv)
         script_tick(now);
         job_tick();
         if (restart_wanted) quit = true;
-        if (playing && screen == Screen::Play && !menu_open) {
+        if (playing && screen == Screen::Play && !menu_open && !jour::active()) {
             play::tick(plat::now_ms(), cv);
             after_input();
         }
