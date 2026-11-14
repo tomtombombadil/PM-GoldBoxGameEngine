@@ -3,15 +3,13 @@
 Tick off with the version that did it. Never ask Tom the same thing twice.
 
 ## Tom
-- [ ] **First run on the RG40XX H (ROCKNIX)**: README "Installing" -
-      `GoldBox.Installer.sh` from the newest release into `roms/ports`,
-      run it from Ports, add a game. Report - each problem its own
-      message: did the installer work; does the port start; are A / B the
-      right way round (Start menu - Confirm Button swaps them); L2 / R2;
-      sound; speed; how the picture fits.
-- [ ] **Log Server**: start your dev WebDAV server (writable), enter its
-      address under Start - Log Server, try Send Logs; pass me the files
-      whenever something goes wrong.
+- [ ] **Send Logs** couldn't find your WebDAV server (v0.3.1) - you're
+      looking at your side. If it still fails: what address you typed,
+      and what the server's own window shows when you try.
+- [ ] After the v0.3.1 install the `goldbox` folder wasn't visible until
+      the port had been started once. The release zip holds
+      `goldbox/games/` and the installer makes it; say if v0.4's install
+      (or a refresh of the Explorer window) still doesn't show it.
 - [ ] Other handhelds / firmwares you can test on, when it matters (a
       PortMaster submission wants several).
 - [ ] `cyd/src/app/library.cpp` (the game scan) is tied to Arduino's
@@ -29,15 +27,14 @@ Tick off with the version that did it. Never ask Tom the same thing twice.
       shops, a fight (moving, aiming, diagonals), saving, the icon
       gallery and editor (may need D-pad support beyond Pointer Mode),
       and every other game; the Steam (SNEG) folders; the VGA games.
-- [ ] While "press a key" text waits only A continues; the D-pad does
-      nothing there. Decide after Tom's first play whether any button
-      should go on.
-- [ ] Game selection screen with the player's box art (Steam Launcher) /
-      GOG icon, made on the device (roadmap 5) - Tom wants this.
+- [ ] Game list: the GOG icon when there is no Steam Launcher folder
+      (the CYD shows it); the box art is decoded each time a page is first
+      shown - cache it if that is slow on the device.
 - [ ] Journal: process the player's journal PDFs on the device and show
       entries with buttons (roadmap 4; the GOG and Steam PDFs differ).
-- [ ] Auto-map / Companion views; Cheats; Quick Actions; comfort
-      switches; lent sounds (roadmap 4).
+- [ ] From the CYD, still missing here: Cheats; Quick Actions; the comfort
+      switches (Game Fixes, Show Rolls, Camp Fix, Max HP, Readable
+      Messages ...); the icon gallery by buttons (unchecked); logs screen.
 - [ ] Updater: a stable / pre-release choice (as Pocket Curator's A / Y)
       once there is a stable release; show the changelog of the version
       offered.
@@ -46,9 +43,13 @@ Tick off with the version that did it. Never ask Tom the same thing twice.
 - [ ] Before a PortMaster submission: `port.json` against their
       generator / checks (`availability`, `store`, `min_glibc` unverified),
       the gameplay screenshot (Tom: later), an armhf build if wanted.
-- [ ] Keep the `cyd` pin current (built on CYD 0.196.52, commit a1ee0ea).
+- [ ] Keep the `cyd` pin current (built on CYD 0.197.1).
 
 ## Done
+- [x] v0.4.0 (2026-11-14, Tom's first run on the RG40XX H: installer OK,
+      A / B right, L2 / R2, sound, picture fit all fine): box-art game
+      list, sound sets, the Companion on Y, L2 / R2 = list up / down,
+      Modify's single highlight, the games' music (CYD 0.197.1).
 - [x] v0.3.1: the installer's stray log. v0.3.0 (2026-11-14): releases as Pocket Curator's - installer,
       Check for Updates, pre-releases; Send Logs to a WebDAV server.
 - [x] v0.2.0 (2026-11-14): B = Back / the menu's Exit (CYD v0.196.52

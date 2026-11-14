@@ -58,9 +58,9 @@ direction keys (`play::fight_dir`, `fight_select`), typed keys
 | A | choose the highlighted menu word | choose / continue | end the move / Target | type the key |
 | B | Back (below) | Back (below) | - | delete |
 | L1 / R1 | menu word left / right | highlight left / right | up-left / up-right | - |
-| L2 / R2 | side-step left / right | - | down-left / down-right | - |
+| L2 / R2 | list line up / down (the party list) | list line up / down | down-left / down-right | - |
 | X | Area map | - | - | space |
-| Y | Look | - | - | Done |
+| Y | the Companion | the Companion | the Companion | Done |
 | Select | Pointer Mode | Pointer Mode | Pointer Mode | Pointer Mode |
 | Start | the port's menu | the port's menu | the port's menu | the port's menu |
 
@@ -71,6 +71,19 @@ direction keys (`play::fight_dir`, `fight_select`), typed keys
   (`play::exit_point`, added to the engine for this in CYD v0.196.52).
   Never the party menu's "Exit to DOS" - leaving a game is the Start
   menu's Exit Game.
+- **L2 / R2** (Tom, 2026-11-14): no side-steps on the buttons - L2 / R2
+  move the list's line while L1 / R1 move the menu's word, so both of a
+  screen's highlights are at hand and the D-pad keeps walking. Look is on
+  the game's menu (no button).
+- **The Companion** (Y; Tom, 2026-11-14; `src/panel.*`): slides in from
+  the left over the game screen (208 of 320 pixels), the game going on
+  under it - the D-pad still walks and the map follows. Y again: the next
+  view, then away. Exploring: Map (walls, doors gold, locked red, secret
+  doors S, the party's arrow), Party; in a fight: Battle, Party. Party
+  and Battle are the engine's own views (`game/companion.*`) through its
+  Painter, stretched across by 4 / 3 for 8-pixel letters.
+- "Press a key" text goes on with A only - not the D-pad (a held Forward
+  would skip the story).
 - **D-Pad Walks** (menu switch, on): off = the D-Pad always moves the
   highlight (walking then needs the menu words).
 - **Pointer Mode** (Select; acts when Select is let go, so Select + Start
@@ -102,8 +115,19 @@ pixels stay even. Every frame redraws the whole canvas (no dirty rows - a
 handheld has the speed).
 
 ## 6. The port's own screens
-- **Game list**: the games found, the unplayable ones greyed; with none,
-  how to add them.
+- **Game list** (as the CYD's library): a game a page - its box art from
+  the player's Steam `Launcher` folder in games/ (read at a quarter size by
+  the engine's `jpeg_thumb`, fitted to the page at twice the canvas's
+  sharpness, `src/art.*`, `video::set_backdrop`), the name big across the
+  foot; Left / Right (or L1 / R1) turn the pages, round; A plays. No
+  Launcher folder: the name on black. With no games, how to add them.
+- **Music** (the engine's, v0.197): a later game's songs are made into
+  files in `_CYD/<folder>/` at that game's first start ("Making the game's
+  music" on the loading screen - the CYD does it in its card scan), then
+  played by the engine; Start - Music: On / Off.
+- **Game Sound**: Tandy, PC Speaker, then Darkness / Gateway / Treasures
+  (that game's recordings lent to the older games, when its folder is in
+  games/), Off; those three games always their own (or Off).
 - **Loading** message at once when a game is chosen.
 - **Menu** (Start): Back to Game, Controls, Display, Game Sound (Tandy /
   PC Speaker / Off), Volume, Game Font (Original / Clear / Darkness / Clear

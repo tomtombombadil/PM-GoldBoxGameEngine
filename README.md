@@ -46,6 +46,11 @@ You need PortMaster on the handheld, and Wi-Fi.
        roms/ports/goldbox/games/Pool of Radiance/
        roms/ports/goldbox/games/Curse of the Azure Bonds/
 
+   With the Steam release, copy its `Launcher` folder there too
+   (`games/Launcher/`): the game list then shows each game's box art, and
+   the Pools of Darkness, Gateway and Treasures folders give the older
+   games their recorded sound effects (Start - Game Sound).
+
 5. Start **Gold Box Game Engine** from Ports.
 
 That is the only time a file has to be carried over for the port itself.
@@ -80,9 +85,9 @@ Start, Select. Sticks and touch screens are optional extras.
 | A | Choose the highlighted thing / continue |
 | B | Back: out of a screen or question, or the menu's Exit / delete a letter |
 | L1 / R1 | Menu word left / right while walking |
-| L2 / R2 | Side-step left / right |
+| L2 / R2 | List line up / down (the party list while walking) |
 | X | Area map |
-| Y | Look |
+| Y | The Companion: auto-map, party, a fight's battlefield (press again for the next, then away) |
 | Select | Pointer Mode: the D-Pad moves a pointer, A taps there, B ends it |
 | Start | The port's menu: display, sound, font, controls, updates, logs, exit game |
 | Select + Start | Quit (PortMaster's usual) |

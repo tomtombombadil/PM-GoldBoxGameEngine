@@ -104,7 +104,10 @@ say "installing $tag..."
 unzip -oqq "$WORK_ZIP" -d "$PORTS_DIR" || die "unpacking failed (card full or read-only?)."
 rm -f "$WORK_ZIP"
 chmod +x "$PORTS_DIR/Gold Box Game Engine.sh" "$GAMEDIR"/goldbox.* "$GAMEDIR"/tools/*.sh 2>/dev/null
+# The folder the player's games go in must be there the moment this ends
+# (Tom, 2026-11-14: he copies the games over before the first start)
 mkdir -p "$GAMEDIR/games" "$GAMEDIR/conf"
+[ -d "$GAMEDIR/games" ] || die "couldn't make $GAMEDIR/games."
 # (the log began in the ports folder, before the port's own existed)
 mv -f "$LOGF" "$GAMEDIR/install.log" 2>/dev/null && LOGF="$GAMEDIR/install.log"
 
@@ -112,7 +115,8 @@ mv -f "$LOGF" "$GAMEDIR/install.log" 2>/dev/null && LOGF="$GAMEDIR/install.log"
 if command -v curl >/dev/null 2>&1; then
   curl -s -m 3 -o /dev/null "http://127.0.0.1:1234/reloadgames" 2>/dev/null
 fi
-say "done! $tag is installed. If 'Gold Box Game Engine' isn't in Ports yet: Start - Game Settings - Update Gamelists."
+sync 2>/dev/null
+say "done! $tag is installed. Copy your games into ports/goldbox/games. If 'Gold Box Game Engine' isn't in Ports yet: Start - Game Settings - Update Gamelists."
 sleep "${GOLDBOX_PAUSE:-6}"
 exit 0
 

@@ -15,13 +15,16 @@
 #include <string>
 #include <vector>
 
+#include "game/music_make.h"
 #include "game/play.h"
 #include "platform/audio.h"
 #include "platform/file.h"
 #include "platform/platform.h"
 
 #include "host.h"
+#include "art.h"
 #include "library.h"
+#include "panel.h"
 #include "settings.h"
 #include "task.h"
 #include "video.h"
@@ -175,13 +178,20 @@ void box(int col, int row, int cols, int rows)
 const char* confirm_name() { return cfg.swap_ab ? "B" : "A"; }
 const char* back_name() { return cfg.swap_ab ? "A" : "B"; }
 
+// The game list: a game a page - its box art (the player's own, from the
+// Steam release's Launcher folder in games/) under the header, its name
+// across the foot; Left / Right turn the pages, round. As the CYD's.
+constexpr int kHeaderH = 20;
+
 void draw_games()
 {
-    video::clear(video::kBlack);
-    video::fill(0, 0, video::kW, 20, video::kNavy);
-    video::text(1, 1, "Gold Box Game Engine", video::kGold);
-    video::text(39 - static_cast<int>(strlen(PM_VERSION)), 1, PM_VERSION, video::kMuted);
+    video::clear(video::kClear);
+    video::set_backdrop(nullptr);
+    video::fill(0, 0, video::kW, kHeaderH, video::kNavy);
+    video::text_at(8, 6, "Gold Box Game Engine", video::kGold);
+    video::text_at(video::kW - 8 - static_cast<int>(strlen(PM_VERSION)) * 8, 6, PM_VERSION, video::kMuted);
     if (games_found.empty()) {
+        video::fill(0, kHeaderH, video::kW, video::kH - kHeaderH, video::kBlack);
         int row = 4;
         centred(row, have_root ? "No games found" : "No games folder", video::kWarn);
         row = wrapped(2, row + 2, 36,
@@ -196,32 +206,49 @@ void draw_games()
         centred(23, line, video::kMuted);
         return;
     }
-    video::text(1, 4, "Your games", video::kMuted);
     const int n = static_cast<int>(games_found.size());
-    const int rows = 8;                                     // (two text rows a game)
-    int top = game_sel - rows / 2;
-    if (top > n - rows) top = n - rows;
-    if (top < 0) top = 0;
-    for (int i = top; i < n && i < top + rows; ++i) {
-        const library::GameDir& g = games_found[i];
-        const int row = 6 + (i - top) * 2;
-        const bool sel = i == game_sel;
-        const bool can = play::available(g.game);
-        if (sel) video::fill(4, row * 8 - 4, video::kW - 8, 16, video::kKey);
-        if (sel) video::frame(4, row * 8 - 4, video::kW - 8, 16, video::kGold);
-        const char* title = g.game == games::Game::Unknown ? g.folder.c_str() : games::title(g.game);
-        char line[37];
-        snprintf(line, sizeof line, "%.36s", title);
-        video::text(2, row, line, can ? (sel ? video::kGold : video::kCream) : video::kMuted);
-        if (!can) video::text(27, row, "not playable", video::kMuted);
+    const library::GameDir& g = games_found[game_sel];
+    const bool can = play::available(g.game);
+    const uint32_t* picture = art::box(g.game, (video::kH - kHeaderH) * 2);
+    if (picture) video::set_backdrop(picture, kHeaderH);
+    else video::fill(0, kHeaderH, video::kW, video::kH - kHeaderH, video::kBlack);
+    // The name: big, across the foot (two lines when it's long)
+    const char* title = g.game == games::Game::Unknown ? g.folder.c_str() : games::title(g.game);
+    std::string l1 = title, l2;
+    if (l1.size() > 19) {
+        size_t cut = l1.rfind(' ', 19);
+        if (cut == std::string::npos) cut = 19;
+        l2 = l1.substr(cut + (l1[cut] == ' ' ? 1 : 0), 19);
+        l1 = l1.substr(0, cut);
     }
-    char line[41];
-    snprintf(line, sizeof line, "%s: Play   Start: Menu", confirm_name());
-    centred(23, line, video::kMuted);
+    const int ty = picture ? (l2.empty() ? 162 : 144) : (l2.empty() ? 92 : 82);
+    video::text_big((video::kW - static_cast<int>(l1.size()) * 16) / 2, ty, l1.c_str(), can ? video::kCream : video::kMuted);
+    if (!l2.empty())
+        video::text_big((video::kW - static_cast<int>(l2.size()) * 16) / 2, ty + 18, l2.c_str(), can ? video::kCream : video::kMuted);
+    if (!can) {
+        video::fill(104, ty - 14, 112, 11, video::kBlack);
+        video::text_at(112, ty - 12, "Not playable", video::kWarn);
+    }
+    // The pages' clue: a small arrowhead at each side, which game of how many
+    if (n > 1) {
+        for (int k = 0; k < 7; ++k) {
+            video::fill(4 + k, 106 - k, 1, 2 * k + 1, video::kBlack);
+            video::fill(video::kW - 5 - k, 106 - k, 1, 2 * k + 1, video::kBlack);
+        }
+        for (int k = 0; k < 5; ++k) {
+            video::fill(6 + k, 106 - k, 1, 2 * k + 1, video::kCream);
+            video::fill(video::kW - 7 - k, 106 - k, 1, 2 * k + 1, video::kCream);
+        }
+        char page[24];
+        snprintf(page, sizeof page, "%d of %d", (game_sel + 1) % 1000, n % 1000);
+        video::fill(video::kW - 12 - static_cast<int>(strlen(page)) * 8, kHeaderH + 3, static_cast<int>(strlen(page)) * 8 + 8, 12, video::kBlack);
+        video::text_at(video::kW - 8 - static_cast<int>(strlen(page)) * 8, kHeaderH + 5, page, video::kMuted);
+    }
 }
 
 void draw_message()
 {
+    video::set_backdrop(nullptr);
     video::clear(playing ? video::kClear : video::kBlack);
     box(3, 6, 34, 13);
     centred(7, msg_title.c_str(), video::kGold);
@@ -230,6 +257,10 @@ void draw_message()
     snprintf(line, sizeof line, "%s: Continue", confirm_name());
     centred(18, line, video::kMuted);
 }
+
+uint8_t     sound_shown();
+const char* sound_name(uint8_t m);
+void        sound_cycle(int step);
 
 // ---- The network jobs (tools/update.sh, tools/sendlogs.sh) ------------------
 enum class Job : uint8_t { None, Check, Fetch, Logs };
@@ -382,7 +413,7 @@ void draw_notice()
 
 // ---- The menu --------------------------------------------------------------
 enum MenuItem : uint8_t {
-    MResume, MControls, MDisplay, MSound, MVolume, MFont, MPadMoves, MSwap, MRescan, MUpdate, MSendLogs, MLogServer,
+    MResume, MControls, MDisplay, MSound, MMusic, MVolume, MFont, MPadMoves, MSwap, MRescan, MUpdate, MSendLogs, MLogServer,
     MLeaveGame, MExit
 };
 std::vector<MenuItem> menu_items;
@@ -394,6 +425,7 @@ void menu_build()
     menu_items.push_back(MControls);
     menu_items.push_back(MDisplay);
     menu_items.push_back(MSound);
+    menu_items.push_back(MMusic);
     menu_items.push_back(MVolume);
     menu_items.push_back(MFont);
     menu_items.push_back(MPadMoves);
@@ -409,13 +441,13 @@ void menu_build()
 
 void menu_label(MenuItem m, char* out, size_t cap)
 {
-    static const char* const kSound[] = {"", "Tandy", "PC Speaker", "Off"};
     static const char* const kFont[] = {"Original", "Clear", "Darkness", "Clear Caps"};
     switch (m) {
     case MResume: snprintf(out, cap, "Back to Game"); break;
     case MControls: snprintf(out, cap, "Controls"); break;
     case MDisplay: snprintf(out, cap, "Display: %s", video::fit_name(static_cast<video::Fit>(cfg.fit))); break;
-    case MSound: snprintf(out, cap, "Game Sound: %s", kSound[cfg.sound]); break;
+    case MSound: snprintf(out, cap, "Game Sound: %s", sound_name(sound_shown())); break;
+    case MMusic: snprintf(out, cap, "Music: %s", cfg.music ? "On" : "Off"); break;
     case MVolume: snprintf(out, cap, "Volume: %d%%", cfg.volume); break;
     case MFont: snprintf(out, cap, "Game Font: %s", kFont[cfg.font]); break;
     case MPadMoves: snprintf(out, cap, "D-Pad Walks: %s", cfg.pad_moves ? "On" : "Off"); break;
@@ -441,9 +473,9 @@ void draw_help()
         {a, "Choose the highlighted thing"},
         {b, "Back / the menu's Exit"},
         {"L1 R1", "Menu word left / right"},
-        {"L2 R2", "Side-step left / right"},
+        {"L2 R2", "List line up / down"},
         {"X", "Area map"},
-        {"Y", "Look"},
+        {"Y", "Companion: map, party"},
         {"Select", "Pointer: D-Pad moves it,"},
         {"", "Confirm taps, Back ends"},
         {"Start", "This menu"},
@@ -607,6 +639,7 @@ void draw_frame()
         draw_message();
     } else {
         video::clear();
+        panel::draw(SDL_GetTicks());
         if (!menu_open && !prompt_open) draw_keys();
         if (ptr_on && !menu_open) video::pointer(static_cast<int>(ptr_x), static_cast<int>(ptr_y));
     }
@@ -633,10 +666,95 @@ void message(const char* title, const std::string& body)
 }
 
 // ---- The game --------------------------------------------------------------
+// ---- Game Sound (as the CYD's): Tandy, PC Speaker, then Darkness /
+// Gateway / Treasures - that game's own recordings lent to the older
+// games' effects - when that game is in games/; Off. Darkness, Gateway
+// and Treasures themselves always play their own.
+constexpr uint8_t kSndTandy = 1, kSndPc = 2, kSndOff = 3, kSndDarkness = 4, kSndGateway = 5, kSndTreasures = 6;
+
+uint8_t own_sound(games::Game g)
+{
+    return g == games::Game::PoolsOfDarkness              ? kSndDarkness
+         : g == games::Game::GatewayToTheSavageFrontier   ? kSndGateway
+         : g == games::Game::TreasuresOfTheSavageFrontier ? kSndTreasures
+                                                          : 0;
+}
+
+games::Game sound_game() { return games_found.empty() ? games::Game::Unknown : games_found[game_sel].game; }
+
+bool sound_ok(uint8_t m)
+{
+    if (m == kSndTandy || m == kSndPc || m == kSndOff) return true;
+    for (const auto& g : games_found)
+        if (!g.hlib && own_sound(g.game) == m) return true;
+    return false;
+}
+
+// The set in use: the game's own, else the setting (Tandy when the
+// setting's game isn't there any more)
+uint8_t sound_shown()
+{
+    const uint8_t own = own_sound(sound_game());
+    if (own && cfg.sound != kSndOff) return own;
+    return sound_ok(cfg.sound) ? cfg.sound : kSndTandy;
+}
+
+const char* sound_name(uint8_t m)
+{
+    switch (m) {
+    case kSndPc: return "PC Speaker";
+    case kSndOff: return "Off";
+    case kSndDarkness: return "Darkness";
+    case kSndGateway: return "Gateway";
+    case kSndTreasures: return "Treasures";
+    default: return "Tandy";
+    }
+}
+
+void sound_cycle(int step)
+{
+    static const uint8_t kOrder[6] = {kSndTandy, kSndPc, kSndDarkness, kSndGateway, kSndTreasures, kSndOff};
+    // (in Darkness, Gateway or Treasures: its own or Off)
+    const uint8_t own = own_sound(sound_game());
+    if (own) {
+        cfg.sound = cfg.sound == kSndOff ? own : kSndOff;
+        return;
+    }
+    int at = 0;
+    for (int i = 0; i < 6; ++i)
+        if (kOrder[i] == sound_shown()) at = i;
+    for (int k = 0; k < 6; ++k) {
+        at = (at + (step < 0 ? 5 : 1)) % 6;
+        if (sound_ok(kOrder[at])) break;
+    }
+    cfg.sound = kOrder[at];
+}
+
 void apply_sound()
 {
-    // (Tandy: Darkness, Gateway and Treasures play their own recordings)
-    play::set_sound(cfg.sound, static_cast<uint8_t>(cfg.volume * 255 / 100));
+    const uint8_t m = sound_shown();
+    uint8_t mode = m == kSndOff ? kSndOff : m == kSndPc ? kSndPc : kSndTandy;
+    std::string rec_dir;
+    games::Game rec = games::Game::Unknown;
+    if (m >= kSndDarkness && !own_sound(sound_game()))
+        for (const auto& g : games_found)
+            if (!g.hlib && own_sound(g.game) == m) {
+                mode = 4;                       // (recorded: that game's ZOUNDS lent)
+                rec_dir = g.data_dir;
+                rec = g.game;
+                break;
+            }
+    play::set_sound(mode, static_cast<uint8_t>(cfg.volume * 255 / 100), rec_dir.empty() ? nullptr : rec_dir.c_str(), rec);
+    play::set_music(cfg.music);
+}
+
+// A line under "Loading ..." while a game's first start makes its files
+void loading_line(const char* line, bool, void*)
+{
+    video::fill(0, 14 * 8 - 2, video::kW, 40, video::kBlack);
+    wrapped(2, 14, 36, line, video::kMuted);
+    video::present(nullptr);
+    SDL_PumpEvents();           // (minutes may pass: the window stays alive)
 }
 
 void apply_options()
@@ -653,6 +771,7 @@ void leave_game()
     if (!playing) return;
     audio_stop();
     play::close();
+    panel::close();
     playing = false;
     menu_open = false;
     keys_build(play::Input::None);
@@ -672,6 +791,7 @@ void start_game()
         return;
     }
     // (on screen at once: the first load can take a few seconds)
+    video::set_backdrop(nullptr);
     video::clear(video::kBlack);
     char line[80];
     snprintf(line, sizeof line, "Loading %.28s...", games::title(g.game));
@@ -713,6 +833,13 @@ void start_game()
     cv.paper = -1;
     memset(pixels.data(), 0, pixels.size());
     const std::string cache = library::cache_dir(g);
+    // The game's music (the later games): made once from its own files -
+    // the CYD's card scan does this; here a game's first start
+    if (!g.hlib && musicfiles::songs(g.data_dir.c_str()) && !musicfiles::ready(g.data_dir.c_str(), cache.c_str())) {
+        loading_line("Making the game's music (once; it can take a few minutes)...", false, nullptr);
+        const int failed = musicfiles::make(g.data_dir.c_str(), cache.c_str(), games::short_title(g.game), false, loading_line, nullptr);
+        plat::log("[port] music made for %s (%d failed)\n", games::title(here), failed);
+    }
     const char* err = play::open(g.data_dir.c_str(), here, cv, cache.c_str());
     if (err) {
         play::close();
@@ -827,8 +954,12 @@ void menu_change(int step)
         video::set_fit(static_cast<video::Fit>(cfg.fit));
         break;
     case MSound:
-        cfg.sound = static_cast<uint8_t>((cfg.sound - 1 + (step < 0 ? 2 : 1)) % 3 + 1);
+        sound_cycle(step);
         if (playing) apply_sound();
+        break;
+    case MMusic:
+        cfg.music = !cfg.music;
+        play::set_music(cfg.music);
         break;
     case MVolume: {
         int v = cfg.volume + (step < 0 ? -10 : 10);
@@ -927,8 +1058,8 @@ void press(int b)
         const int n = static_cast<int>(games_found.size());
         if (b == BA && n == 0) rescan();
         else if (b == BA) start_game();
-        else if (b == BUp && n) game_sel = (game_sel + n - 1) % n;
-        else if (b == BDown && n) game_sel = (game_sel + 1) % n;
+        else if ((b == BUp || b == BLeft || b == BL1) && n) game_sel = (game_sel + n - 1) % n;
+        else if ((b == BDown || b == BRight || b == BR1) && n) game_sel = (game_sel + 1) % n;
         return;
     }
     // ---- in the game
@@ -964,7 +1095,7 @@ void press(int b)
         break;
     }
     case BX: play::act(play::Act::Area, cv); break;
-    case BY: play::act(play::Act::Look, cv); break;
+    case BY: panel::next(); break;
     case BL1:
         if (fight) play::fight_dir(7, cv);
         else play::nav(play::Nav::Left, cv);
@@ -973,13 +1104,15 @@ void press(int b)
         if (fight) play::fight_dir(1, cv);
         else play::nav(play::Nav::Right, cv);
         break;
+    // (Tom, 2026-11-14: with L1 / R1 the two highlights - the menu's word
+    // and the list's line - are both at hand while the D-pad walks)
     case BL2:
         if (fight) play::fight_dir(5, cv);
-        else play::act(play::Act::StepLeft, cv);
+        else play::nav(play::Nav::Up, cv);
         break;
     case BR2:
         if (fight) play::fight_dir(3, cv);
-        else play::act(play::Act::StepRight, cv);
+        else play::nav(play::Nav::Down, cv);
         break;
     default: break;
     }
@@ -1264,6 +1397,21 @@ void script_tick(Uint32 now)
             if (prompt_open) prompt_key(*p);
             else if (playing) play::input_key(*p == '_' ? ' ' : *p, cv);
         }
+    } else if (t.compare(0, 5, "menu:") == 0) {
+        // (menu:Send Logs - the open menu's line that starts so, '_' for a space)
+        std::string want = t.substr(5);
+        for (char& ch : want)
+            if (ch == '_') ch = ' ';
+        bool found = false;
+        for (size_t i = 0; menu_open && i < menu_items.size(); ++i) {
+            char label[40];
+            menu_label(menu_items[i], label, sizeof label);
+            if (strncmp(label, want.c_str(), want.size()) == 0) {
+                menu_sel = static_cast<int>(i);
+                found = true;
+            }
+        }
+        if (!found) plat::log("[script] no menu line '%s'\n", want.c_str());
     } else if (t == "quit") {
         quit = true;
     } else {

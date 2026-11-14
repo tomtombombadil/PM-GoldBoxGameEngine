@@ -11,6 +11,10 @@
     modify and redistribute it for personal, non-profit or commercial
     products UNDER YOUR RESPONSIBILITY. Redistributions of source code must
     retain the above copyright notice."
+  - **ymfm** (Yamaha FM sound cores), Copyright (c) 2021 Aaron Giles, BSD
+    3-Clause License (its text: `licenses/LICENSE.ymfm.txt` in the
+    package), https://github.com/aaronsgiles/ymfm - the AdLib chip the
+    games' music is rendered with, on the device.
   - **QR Code generator library (C)**, Copyright (c) Project Nayuki, MIT
     License, https://www.nayuki.io/page/qr-code-generator-library.
 

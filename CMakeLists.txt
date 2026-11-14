@@ -21,15 +21,16 @@ find_package(Threads REQUIRED)
 # its .inc files are part of it). The boards' own front end and drivers
 # (cyd/src/ui, hal, boards, app/*.cpp) are not built here.
 file(GLOB ENGINE_SOURCES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/cyd/src/engine/*.cpp")
-add_library(gbengine STATIC ${ENGINE_SOURCES} cyd/src/game/play.cpp src/compat.cpp)
+add_library(gbengine STATIC ${ENGINE_SOURCES} cyd/src/game/play.cpp cyd/src/game/companion.cpp
+    cyd/src/game/music_make.cpp src/compat.cpp)
 target_include_directories(gbengine PUBLIC cyd/src)
 # (src/compat.h first in every engine file: strlcpy / strlcat of our own)
-target_compile_options(gbengine PRIVATE -O2 -Wno-format-truncation
+target_compile_options(gbengine PRIVATE -O2 -Wno-format-truncation -Wno-stringop-overflow
     -include "${CMAKE_CURRENT_SOURCE_DIR}/src/compat.h")
 
 add_executable(goldbox
     src/main.cpp src/video.cpp src/library.cpp src/settings.cpp
-    src/platform_sdl.cpp src/audio_sdl.cpp src/task.cpp)
+    src/platform_sdl.cpp src/audio_sdl.cpp src/task.cpp src/art.cpp src/panel.cpp)
 target_compile_definitions(goldbox PRIVATE PM_VERSION="${PM_VERSION}")
 target_compile_options(goldbox PRIVATE -Wall -Wextra)
 if(TARGET SDL2::SDL2)

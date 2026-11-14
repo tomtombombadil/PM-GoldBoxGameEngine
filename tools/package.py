@@ -48,6 +48,7 @@ def main() -> int:
     files.append((f"{NAME}/licenses/LICENSE.goldbox.txt", ROOT / "LICENSE", False))
     files.append((f"{NAME}/licenses/LICENSE.engine.txt", ROOT / "cyd" / "LICENSE", False))
     files.append((f"{NAME}/licenses/THIRD_PARTY_NOTICES.md", ROOT / "THIRD_PARTY_NOTICES.md", False))
+    files.append((f"{NAME}/licenses/LICENSE.ymfm.txt", ROOT / "cyd/src/engine/third_party/ymfm/LICENSE", False))
     files.append((f"{NAME}/VERSION", ROOT / "VERSION", False))
     for name, src, _ in files:
         if pathlib.PurePosixPath(name).suffix.lower() in BLOCKED:

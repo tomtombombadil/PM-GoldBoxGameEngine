@@ -28,7 +28,17 @@ and maintains it; it is the primary output of the Claude Project
 
 ## Decisions (Tom, 2026-11-14)
 - The port's name is "Gold Box Game Engine", its folder `goldbox` - settled.
-- B = Back / Exit (SPEC 4).
+- B = Back / Exit (SPEC 4). L2 / R2 = list up / down, no side-step
+  buttons; Y = the Companion slide-out; no Look button (SPEC 4).
+- **What the CYD version has, this port must have** (Tom, 2026-11-14,
+  after v0.3: the journals "a very big deal", the launcher's box art on
+  the game chooser, the Darkness / Gateway / Treasures sound sets were all
+  missing): before calling a version ready, go down the CYD's player-facing
+  features (its CLAUDE.md / SPEC 11) and port each or list it in TODO as
+  missing - never leave one out silently.
+- The port's folder: one program file a device type (`goldbox.aarch64`) -
+  the engine is compiled into it, there are no loose engine files; the
+  player's games in `games/`.
 - It is to be submitted to PortMaster's catalogue **eventually**; that
   needs a gameplay screenshot - "don't worry about that for now". Don't
   raise it again until the port is ready for submission.
@@ -137,7 +147,8 @@ and maintains it; it is the primary output of the Claude Project
   (`a! wait:700!`), and keep sheets small - a shot per step that matters.
 - `--script` steps: button names (`up down left right a b x y l1 r1 l2 r2
   start select`), `hold:<dir>` / `let:<dir>`, `wait:<ms>`, `tap:x:y`,
-  `type:TEXT`, `shot:<file.bmp>`, `quit`. `--game <n>` starts a game at
+  `type:TEXT`, `menu:<line's start, _ for a space>` (the open Start
+  menu's line - never count `down`s), `shot:<file.bmp>`, `quit`. `--game <n>` starts a game at
   once. With Tom's game files in scratch this plays real games headless;
   look at the `shot:` pictures before saying something works.
 - Never report "tested" without saying what was run against what. Without

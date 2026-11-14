@@ -13,6 +13,9 @@ SDL_Window*   win = nullptr;
 SDL_Renderer* ren = nullptr;
 SDL_Texture*  tex = nullptr;        // 320 x 200, the frame as composed
 SDL_Texture*  big = nullptr;        // the frame at a whole multiple (sharp pixels, then smoothed to the panel)
+SDL_Texture*  back = nullptr;       // the backdrop picture
+bool          back_on = false;
+int           back_top = 0;
 int           big_k = 0;
 Fit           fit = Fit::Original;
 uint32_t      pal[256];
@@ -62,6 +65,8 @@ void layout()
     }
 }
 
+} // namespace
+
 const uint8_t* glyph(char ch)
 {
     const unsigned char c = static_cast<unsigned char>(ch);
@@ -71,7 +76,58 @@ const uint8_t* glyph(char ch)
     return font::kClearText[0];
 }
 
-} // namespace
+uint32_t palette(int value) { return pal[value & 0xFF]; }
+
+void blit(int x, int y, int w, int h, const uint32_t* argb)
+{
+    for (int j = 0; j < h; ++j) {
+        const int py = y + j;
+        if (py < 0 || py >= kH) continue;
+        for (int i = 0; i < w; ++i) {
+            const int px = x + i;
+            const uint32_t c = argb[j * w + i];
+            if (px >= 0 && px < kW && (c >> 24)) over[py * kW + px] = c;
+        }
+    }
+}
+
+void text_big(int x, int y, const char* s, uint32_t fg)
+{
+    // (the edge first: the letters' shape a pixel out every way)
+    for (int pass = 0; pass < 2; ++pass) {
+        int cx = x;
+        for (const char* p = s; *p; ++p, cx += 16) {
+            const uint8_t* g = glyph(*p);
+            for (int j = 0; j < 8; ++j)
+                for (int i = 0; i < 8; ++i)
+                    if (g[j] & (0x80 >> i)) {
+                        if (pass == 0) fill(cx + i * 2 - 1, y + j * 2 - 1, 4, 4, kBlack);
+                        else fill(cx + i * 2, y + j * 2, 2, 2, fg);
+                    }
+        }
+    }
+}
+
+int pixel_aspect()
+{
+    if (dst.w <= 0 || dst.h <= 0) return 1000;
+    return static_cast<int>(static_cast<long>(dst.h) * kW * 1000 / (static_cast<long>(dst.w) * kH));
+}
+
+void set_backdrop(const uint32_t* argb, int top)
+{
+    back_on = false;
+    if (!ren || !argb) return;
+    if (!back) {
+        SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "linear");
+        back = SDL_CreateTexture(ren, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, kBackW, kBackH);
+        SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "nearest");
+        if (!back) return;
+    }
+    SDL_UpdateTexture(back, nullptr, argb, kBackW * 4);
+    back_top = top;
+    back_on = true;
+}
 
 const char* fit_name(Fit f) { return f == Fit::Square ? "Square Pixels" : f == Fit::Stretch ? "Stretch" : "Original 4:3"; }
 
@@ -97,6 +153,9 @@ bool begin(int window_w, int window_h)
 
 void end()
 {
+    if (back) SDL_DestroyTexture(back);
+    back = nullptr;
+    back_on = false;
     if (big) SDL_DestroyTexture(big);
     if (tex) SDL_DestroyTexture(tex);
     if (ren) SDL_DestroyRenderer(ren);
@@ -185,13 +244,35 @@ void pointer(int x, int y)
 void present(const pic::Canvas* game)
 {
     if (!ren) return;
+    const bool picture = back_on && !game;      // (the backdrop shows through the overlay's gaps)
     for (int y = 0; y < kH; ++y)
         for (int x = 0; x < kW; ++x) {
             const uint32_t o = over[y * kW + x];
-            shown[y * kW + x] = (o >> 24) ? o : game && game->px ? pal[game->get(x, y)] : 0xFF000000u;
+            shown[y * kW + x] = (o >> 24) ? o : game && game->px ? pal[game->get(x, y)]
+                              : picture && y >= back_top ? 0u : 0xFF000000u;
         }
     SDL_UpdateTexture(tex, nullptr, shown, kW * 4);
     SDL_SetRenderDrawColor(ren, 0, 0, 0, 255);
+    SDL_SetTextureBlendMode(tex, SDL_BLENDMODE_NONE);
+    if (picture) {
+        SDL_RenderClear(ren);
+        const SDL_Rect to{dst.x, dst.y + dst.h * back_top / kH, dst.w, dst.h - dst.h * back_top / kH};
+        const SDL_Rect from{0, 0, kBackW, kBackH - back_top * 2};
+        SDL_RenderCopy(ren, back, &from, &to);
+        if (big) {
+            SDL_SetTextureBlendMode(big, SDL_BLENDMODE_BLEND);
+            SDL_SetRenderTarget(ren, big);
+            SDL_RenderCopy(ren, tex, nullptr, nullptr);     // (alpha copied as it is)
+            SDL_SetRenderTarget(ren, nullptr);
+            SDL_RenderCopy(ren, big, nullptr, &dst);
+            SDL_SetTextureBlendMode(big, SDL_BLENDMODE_NONE);
+        } else {
+            SDL_SetTextureBlendMode(tex, SDL_BLENDMODE_BLEND);
+            SDL_RenderCopy(ren, tex, nullptr, &dst);
+        }
+        SDL_RenderPresent(ren);
+        return;
+    }
     if (big) {
         SDL_SetRenderTarget(ren, big);
         SDL_RenderCopy(ren, tex, nullptr, nullptr);
@@ -221,9 +302,14 @@ bool to_canvas(int wx, int wy, int& cx, int& cy)
 
 bool save_bmp(const char* path)
 {
-    SDL_Surface* s = SDL_CreateRGBSurfaceWithFormatFrom(shown, kW, kH, 32, kW * 4, SDL_PIXELFORMAT_ARGB8888);
+    // What the panel got: the frame as scaled, the backdrop included
+    if (!ren) return false;
+    int w = 0, h = 0;
+    SDL_GetRendererOutputSize(ren, &w, &h);
+    SDL_Surface* s = SDL_CreateRGBSurfaceWithFormat(0, w, h, 32, SDL_PIXELFORMAT_ARGB8888);
     if (!s) return false;
-    const bool ok = SDL_SaveBMP(s, path) == 0;
+    bool ok = SDL_RenderReadPixels(ren, nullptr, SDL_PIXELFORMAT_ARGB8888, s->pixels, s->pitch) == 0;
+    ok = ok && SDL_SaveBMP(s, path) == 0;
     SDL_FreeSurface(s);
     return ok;
 }

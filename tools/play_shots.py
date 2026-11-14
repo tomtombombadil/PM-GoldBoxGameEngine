@@ -43,7 +43,7 @@ def main():
         print("\n".join(log[-int(os.environ.get("LOG", "12")):]))
         print("exit code", r.returncode)
         cols = int(os.environ.get("COLS", "4"))
-        w, h = 480, 300
+        w, h = 480, 360
         rows = (len(shots) + cols - 1) // cols
         sheet = Image.new("RGB", (cols * w, rows * (h + 14)), (40, 40, 40))
         d = ImageDraw.Draw(sheet)

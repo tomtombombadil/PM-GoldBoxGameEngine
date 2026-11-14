@@ -45,6 +45,25 @@ void frame(int x, int y, int w, int h, uint32_t colour);
 int text(int col, int row, const char* s, uint32_t fg, uint32_t bg = kClear);
 // The same from a pixel position
 void text_at(int x, int y, const char* s, uint32_t fg, uint32_t bg = kClear);
+// Twice the size (16 x 16 a letter), a black edge round it: names over pictures
+void text_big(int x, int y, const char* s, uint32_t fg);
+// A letter's 8 rows (bit 7 the left pixel)
+const uint8_t* glyph(char ch);
+// A picture into the overlay (w x h of 0xAARRGGBB, alpha 0 skipped)
+void blit(int x, int y, int w, int h, const uint32_t* argb);
+// The colour a canvas value shows as now
+uint32_t palette(int value);
+
+// A picture behind the overlay where it is see-through, in place of the
+// game (the game list's box art): kBackW x kBackH pixels - twice the
+// canvas's, for the panel's sharpness - shown from canvas row `top` down.
+// nullptr: none.
+constexpr int kBackW = kW * 2, kBackH = kH * 2;
+// How tall a canvas pixel is shown, in thousandths of its width (1200 on
+// a 4:3 fit): a picture made for the backdrop is squeezed by it
+int pixel_aspect();
+void set_backdrop(const uint32_t* argb, int top = 0);
+
 // The pointer's arrow, its tip at (x, y)
 void pointer(int x, int y);
 
@@ -53,7 +72,7 @@ void present(const pic::Canvas* game);
 
 // A point of the window -> the canvas's pixel (false: outside the picture)
 bool to_canvas(int wx, int wy, int& cx, int& cy);
-// Saves what was last presented (320 x 200, before scaling) as a BMP
+// Saves what the panel shows (as scaled) as a BMP
 bool save_bmp(const char* path);
 
 } // namespace video

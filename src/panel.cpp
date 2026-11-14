@@ -1,0 +1,205 @@
+#include "panel.h"
+
+#include "engine/geo.h"
+#include "game/companion.h"
+#include "game/play.h"
+
+#include "video.h"
+
+#include <cstring>
+
+namespace panel {
+namespace {
+
+constexpr int kVW = 156;                    // the engine's views' width (6-wide cells)
+constexpr int kW = kVW * 4 / 3;             // on the screen: 208
+constexpr int kH = video::kH;
+
+enum class View : uint8_t { None, Map, Party, Battle };
+View     view = View::None;
+uint32_t pixels[kW * kH];                   // the panel, drawn only when it changes
+uint32_t sig = 0;
+float    shown = 0;                         // how far out it is: 0 closed, 1 fully
+uint32_t last_ms = 0;
+
+constexpr uint32_t rgb(uint16_t c)
+{
+    return 0xFF000000u | (static_cast<uint32_t>((c >> 11) * 255 / 31) << 16) |
+           (static_cast<uint32_t>(((c >> 5) & 63) * 255 / 63) << 8) | static_cast<uint32_t>((c & 31) * 255 / 31);
+}
+
+void put(int x, int y, int w, int h, uint32_t c)
+{
+    for (int j = y < 0 ? 0 : y; j < y + h && j < kH; ++j)
+        for (int i = x < 0 ? 0 : x; i < x + w && i < kW; ++i) pixels[j * kW + i] = c;
+}
+
+void letters(int x, int y, const char* s, uint32_t c)
+{
+    for (; *s; ++s, x += 8) {
+        const uint8_t* g = video::glyph(*s);
+        for (int j = 0; j < 8; ++j)
+            for (int i = 0; i < 8; ++i)
+                if (g[j] & (0x80 >> i)) put(x + i, y + j, 1, 1, c);
+    }
+}
+
+// The engine's views draw through this: across stretched by 4 / 3
+struct Paint : companion::Painter {
+    static int sx(int x) { return x * 4 / 3; }
+    void fill(int x, int y, int w, int h, uint16_t c) override { put(sx(x), y, sx(x + w) - sx(x), h, rgb(c)); }
+    void text(int x, int y, const char* s, uint16_t c) override { letters(sx(x), y, s, rgb(c)); }
+    uint16_t colour(int value) override
+    {
+        const uint32_t p = video::palette(value);
+        return static_cast<uint16_t>((((p >> 16) & 0xF8) << 8) | (((p >> 8) & 0xFC) << 3) | ((p & 0xFF) >> 3));
+    }
+};
+
+// The wall types that look like the area's ordinary walls (mostly solid
+// sides on this map): a passable side of one is a secret door - as the
+// CYD's map marks them
+uint16_t plain_walls(const geo::Map& m)
+{
+    uint16_t solid[16] = {}, open[16] = {};
+    for (int y = 0; y < m.h; ++y)
+        for (int x = 0; x < m.w; ++x)
+            for (int d = 0; d < 8; d += 2) {
+                const int w = geo::wall(m, x, y, d);
+                if (!w) continue;
+                if (geo::door(m, x, y, d) == 0) ++solid[w];
+                else ++open[w];
+            }
+    uint16_t bits = 0;
+    for (int w = 1; w < 16; ++w)
+        if (solid[w] && solid[w] >= open[w] * 4) bits |= static_cast<uint16_t>(1u << w);
+    return bits;
+}
+
+// The auto-map: walls a pixel wide, doors a band on the wall line (gold;
+// red: locked), a secret door an S, the party a green arrow
+void draw_map()
+{
+    put(0, 0, kW, kH, video::kBlack);
+    Paint p;
+    companion::draw_tabs(p, 2, 1, companion::View::Map, false);
+    const geo::Map* m = play::map();
+    if (!m) {
+        letters(8, 40, "No map here.", video::kCream);
+        return;
+    }
+    // (squares 12 x 10: about square once a 4:3 screen has stretched the rows)
+    int cw = (kW - 10) / m->w, ch = (kH - 44) / m->h;
+    if (cw > 12) cw = 12;
+    if (ch > 10) ch = 10;
+    if (cw < 2) cw = 2;
+    if (ch < 2) ch = 2;
+    const int mx = (kW - cw * m->w) / 2, my = 14;
+    const uint16_t plain = plain_walls(*m);
+    static const uint8_t kS[7] = {0x0E, 0x11, 0x10, 0x0E, 0x01, 0x11, 0x0E};
+    for (int pass = 0; pass < 2; ++pass)
+        for (int y = 0; y < m->h; ++y)
+            for (int x = 0; x < m->w; ++x) {
+                const int sx = mx + x * cw, sy = my + y * ch;
+                for (int d = 0; d < 8; d += 2) {
+                    const int w = geo::wall(*m, x, y, d);
+                    if (!w) continue;
+                    const int door = geo::door(*m, x, y, d);
+                    if ((door != 0) != (pass == 1)) continue;
+                    const bool across = d == 0 || d == 4;
+                    const int lx = d == 2 ? sx + cw : sx, ly = d == 4 ? sy + ch : sy;
+                    if (across) put(lx, ly, cw + 1, 1, video::kCream);
+                    else put(lx, ly, 1, ch + 1, video::kCream);
+                    if (!door) continue;
+                    if (door == 1 && (plain >> w & 1) && cw >= 8) {
+                        const int ox = across ? lx + cw / 2 - 2 : lx - 2, oy = across ? ly - 3 : ly + ch / 2 - 3;
+                        for (int r = 0; r < 7; ++r)
+                            for (int c = 0; c < 5; ++c)
+                                if (kS[r] >> (4 - c) & 1) put(ox + c, oy + r, 1, 1, video::kGold);
+                        continue;
+                    }
+                    const uint32_t col = door == 1 ? video::kGold : video::kWarn;
+                    if (across) put(lx + 1, ly - 1, cw - 1, 3, col);
+                    else put(lx - 1, ly + 1, 3, ch - 1, col);
+                }
+            }
+    // The party: an arrowhead the way it faces
+    const int cx = mx + play::pos_x() * cw + cw / 2, cy = my + play::pos_y() * ch + ch / 2;
+    const int dir = play::dir(), fx = geo::dx(dir), fy = geo::dy(dir);
+    const int len = (fx ? cw : ch) / 2 - 1;
+    for (int k = -len; k <= len; ++k) {
+        // (k along the facing; the head narrows to the front)
+        const int half = (len - k) / 2;
+        for (int s = -half; s <= half; ++s) put(cx + fx * k + (fx ? 0 : s), cy + fy * k + (fy ? 0 : s), 1, 1, 0xFF28FF28u);
+    }
+    const int ly = my + m->h * ch + 6;
+    letters(4, ly, "Gold", video::kGold);
+    letters(44, ly, "Door", video::kMuted);
+    letters(92, ly, "Red", video::kWarn);
+    letters(124, ly, "Locked", video::kMuted);
+    letters(4, ly + 10, "S", video::kGold);
+    letters(20, ly + 10, "Secret Door", video::kMuted);
+}
+
+void redraw(bool blink_on)
+{
+    Paint p;
+    const companion::Area a{0, 0, kVW, kH};
+    if (view == View::Map) draw_map();
+    else if (view == View::Party) companion::draw_party(p, a, true, true);
+    else companion::draw_battle(p, a, blink_on, false, true);
+    put(kW - 1, 0, 1, kH, video::kGold);
+}
+
+View first() { return play::fighting() ? View::Battle : View::Map; }
+
+} // namespace
+
+bool open() { return view != View::None; }
+void close() { view = View::None; }
+
+void next()
+{
+    if (view == View::None) view = first();
+    else if (view == View::Party) view = View::None;
+    else view = View::Party;
+    sig = 0;
+}
+
+void draw(uint32_t now_ms)
+{
+    const uint32_t dt = now_ms - last_ms;
+    last_ms = now_ms;
+    const float step = (dt > 100 ? 100 : dt) / 140.0f;        // (out or in within 140 ms)
+    shown += open() ? step : -step;
+    if (shown < 0) shown = 0;
+    if (shown > 1) shown = 1;
+    if (shown <= 0) return;
+    if (open()) {
+        // A fight starts or ends under it: the view that fits
+        if (view == View::Map && play::fighting()) view = View::Battle;
+        if (view == View::Battle && !play::fighting()) view = View::Map;
+        const bool blink_on = (now_ms / 400) & 1;
+        uint32_t s = static_cast<uint32_t>(view) * 0x9E3779B1u;
+        if (view == View::Map) {
+            const geo::Map* m = play::map();
+            s ^= static_cast<uint32_t>(reinterpret_cast<uintptr_t>(m)) ^ static_cast<uint32_t>(play::pos_x() << 8) ^
+                 static_cast<uint32_t>(play::pos_y() << 16) ^ static_cast<uint32_t>(play::dir() << 24) ^ (m ? 1u : 0u);
+            // (a door opened shows too: the map's own bytes)
+            if (m)
+                for (int i = 0; i < m->squares(); ++i) s = s * 31 + m->pl(3)[i];
+        } else if (view == View::Party) {
+            s ^= play::panel_party_sig(true);
+        } else {
+            s ^= play::panel_field_sig() ^ (companion::battle_blinks() && blink_on ? 0x55u : 0u);
+        }
+        s |= 1;
+        if (s != sig) {
+            sig = s;
+            redraw(blink_on);
+        }
+    }
+    video::blit(static_cast<int>(kW * shown) - kW, 0, kW, kH, pixels);
+}
+
+} // namespace panel

@@ -28,7 +28,7 @@ def run(exe, games, conf, script):
 
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
-MENU_UPDATE = "start," + "down," * 8          # the game list's menu, down to Check for Updates
+MENU_UPDATE = "start,menu:Check_for_Updates,"   # the Start menu's line
 
 
 def update_test(exe):
@@ -133,9 +133,9 @@ def logs_test(exe):
         (t / "log.txt").write_text("a line of this run's log\n")
         (t / "log.prev.txt").write_text("the run before\n")
         env = dict(os.environ, SDL_VIDEODRIVER="dummy", SDL_AUDIODRIVER="dummy")
-        steps = (f"wait:100,start,{'down,' * 9}a,wait:100,shot:{t}/nolog.bmp,a,"       # Send Logs with no server set
-                 f"down,a,type:127.0.0.1:{srv.server_port},y,"                          # Log Server: typed
-                 f"up,a,wait:200,quit")                                                 # Send Logs
+        steps = (f"wait:100,start,menu:Send_Logs,a,wait:100,shot:{t}/nolog.bmp,a,"     # Send Logs with no server set
+                 f"menu:Log_Server,a,type:127.0.0.1:{srv.server_port},y,"               # Log Server: typed
+                 f"menu:Send_Logs,a,wait:200,quit")                                     # Send Logs
         r = subprocess.run([exe, "--games", str(t / "games"), "--conf", str(t / "conf"), "--tools", str(t / "tools"),
                             "--script", steps], env=env, capture_output=True, text=True, timeout=120)
         print(r.stdout, r.stderr, sep="")
@@ -156,7 +156,8 @@ def main():
         # 1. No games folder at all; the menu: every item changed once
         shot = t / "a.bmp"
         out = run(exe, t / "nothing", conf,
-                  f"wait:100,a,start,down,right,left,down,right,down,right,down,right,down,a,down,a,a,up,up,up,up,up,a,b,b,"
+                  f"wait:100,a,start,down,right,left,down,right,down,right,down,right,down,right,down,a,down,a,a,"
+                  f"menu:Controls,a,b,b,"
                   f"select,shot:{shot},quit")
         assert "0 game folder(s) found" in out, "expected no games"
         assert shot.stat().st_size > 320 * 200 * 3, "no screenshot"
