@@ -64,8 +64,8 @@ Tick off with the version that did it. Never ask Tom the same thing twice.
       no screen for it); a real mention reached by playing (the test hook
       `journal:K:N` so far). Known gaps (the CYD's TODO too): the Dark
       Queen's Introduction is only its heading lines; GOG's Dark Queen
-      journal comes from the PDF's text (no table) and lacks entry 13 (26 found since engine 0.200.6)
-      and 26; Death Knights has no entry 13 in any source.
+      journal comes from the PDF's text (no table) and lacks entry 13 (26 found
+      since engine 0.200.6); Death Knights has no entry 13 in any source.
 - [ ] Tom: after v0.7.0 on the RGB10 MAX3 - do the game list's pictures
       show at once, at every start? If not: Send Logs (the log's
       "[video] panel" lines say what sizes the panel reported).
