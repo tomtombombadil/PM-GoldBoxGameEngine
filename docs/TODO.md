@@ -31,10 +31,14 @@ Tick off with the version that did it. Never ask Tom the same thing twice.
       in 260 steps); Queen was checked by screenshots as far as the first
       city menu; the Steam copies and a 16:9 window got a short run only;
       no game was played far past its start.
-- [ ] Engine-side, noted in the CYD TODO (not bugs of the port, not
-      changed): Queen's Delete Character "Pick Character" can't be answered
-      with A; "Pick Character" has no B = back; B doesn't leave the
-      Trainer's party menu (Begin does) - ask Tom whether B should.
+- [ ] The Dark Queen's Delete Character (v0.9.2 made it work by buttons,
+      as a party member's Drop): the original may instead list the saved
+      characters to delete ("delete a character:" is in its program) - a
+      DOSBox look is owed (CYD TODO).
+- [ ] Asked Tom (2026-11-14), awaiting his answer: at "Pick Character /
+      Select" (Champions', Knights', Gateway's, Treasures' View / Modify /
+      Train / Remove ..., Darkness's and Queen's Drop) B does nothing -
+      should B go back to the party menu?
 - [ ] **Buttons through every screen kind** with the game files (SPEC
       roadmap 3). Checked so far, Curse (GOG), v0.2.0: titles, party
       menu, Load, Modify, Create Character to the name's keyboard (type,
@@ -76,11 +80,15 @@ Tick off with the version that did it. Never ask Tom the same thing twice.
 - [ ] Before a PortMaster submission: `port.json` against their
       generator / checks (`availability`, `store`, `min_glibc` unverified),
       the gameplay screenshot (Tom: later), an armhf build if wanted.
-- [ ] Keep the `cyd` pin current (built on CYD 0.200.1). Tom, 2026-11-14:
+- [ ] Keep the `cyd` pin current (built on CYD 0.200.2). Tom, 2026-11-14:
       a minor Companion display change is coming in the CYD - not pushed
-      yet at 0.200.1; pick it up when it lands.
+      yet at 0.200.2 (unless 0.200.0's yellow classes were it); pick it up when it lands.
 
 ## Done
+- [x] v0.9.2 (Tom on a handheld, 2026-11-14; engine 0.200.2): Death
+      Knights' fight field grey with its ground (was black; checked
+      against the original in DOSBox); the Dark Queen's Delete Character
+      by buttons. Tom: the Trainer is left with Begin, B needn't.
 - [x] v0.9.1: the D-pad couldn't move the party on the Krynn / Darkness
       overland maps (found by the button test; engine 0.200.1). CYD
       0.200.0's Queen ending pictures and yellow trainable classes came

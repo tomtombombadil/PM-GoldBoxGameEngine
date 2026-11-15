@@ -86,7 +86,13 @@ and maintains it; it is the primary output of the Claude Project
   CI is green, adapt the port to any changed call, and wrap anything
   player-facing into this repo in the same version (new music -> the
   scan; a Companion change -> `src/panel.*` shows it). Waiting on: a
-  minor Companion display change he announced (not pushed at v0.200.1).
+  minor Companion display change he announced (v0.200.0's yellow trainable classes in the Party view may be it - ask if more is coming).
+- **The Trainer cheat is left with Begin Adventuring** (Tom, 2026-11-14:
+  "B doesn't leave, and that's OK") - don't make B leave it.
+- **A highlighted word must act on A, and the list keys must not drop out
+  of a prompt** (Tom, 2026-11-14, the Dark Queen's Pick Character): where
+  they don't, it is an engine bug in `play::nav` / `nav_point` - fix it
+  in the CYD repo.
 - **Game list pictures** (Tom, 2026-11-14): Steam box art when the
   Launcher folder is there, else the game's own logo from its folder's
   `goggame-*.ico` / `.dll` as the CYD. If a picture of our own is ever

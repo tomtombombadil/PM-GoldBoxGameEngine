@@ -3,6 +3,11 @@
 Every version of Gold Box Game Engine for PortMaster. A release's notes are
 its part of this file.
 
+## [0.9.2] - 2026-11-14
+
+- Pre-release. **Death Knights of Krynn: the fight field is grey again**, with its dotted ground - the open squares were black and only the trees and rocks grey. Checked against the original game (engine 0.200.2).
+- **The Dark Queen of Krynn: Delete Character works from the buttons.** At "Pick Character": Up / Down (or L2 / R2) choose the character, A is Select and asks "drop NAME forever" Yes / No, B is No. Before, A did nothing and Up / Down dropped out of it.
+
 ## [0.9.1] - 2026-11-14
 
 - Pre-release. **Overland travel works from the D-Pad** in Champions of Krynn, Death Knights of Krynn and Pools of Darkness: choose Move, the D-Pad steps the party across the map, B ends it. Before this the party could not leave the square it stood on - Champions' own saved game starts on that map (fixed in the engine, 0.200.1).
