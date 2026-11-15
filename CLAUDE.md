@@ -98,6 +98,9 @@ and maintains it; it is the primary output of the Claude Project
   party quickly and save them. There's your savegame. Don't let that keep
   you from testing") - in the engine and in the original under DOSBox
   alike (Create New Character with Returns, Add Character to Party).
+  GOG's Curse / PoolRad take **any answer** at the code wheel (Tom);
+  PoolRad in DOSBox needs its folder's parent mounted as C: and
+  `cd POOLRAD`; Curse's and PoolRad's menus take letters, not Return.
 - **Coming from the CYD** (Tom, 2026-11-14): Companion map / party-info
   changes, mostly for the small boards but with effects here, and maybe a
   rearranged party-info layout ("It's hard to read as is"). Don't

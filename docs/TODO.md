@@ -31,9 +31,6 @@ Tick off with the version that did it. Never ask Tom the same thing twice.
       in 260 steps); Queen was checked by screenshots as far as the first
       city menu; the Steam copies and a 16:9 window got a short run only;
       no game was played far past its start.
-- [ ] PoolRad's and Curse's party menus not set beside the originals: the
-      code wheel question comes first (its answer needs the wheel's
-      tables). Their programs have no "Pick Character" string.
 - [ ] **Buttons through every screen kind** with the game files (SPEC
       roadmap 3). Checked so far, Curse (GOG), v0.2.0: titles, party
       menu, Load, Modify, Create Character to the name's keyboard (type,
@@ -81,6 +78,9 @@ Tick off with the version that did it. Never ask Tom the same thing twice.
       land, move the pin and bring `src/panel.*` along.
 
 ## Done
+- [x] 2026-11-14: PoolRad's and Curse's party menus set beside the
+      originals in DOSBox (any answer passes GOG's code wheel - Tom): the
+      same as the engine, no "Pick Character" there. All nine done.
 - [x] v0.9.4 (engine 0.200.5; DOSBox with a made party): Secret's Pick
       Character and its creation questions on Yes; Gateway checked, the
       same.
