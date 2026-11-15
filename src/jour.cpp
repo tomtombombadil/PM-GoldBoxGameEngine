@@ -204,7 +204,7 @@ void make_from_gbc(const library::GameDir& g, const std::string& cache, const st
     const char* title = games::title(g.game);
     const std::string dat = card(gbc + "/Game.dat"), out_path = cache + "/JOURNAL.DAT";
     char id[48];
-    snprintf(id, sizeof id, "gbc5:%u:%u", file_size(dat), pdf.empty() ? 0u : file_size(card(pdf)));
+    snprintf(id, sizeof id, "gbc6:%u:%u", file_size(dat), pdf.empty() ? 0u : file_size(card(pdf)));
     if (made_id(out_path) == id && (pdf.empty() || book_ready(cache))) return;
     Prog pr{say, title, "Processing"};
     std::vector<journal::Section> secs(pdf.empty() ? 0 : journal::kMaxSections);
@@ -243,7 +243,7 @@ void make_from_text(const library::GameDir& g, const std::string& cache, const s
     const char* title = games::title(g.game);
     const std::string out_path = cache + "/JOURNAL.DAT";
     char id[32];
-    snprintf(id, sizeof id, "text2:%u", file_size(card(pdf)));
+    snprintf(id, sizeof id, "text3:%u", file_size(card(pdf)));
     if (made_id(out_path) == id && book_ready(cache)) return;
     Prog pr{say, title, "Processing"};
     std::vector<journal::Section> secs(journal::kMaxSections);

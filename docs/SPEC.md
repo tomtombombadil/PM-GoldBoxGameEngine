@@ -71,6 +71,10 @@ direction keys (`play::fight_dir`, `fight_select`), typed keys
   (`play::exit_point`, added to the engine for this in CYD v0.196.52).
   Never the party menu's "Exit to DOS" - leaving a game is the Start
   menu's Exit Game.
+  At "Pick Character" (the party menu's Drop / Modify / View / Remove
+  ... in every game but PoolRad, Curse and Secret) B goes back to the
+  party menu, as the originals' Esc (CYD 0.200.4). At a Yes / No, B is No
+  (ours - the originals' Esc does nothing there).
 - **Overland maps with a marker** (Champions, Death Knights, Darkness;
   v0.9.1): the menu is "Move Encamp" - Move, then the D-pad steps (the
   engine's `walking()` is true in Move mode since CYD 0.200.1), B = Exit.

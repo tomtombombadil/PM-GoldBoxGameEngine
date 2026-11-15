@@ -1056,7 +1056,7 @@ void apply_options()
 // lists what it does and stays until Continue.
 unsigned shape_seen = ~0u;      // (the picture shape the game list's pictures were last checked for: pictures_follow)
 constexpr char kScanMark[] = "PMSCAN.TXT";      // in the game's _CYD folder: found and its files made
-constexpr char kScanTag[] = "scan 3";       // (2: engine 0.198.1 - journals read anew, music 16-bit; 3: 0.199 - Queen's and Champions' music)
+constexpr char kScanTag[] = "scan 4";       // (2: engine 0.198.1 - journals read anew, music 16-bit; 3: 0.199 - Queen's and Champions' music; 4: 0.200.4 - journal sections read anew)
 std::vector<std::string> scan_log;
 bool                     scan_done = false, scan_progress = false;
 

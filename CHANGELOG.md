@@ -3,6 +3,16 @@
 Every version of Gold Box Game Engine for PortMaster. A release's notes are
 its part of this file.
 
+## [0.9.3] - 2026-11-14
+
+Engine 0.200.4. The party menus (the one with Begin Adventuring) were set beside the original games running in DOSBox, and three things brought into line:
+
+- **B leaves "Pick Character"** in every game, back to the party menu with nobody picked - as Esc does in the originals. (B also still answers No at a Yes / No, and takes a menu's Exit.)
+- **Pools of Darkness and Treasures of the Savage Frontier ask "Pick Character" first** for Drop, Modify, View and Remove, as the originals do. Before, only Darkness's Drop asked; the others acted on the highlighted character at once.
+- **The Dark Queen of Krynn: Delete Character is the original's** - a list of your saved characters that aren't in the party ("delete a character:", Delete / Exit), then "Delete NAME forever?" and "Are you sure?". With none saved: "No characters to delete." (0.9.2 had it dropping a party member - wrong.)
+- Journals: the engine reads two Introductions better (Steam Gateway's was its contents page). This version's first start runs the scan once more to rebuild the journals.
+- Not rechecked against the originals this round: Pool of Radiance, Curse, Secret, Gateway.
+
 ## [0.9.2] - 2026-11-14
 
 - Pre-release. **Death Knights of Krynn: the fight field is grey again**, with its dotted ground - the open squares were black and only the trees and rocks grey. Checked against the original game (engine 0.200.2).

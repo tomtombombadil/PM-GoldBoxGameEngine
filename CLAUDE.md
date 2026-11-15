@@ -87,6 +87,14 @@ and maintains it; it is the primary output of the Claude Project
   player-facing into this repo in the same version (new music -> the
   scan; a Companion change -> `src/panel.*` shows it). Waiting on: a
   minor Companion display change he announced (v0.200.0's yellow trainable classes in the Party view may be it - ask if more is coming).
+- **B = the menu's Exit or a question's No, and out of "Pick Character"**
+  (Tom, 2026-11-14: "use B to exit if there is an exit menu item or 'no'
+  item ... only enhancing it with the B-button-exit feature, not altering
+  the way the games work"). **The games' own menus follow the originals**:
+  when a party-menu / prompt question comes up, run the original in
+  DOSBox beside the engine (CYD CLAUDE.md "DOSBox here";
+  `usescancodes=false`, arrows + Return, letters work in Queen) and make
+  the engine match - in the CYD repo - before adding anything of ours.
 - **The Trainer cheat is left with Begin Adventuring** (Tom, 2026-11-14:
   "B doesn't leave, and that's OK") - don't make B leave it.
 - **A highlighted word must act on A, and the list keys must not drop out
