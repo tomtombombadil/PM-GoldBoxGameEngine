@@ -3,6 +3,13 @@
 Every version of Gold Box Game Engine for PortMaster. A release's notes are
 its part of this file.
 
+## [0.9.1] - 2026-11-14
+
+- Pre-release. **Overland travel works from the D-Pad** in Champions of Krynn, Death Knights of Krynn and Pools of Darkness: choose Move, the D-Pad steps the party across the map, B ends it. Before this the party could not leave the square it stood on - Champions' own saved game starts on that map (fixed in the engine, 0.200.1).
+- Engine 0.200.1: also the Dark Queen's ending pictures, and the classes a character can train in shown in yellow (0.200.0).
+- **Every game was played by a scripted button test** before this release (see the README's Status): no taps, the screen read back after every press.
+- Known: in The Dark Queen of Krynn, Delete Character's "Pick Character" can't be answered with A (L2 / R2 leave it; Pointer Mode works). "Pick Character" in the Krynn games has no B = back: pick one, then Exit. The Trainer cheat is left with Begin Adventuring, not B.
+
 ## [0.9.0] - 2026-11-14
 
 - Pre-release. **Music for The Dark Queen of Krynn and Champions of Krynn** (engine 0.199.0): made from the game's own files by the scan, like the other games' music. This version's first start runs the scan once more to make it.

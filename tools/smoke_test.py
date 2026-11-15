@@ -244,6 +244,11 @@ def main():
         assert "[scan]" not in out, "pictures made again at the next start"
         out = run(exe, g, conf, "wait:100,start,menu:Rescan,a,wait:100,a,right,quit")
         assert out.count("[scan] Found ") == 2, "Rescan Game Files"
+        # (--drive, tools/play_test.py's way in: steps on stdin, the state back after each line)
+        r = subprocess.run([exe, "--games", str(g), "--conf", str(conf), "--drive"], input="wait:100\nright,wait:100\nquit\n",
+                           env=dict(os.environ, SDL_VIDEODRIVER="dummy", SDL_AUDIODRIVER="dummy"),
+                           capture_output=True, text=True, timeout=60)
+        assert r.returncode == 0 and r.stdout.count("[state] screen=") >= 2 and r.stdout.count("[end]") >= 2, "--drive: " + r.stdout[-400:] + r.stderr[-400:]
     update_test(exe)
     logs_test(exe)
     print("smoke test passed")

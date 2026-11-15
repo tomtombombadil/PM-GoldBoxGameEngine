@@ -10,6 +10,8 @@
 #include <SDL.h>
 
 #include <cstdio>
+#include <fcntl.h>
+#include <unistd.h>
 #include <cstdlib>
 #include <cstring>
 #include <string>
@@ -2011,8 +2013,123 @@ std::vector<std::string> script;
 size_t                   script_at = 0;
 Uint32                   script_next = 0;
 
+// ---- Driven from outside (--drive; tools/play_test.py) -----------------------
+// Steps come on stdin, a line at a time (the script's steps, commas between);
+// when a line's steps are done the port answers with what it is showing: a
+// "[state]" line and the game screen READ AS TEXT - each 8 x 8 cell matched
+// against the engine's Clear font (the test sets Game Font: Clear), with a
+// second line saying how each cell is lit (H: boxed / inverse - the
+// highlight; else its ink's colour as a hex digit). A test program can so
+// find a menu's words and see where the highlight is, as a player would.
+bool        drive = false, drive_owes = false;
+std::string drive_in;
+
+void drive_text()
+{
+    // (the glyphs to match: every printable character the font has)
+    static uint64_t glyphs[127];
+    static bool     made = false;
+    if (!made) {
+        made = true;
+        for (int ch = 33; ch < 127; ++ch) {
+            const uint8_t* g = video::glyph(static_cast<char>(ch));
+            uint64_t v = 0;
+            for (int j = 0; j < 8; ++j) v = v << 8 | g[j];
+            glyphs[ch] = v;
+        }
+    }
+    for (int row = 0; row < 25; ++row) {
+        char text[41], lit[41];
+        for (int col = 0; col < 40; ++col) {
+            // The cell's paper: the colour most of it has; its ink: the rest
+            int count[256] = {};
+            uint8_t px[64];
+            for (int j = 0; j < 8; ++j)
+                for (int i = 0; i < 8; ++i) ++count[px[j * 8 + i] = cv.get(col * 8 + i, row * 8 + j)];
+            int paper = 0, ink = -1;
+            for (int v = 1; v < 256; ++v)
+                if (count[v] > count[paper]) paper = v;
+            uint64_t bits = 0;
+            for (int k = 0; k < 64; ++k) {
+                bits = bits << 1 | (px[k] != paper ? 1u : 0u);
+                if (px[k] != paper) ink = px[k];
+            }
+            char ch = bits == 0 ? ' ' : '?';
+            for (int c = 33; c < 127 && ch == '?'; ++c)
+                if (glyphs[c] == bits) ch = static_cast<char>(c);
+            // (a heavy letter - M, N, W - fills more than half its cell: the ink is the common colour)
+            for (int c = 33; c < 127 && ch == '?'; ++c)
+                if (glyphs[c] == ~bits) {
+                    ch = static_cast<char>(c);
+                    const int was = paper;
+                    paper = ink;
+                    ink = was;
+                }
+            // (paper that isn't black: a boxed word - the highlight)
+            const bool boxed = paper != 0 && (ch != '?' || bits == 0);
+            text[col] = ch;
+            lit[col] = boxed ? 'H' : ch == ' ' || ink < 0 ? '.' : "0123456789abcdef"[ink & 15];
+        }
+        text[40] = lit[40] = 0;
+        printf("T|%s|\nL|%s|\n", text, lit);
+    }
+}
+
+void drive_answer()
+{
+    char l1[64] = "", l2[64] = "";
+    if (playing) play::describe(l1, l2, sizeof l1);
+    printf("[state] screen=%s playing=%d walking=%d fighting=%d pad=%d input=%d journal=%d jlist=%d menu=%d quick=%d notice=%d "
+           "panel=%d pos=%d,%d,%d desc=%s|%s\n",
+           screen == Screen::Games ? "games" : screen == Screen::Play ? "play" : screen == Screen::Scan ? "scan" : "message",
+           playing ? 1 : 0, playing && play::walking() ? 1 : 0, playing && play::fighting() ? 1 : 0,
+           playing && play::fight_pad() ? 1 : 0, playing ? static_cast<int>(play::input()) : 0, jour::active() ? 1 : 0,
+           jlist_open ? 1 : 0, menu_open ? 1 : 0, quick_open ? 1 : 0, notice.open ? 1 : 0, panel::open() ? 1 : 0,
+           playing ? play::pos_x() : 0, playing ? play::pos_y() : 0, playing ? play::dir() : 0, l1, l2);
+    if (playing) drive_text();
+    printf("[end]\n");
+    fflush(stdout);
+}
+
+// More steps from stdin (never waits)
+void drive_read()
+{
+    char buf[512];
+    for (;;) {
+        const ssize_t n = read(0, buf, sizeof buf);
+        if (n <= 0) {
+            if (n == 0 && drive_in.empty() && script_at >= script.size() && !drive_owes) quit = true;     // (stdin closed)
+            break;
+        }
+        drive_in.append(buf, static_cast<size_t>(n));
+    }
+    size_t nl;
+    while (script_at >= script.size() && !drive_owes && (nl = drive_in.find('\n')) != std::string::npos) {
+        const std::string line = drive_in.substr(0, nl);
+        drive_in.erase(0, nl + 1);
+        script.clear();
+        script_at = 0;
+        size_t p0 = 0;
+        while (p0 <= line.size()) {
+            const size_t c = line.find(',', p0);
+            const std::string t = line.substr(p0, c == std::string::npos ? std::string::npos : c - p0);
+            if (!t.empty()) script.push_back(t);
+            if (c == std::string::npos) break;
+            p0 = c + 1;
+        }
+        drive_owes = true;
+    }
+}
+
 void script_tick(Uint32 now)
 {
+    if (drive) {
+        drive_read();
+        if (drive_owes && script_at >= script.size() && static_cast<Sint32>(now - script_next) >= 0 && job == Job::None) {
+            drive_owes = false;
+            drive_answer();
+        }
+    }
     if (script_at >= script.size() || static_cast<Sint32>(now - script_next) < 0) return;
     if (job != Job::None) return;                   // (a network job runs: the script waits for it)
     const std::string& t = script[script_at++];
@@ -2110,6 +2227,7 @@ int main(int argc, char** argv)
         else if (a == "--tools" && v) tools_dir = argv[++i];
         else if (a == "--window" && v) sscanf(argv[++i], "%dx%d", &win_w, &win_h);
         else if (a == "--game" && v) auto_game = atoi(argv[++i]);
+        else if (a == "--drive") drive = true;
         else if (a == "--script" && v) {
             std::string s = argv[++i];
             size_t p = 0;
@@ -2161,6 +2279,7 @@ int main(int argc, char** argv)
     }
     // (new games now; the pictures of games found before are checked by the
     // game list once the panel's shape has stood still - pictures_follow)
+    if (drive) fcntl(0, F_SETFL, fcntl(0, F_GETFL, 0) | O_NONBLOCK);
     discover(false, false);
     if (auto_game >= 1 && auto_game <= static_cast<int>(games_found.size())) {
         screen = Screen::Games;         // (--game: straight in, the scan's list not waited at)

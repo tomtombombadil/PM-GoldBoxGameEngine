@@ -9,10 +9,28 @@ This is the handheld version of the
 the same engine (it is built in from that repository, unchanged) with a new
 front end made for a handheld's buttons and screen.
 
-**Status: early development.** The port builds, finds the games and plays
-them (checked on a PC with scripted button presses); it has not been
-play-tested on a handheld yet.
-See [docs/TODO.md](docs/TODO.md).
+**Status: pre-release, playable.** All nine games start and play from the
+buttons alone. What that rests on:
+
+- **On handhelds** (the developer's own): Anbernic RG40XX H, PowKiddy
+  RGB10 MAX3 (16:9) and an R36H, all on ROCKNIX. Other devices and
+  firmwares (Knulli, muOS, ArkOS / dArkOS, AmberELEC ...) should work -
+  the port follows PortMaster's rules and asks nothing unusual of a
+  device - but nobody has reported on them yet. **If you try one, please
+  use Start - Send Logs** and say how it went.
+- **By a scripted test** (`tools/play_test.py`, button presses only, the
+  screen read back) on the GOG copies of the games: title, loading a
+  saved game or making characters, the party menu, walking, overland
+  travel, the area map, the Companion, camping and saving, the journal,
+  Quick Actions, the cheats, and whole fights in Pool of Radiance,
+  Champions of Krynn and Death Knights of Krynn. The released ARM program
+  is also run under emulation. The rules of the games themselves are the
+  CYD engine's, tested there.
+- **Not yet covered:** nobody has played a game from start to finish on a
+  handheld; fights were scripted in three of the nine games only.
+
+Known rough edges are in [docs/TODO.md](docs/TODO.md); each version's
+changes in [CHANGELOG.md](CHANGELOG.md).
 
 ## The games
 
@@ -100,6 +118,9 @@ Start, Select. Sticks and touch screens are optional extras.
 | Select | Pointer Mode: the D-Pad moves a pointer, A taps there, B ends it |
 | Start | The port's menu: display, sound, font, controls, updates, logs, exit game |
 | Select + Start | Quit (PortMaster's usual) |
+
+On an overland map with a marker (Champions of Krynn, Death Knights of
+Krynn, Pools of Darkness): choose **Move**, then the D-Pad steps; B ends it.
 
 In a fight, while a fighter moves or aims: the D-Pad steps (two directions
 together = a diagonal), L1 / R1 / L2 / R2 are the four diagonals, A ends the

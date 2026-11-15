@@ -71,6 +71,11 @@ direction keys (`play::fight_dir`, `fight_select`), typed keys
   (`play::exit_point`, added to the engine for this in CYD v0.196.52).
   Never the party menu's "Exit to DOS" - leaving a game is the Start
   menu's Exit Game.
+- **Overland maps with a marker** (Champions, Death Knights, Darkness;
+  v0.9.1): the menu is "Move Encamp" - Move, then the D-pad steps (the
+  engine's `walking()` is true in Move mode since CYD 0.200.1), B = Exit.
+  The Dark Queen's and PoolRad's / Gateway's overland: the D-pad steps at
+  once.
 - **L2 / R2** (Tom, 2026-11-14): no side-steps on the buttons - L2 / R2
   move the list's line while L1 / R1 move the menu's word, so both of a
   screen's highlights are at hand and the D-pad keeps walking. Look is on

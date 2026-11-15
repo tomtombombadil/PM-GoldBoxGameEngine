@@ -86,7 +86,7 @@ and maintains it; it is the primary output of the Claude Project
   CI is green, adapt the port to any changed call, and wrap anything
   player-facing into this repo in the same version (new music -> the
   scan; a Companion change -> `src/panel.*` shows it). Waiting on: a
-  minor Companion display change he announced (not pushed at v0.199.0).
+  minor Companion display change he announced (not pushed at v0.200.1).
 - **Game list pictures** (Tom, 2026-11-14): Steam box art when the
   Launcher folder is there, else the game's own logo from its folder's
   `goggame-*.ico` / `.dll` as the CYD. If a picture of our own is ever
@@ -211,6 +211,20 @@ and maintains it; it is the primary output of the Claude Project
 - `tools/smoke_test.py <binary>` runs the port with SDL's dummy drivers and
   a `--script` of button presses (no game files). CI runs it on an
   ASan / UBSan build. Extend it with every new screen.
+- **`tools/play_test.py <binary> <games dir> <game n> <out dir> [WxH]`**
+  (2026-11-14, before the Reddit announcement - Tom: "Test it. Test each
+  game"): plays a game with button presses alone through `--drive` (steps
+  on stdin; after each line the port prints its state and the game screen
+  read back as text, `drive_text` in main.cpp) - party set-up, walking,
+  overland Move, Area, the Companion, Encamp / Save, Journal, Quick
+  Actions, the Cheats, a fight. Needs real game files, so it is run by
+  hand on a COPY of the games folder before every release Tom is to
+  announce, every game; the Dark Queen (pictures behind its text) by
+  `play_shots.py`. **The engine's `play::walking()` decides what the D-pad
+  does** - a place where the boards' movement keys work but walking() is
+  false is a place this port can't move (v0.9.1: the Krynn / Darkness
+  overland). The ARM program can be run here too: qemu-user plus an arm64
+  SDL2 sysroot unpacked from Ubuntu's ports debs (`qemu-aarch64 -L <root>`).
 - `tools/play_shots.py <binary> <games dir> <out.png> steps...` plays a
   script and puts a screenshot per step on one sheet (scratch only - real
   game screens). Titles run on their own: give waits between presses
