@@ -85,8 +85,7 @@ and maintains it; it is the primary output of the Claude Project
   are"): when he says the CYD changed, fetch it, move the pin once its
   CI is green, adapt the port to any changed call, and wrap anything
   player-facing into this repo in the same version (new music -> the
-  scan; a Companion change -> `src/panel.*` shows it). Waiting on: a
-  minor Companion display change he announced (v0.200.0's yellow trainable classes in the Party view may be it - ask if more is coming).
+  scan; a Companion change -> `src/panel.*` shows it).
 - **B = the menu's Exit or a question's No, and out of "Pick Character"**
   (Tom, 2026-11-14: "use B to exit if there is an exit menu item or 'no'
   item ... only enhancing it with the B-button-exit feature, not altering
@@ -95,6 +94,15 @@ and maintains it; it is the primary output of the Claude Project
   DOSBox beside the engine (CYD CLAUDE.md "DOSBox here";
   `usescancodes=false`, arrows + Return, letters work in Queen) and make
   the engine match - in the CYD repo - before adding anything of ours.
+- **No saved game is no reason not to test** (Tom, 2026-11-14: "create a
+  party quickly and save them. There's your savegame. Don't let that keep
+  you from testing") - in the engine and in the original under DOSBox
+  alike (Create New Character with Returns, Add Character to Party).
+- **Coming from the CYD** (Tom, 2026-11-14): Companion map / party-info
+  changes, mostly for the small boards but with effects here, and maybe a
+  rearranged party-info layout ("It's hard to read as is"). Don't
+  redesign `src/panel.*`'s Party view meanwhile; when it lands, move the
+  pin and make the port's panel show it in the same version.
 - **The Trainer cheat is left with Begin Adventuring** (Tom, 2026-11-14:
   "B doesn't leave, and that's OK") - don't make B leave it.
 - **A highlighted word must act on A, and the list keys must not drop out

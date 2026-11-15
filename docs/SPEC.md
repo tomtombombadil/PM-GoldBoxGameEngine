@@ -72,7 +72,7 @@ direction keys (`play::fight_dir`, `fight_select`), typed keys
   Never the party menu's "Exit to DOS" - leaving a game is the Start
   menu's Exit Game.
   At "Pick Character" (the party menu's Drop / Modify / View / Remove
-  ... in every game but PoolRad, Curse and Secret) B goes back to the
+  ... in every game but PoolRad and Curse) B goes back to the
   party menu, as the originals' Esc (CYD 0.200.4). At a Yes / No, B is No
   (ours - the originals' Esc does nothing there).
 - **Overland maps with a marker** (Champions, Death Knights, Darkness;

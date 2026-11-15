@@ -3,6 +3,15 @@
 Every version of Gold Box Game Engine for PortMaster. A release's notes are
 its part of this file.
 
+## [0.9.4] - 2026-11-14
+
+Engine 0.200.5 - the rest of the party-menu check against the originals (a character made and added in each, since they ship no usable saved game):
+
+- **Secret of the Silver Blades asks "Pick Character" first** (Select / Exit) for Drop, Modify, View and Remove, as the original does. B leaves it.
+- **Secret's character-creation questions start on Yes** - "Reroll stats?", "Is this icon ok?", "Save NAME?" - as the original's. Careful: A on "Reroll stats?" now rerolls; move to No to keep the stats.
+- Gateway to the Savage Frontier: checked, already the same as the original.
+- Not run: Pool of Radiance and Curse of the Azure Bonds (the originals ask their code wheel question before the menu). Neither has a "Pick Character" prompt in its program.
+
 ## [0.9.3] - 2026-11-14
 
 Engine 0.200.4. The party menus (the one with Begin Adventuring) were set beside the original games running in DOSBox, and three things brought into line:
