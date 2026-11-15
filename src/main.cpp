@@ -1786,11 +1786,20 @@ void button(int b, bool down)
     }
     if (down) select_alone = false;
     if (b <= BRight) {
-        held[b] = down;
         if (!down) {
+            // A tap let go before its step was taken (a fight waits 70 ms for a
+            // diagonal's second direction; a tap can be shorter than that, or
+            // than a frame): the step is taken now, with what was held
+            const bool pointing = ptr_mode && screen == Screen::Play && !menu_open;
+            if (held[b] && last_dir >= 0 && !fired_once && !pointing) {
+                fired_once = true;
+                press(last_dir);
+            }
+            held[b] = false;
             if (last_dir == b) last_dir = -1;
             return;
         }
+        held[b] = true;
         last_dir = b;
         fired_once = false;
         if (held[0] + held[1] + held[2] + held[3] == 1) ptr_held_since = SDL_GetTicks();
@@ -2243,6 +2252,19 @@ void script_tick(Uint32 now)
         if (!found) plat::log("[script] no menu line '%s'\n", want.c_str());
     } else if (t == "quit") {
         quit = true;
+    } else if (t.find('+') != std::string::npos) {
+        // two directions together (a fight's diagonal): up+right
+        int one = -1, two = -1;
+        const std::string x = t.substr(0, t.find('+')), y = t.substr(t.find('+') + 1);
+        for (int b = 0; b <= BRight; ++b) {
+            if (x == kBtnNames[b]) one = b;
+            if (y == kBtnNames[b]) two = b;
+        }
+        if (one >= 0 && two >= 0) {
+            held[one] = held[two] = true;
+            press(two);
+            held[one] = held[two] = false;
+        } else plat::log("[script] unknown step '%s'\n", t.c_str());
     } else {
         bool found = false;
         for (int b = 0; b < BCount; ++b)
@@ -2250,6 +2272,12 @@ void script_tick(Uint32 now)
                 if (b == BSelect) {
                     button(b, true);
                     button(b, false);
+                } else if (b <= BRight) {
+                    // (a direction: held while it acts, as a real press - a fight's pad reads what is held)
+                    select_alone = false;
+                    held[b] = true;
+                    press(mapped(b));
+                    held[b] = false;
                 } else {
                     select_alone = false;
                     press(mapped(b));

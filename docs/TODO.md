@@ -47,10 +47,27 @@ Tick off with the version that did it. Never ask Tom the same thing twice.
       engine shift of -1 (fixed, 0.202.1). Known test misses, not the
       port's: Steam Secret's opening fight is over before the fight steps;
       Champions' overland has no Area map.
-      **Still to do (Tom's list, 2026-11-15)**: 1 fights by hand in every
-      game, 2 camp / spells / items, 3 shops / temples / training in
-      place, 4 creation to the end + icon screens, 6 a journal mention
-      reached by playing, 8 playing further in.
+      v0.10.3's round (tools/hand_test.py, GOG, 640 x 480): **fights by
+      hand** - Move by D-pad, two directions together and L1 / R1 / L2 / R2
+      all step the fighter in PoolRad, Curse, Champions, Queen, Gateway,
+      Treasures; Aim (Next, Target) and Aim - Manual (the pad moves the
+      aim) in PoolRad, Curse, Champions, Gateway, Treasures; Cast - spell
+      - Target in PoolRad and Treasures; Done's menu (Delay) in PoolRad,
+      Curse, Champions; the treasure menu in PoolRad, Curse, Champions.
+      NOT fought: Secret (no fight in 2,000 steps, 203 squares, GOG and
+      Steam), Darkness (4,000 steps), Knights (GOG 2,000 steps; the Steam
+      run looped at a Yes / No square) - their saves start in quiet
+      places; Queen's Aim / Cast (the test loses its menu after the
+      moves). **Menus** (Cast, View - Items / Spells / Trade / Drop,
+      Encamp - Magic / Rest / Alter / Fix, four deep, every word lit and
+      taken, B back): PoolRad, Curse, Secret, Darkness, Knights, Gateway,
+      Treasures whole; Champions its camp only (its save starts
+      overland); Queen in part (the test can't read its coin prompt).
+      Nothing found wrong in them.
+      **Still to do (Tom's list, 2026-11-15)**: 3 shops / temples /
+      training in place, 4 creation to the end + icon screens, 6 a journal
+      mention reached by playing, 8 playing further in (would also reach
+      fights in Secret, Darkness, Knights).
 - [ ] **Buttons through every screen kind** with the game files (SPEC
       roadmap 3). Checked so far, Curse (GOG), v0.2.0: titles, party
       menu, Load, Modify, Create Character to the name's keyboard (type,
@@ -92,12 +109,14 @@ Tick off with the version that did it. Never ask Tom the same thing twice.
 - [ ] Before a PortMaster submission: `port.json` against their
       generator / checks (`availability`, `store`, `min_glibc` unverified),
       the gameplay screenshot (Tom: later), an armhf build if wanted.
-- [ ] Keep the `cyd` pin current (built on CYD 0.202.1). Tom, 2026-11-14:
+- [ ] Keep the `cyd` pin current (built on CYD 0.203.2). Tom, 2026-11-14:
       Companion map / party-info changes are in work in the CYD (small
       boards first; the party-info layout may be rearranged) - when they
       land, move the pin and bring `src/panel.*` along.
 
 ## Done
+- [x] v0.10.3 (Tom, 2026-11-15: phase 1 - fights by hand, camp / spells / items; engine 0.203.2): a D-pad tap
+      under 70 ms in a fight's Move / Aim was lost - fixed; `tools/hand_test.py`. Coverage above.
 - [x] v0.10.2 (Tom, 2026-11-15: the five cheap tests; engine 0.202.1): results above; `tools/save_test.py`, `tools/monkey_test.py`.
 - [x] v0.10.1 (Tom, 2026-11-15: "Go ahead with your testing"; engine 0.201.2): the button test on
       every game in three window shapes and both releases. Found and fixed: the Dark Queen's Create

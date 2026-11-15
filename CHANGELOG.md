@@ -3,6 +3,14 @@
 Every version of Gold Box Game Engine for PortMaster. A release's notes are
 its part of this file.
 
+## [0.10.3] - 2026-11-15
+
+Engine 0.203.2. From the third test round: fights played by hand and the camp / spells / items menus walked through, by buttons.
+
+- **A quick D-pad tap in a fight could be lost.** While a fighter moves or aims, the port waits 70 ms after a direction for a second one (two together = a diagonal). A tap let go sooner than that did nothing. Now the step is taken when the button comes up. (Found by reading the code after the test's own taps did nothing; on a device it would have shown as the odd tap being ignored.)
+- Engine 0.203.x (the CYD session's): every game's demo runs to its end; the Dark Queen's area spells.
+- New test tool `tools/hand_test.py`; the test scripts can press two directions together (`up+right`).
+
 ## [0.10.2] - 2026-11-15
 
 Engine 0.202.1. Nothing a player would notice was wrong; this is the result of the second test round.

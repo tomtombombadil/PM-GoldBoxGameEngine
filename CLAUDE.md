@@ -279,6 +279,20 @@ and maintains it; it is the primary output of the Claude Project
   nowhere). Use copies already scanned by this version (a scan under the
   sanitizer or qemu takes very long). The update across REAL releases was
   checked by hand once (v0.9.4 -> v0.10.1, scratch script).
+- `tools/hand_test.py <binary> <games copy> <n> <out> [fight|menus|both]`
+  (v0.10.3): `fight` walks the map through square by square until a fight
+  starts, then on our fighters' turns tries Move (D-pad straight, two
+  directions together, L1 / R1 / L2 / R2), Aim, Aim - Manual, Cast, Done's
+  menu, then Quick and the treasure menu; `menus` takes every word of
+  Cast / View / Encamp with A, notes its screen, B back, four deep. Its
+  "!!" lines need a look - most so far were the test's own (a message a
+  member that wants a press each, the icon gallery left by B then Yes,
+  the Dark Queen's off-grid prompts). Script steps: a direction is HELD
+  while it acts (a fight's pad reads what is held), `up+right` = two
+  together.
+- **A direction let go before its step was taken still steps** (v0.10.3:
+  a fight waits 70 ms for a diagonal's second direction; shorter taps
+  were lost) - `button()` in main.cpp; keep it when touching the D-pad.
 - `tools/play_shots.py <binary> <games dir> <out.png> steps...` plays a
   script and puts a screenshot per step on one sheet (scratch only - real
   game screens). Titles run on their own: give waits between presses
