@@ -269,6 +269,16 @@ and maintains it; it is the primary output of the Claude Project
   false is a place this port can't move (v0.9.1: the Krynn / Darkness
   overland). The ARM program can be run here too: qemu-user plus an arm64
   SDL2 sysroot unpacked from Ubuntu's ports debs (`qemu-aarch64 -L <root>`).
+- `tools/save_test.py <binary> <games copy> <n> <out>` (v0.10.2): save,
+  quit the port, start anew, load - the same place? The binary may be the
+  ARM program's qemu wrapper. `tools/monkey_test.py <sanitizer build>
+  <games copy> <n> <presses>`: random presses and resizes, looking for a
+  crash or a sanitizer report (build with `-DCMAKE_BUILD_TYPE=RelWithDebInfo
+  -DCMAKE_CXX_FLAGS="-fsanitize=address,undefined"`; a Debug build is too
+  slow for the screen reader; its Send Logs / update addresses point
+  nowhere). Use copies already scanned by this version (a scan under the
+  sanitizer or qemu takes very long). The update across REAL releases was
+  checked by hand once (v0.9.4 -> v0.10.1, scratch script).
 - `tools/play_shots.py <binary> <games dir> <out.png> steps...` plays a
   script and puts a screenshot per step on one sheet (scratch only - real
   game screens). Titles run on their own: give waits between presses

@@ -3,6 +3,17 @@
 Every version of Gold Box Game Engine for PortMaster. A release's notes are
 its part of this file.
 
+## [0.10.2] - 2026-11-15
+
+Engine 0.202.1. Nothing a player would notice was wrong; this is the result of the second test round.
+
+- One fault found by 2,500 random button presses a game on a checking build: the engine shifted -1 while working out whether the Companion's Battle view had changed (no effect on what was drawn; fixed in the engine, 0.202.1). No crash in any of the nine games, window resizes included.
+- Save, quit the port, start it again, load: the party is where it was - all nine GOG games and the ten Steam folders, and all nine again with the handheld (ARM) program under emulation.
+- Updating from v0.9.4 with its own Check for Updates to v0.10.1 (the real release files): settings and saves kept, journals made anew once.
+- The button test at 1280 x 720 and 720 x 720 on the Steam folders and again on the GOG ones: clean.
+- Engine 0.202.0 (the CYD session's): the Dark Queen's area spells' bursts.
+- New test tools: `tools/save_test.py`, `tools/monkey_test.py`.
+
 ## [0.10.1] - 2026-11-15
 
 Engine 0.201.2. From the button test of every game (below).

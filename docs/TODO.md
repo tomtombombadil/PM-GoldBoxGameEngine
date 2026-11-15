@@ -39,8 +39,18 @@ Tick off with the version that did it. Never ask Tom the same thing twice.
       Steam folders at 640 x 480): a fight was met and played to its end
       only in PoolRad, Treasures (GOG - the party fell), Champions and
       Knights (Steam); Curse, Secret, Darkness, Gateway and Queen met none
-      in 260 steps. No game was played far past its start. Nothing on a
-      device or under ARM emulation this round.
+      in 260 steps. No game was played far past its start.
+      v0.10.2's round (2026-11-15, the "cheap" five): save / quit / reload
+      (9 GOG + 10 Steam; 9 GOG under ARM emulation), Steam + GOG at 1280 x
+      720 and 720 x 720, 2,500 random presses a game on a sanitizer build,
+      the update v0.9.4 -> v0.10.1 from the real zips - all clean but one
+      engine shift of -1 (fixed, 0.202.1). Known test misses, not the
+      port's: Steam Secret's opening fight is over before the fight steps;
+      Champions' overland has no Area map.
+      **Still to do (Tom's list, 2026-11-15)**: 1 fights by hand in every
+      game, 2 camp / spells / items, 3 shops / temples / training in
+      place, 4 creation to the end + icon screens, 6 a journal mention
+      reached by playing, 8 playing further in.
 - [ ] **Buttons through every screen kind** with the game files (SPEC
       roadmap 3). Checked so far, Curse (GOG), v0.2.0: titles, party
       menu, Load, Modify, Create Character to the name's keyboard (type,
@@ -82,12 +92,13 @@ Tick off with the version that did it. Never ask Tom the same thing twice.
 - [ ] Before a PortMaster submission: `port.json` against their
       generator / checks (`availability`, `store`, `min_glibc` unverified),
       the gameplay screenshot (Tom: later), an armhf build if wanted.
-- [ ] Keep the `cyd` pin current (built on CYD 0.201.2). Tom, 2026-11-14:
+- [ ] Keep the `cyd` pin current (built on CYD 0.202.1). Tom, 2026-11-14:
       Companion map / party-info changes are in work in the CYD (small
       boards first; the party-info layout may be rearranged) - when they
       land, move the pin and bring `src/panel.*` along.
 
 ## Done
+- [x] v0.10.2 (Tom, 2026-11-15: the five cheap tests; engine 0.202.1): results above; `tools/save_test.py`, `tools/monkey_test.py`.
 - [x] v0.10.1 (Tom, 2026-11-15: "Go ahead with your testing"; engine 0.201.2): the button test on
       every game in three window shapes and both releases. Found and fixed: the Dark Queen's Create
       Character form's two highlights (engine 0.201.1), its knights "Monk" on the Party view
