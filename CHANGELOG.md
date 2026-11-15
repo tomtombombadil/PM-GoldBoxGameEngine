@@ -3,6 +3,16 @@
 Every version of Gold Box Game Engine for PortMaster. A release's notes are
 its part of this file.
 
+## [0.10.1] - 2026-11-15
+
+Engine 0.201.2. From the button test of every game (below).
+
+- **The Dark Queen of Krynn, Create Character:** the form showed two white boxes at once - a choice and "Done" - and A acted on the choice, so it wasn't clear how to finish. Now one box, as on Modify: Up / Down move over the choices and A picks one; L1 / R1 light "Done" (and "Exit"), and A takes it. (Fixed in the engine, so the CYD boards' cursor keys have it too.)
+- **The Dark Queen's knights** read "Monk" on the Companion's Party view - now "Knight" (engine fix).
+- Journals are made anew once after this update (the scan's screen at the first start) - v0.10.0 said so but only did it for games found new. With engine 0.201.0's corrected entry 45 of Secret's GOG journal and 0.200.6's Steam Treasures entries.
+- Engine 0.201.0 (the CYD session's): caster levels, Death Knights' Heal / Remove Curse, PoolRad's camp Animate Dead, the Dark Queen's "Exit to DOS?" question.
+- The button test (`tools/play_test.py`) now reads text over pictures and off the 8-pixel grid, so Treasures and the Dark Queen are played by it like the others.
+
 ## [0.10.0] - 2026-11-15
 
 Engine 0.200.9.

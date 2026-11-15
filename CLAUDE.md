@@ -121,6 +121,9 @@ and maintains it; it is the primary output of the Claude Project
   pin and make the port's panel show it in the same version.
 - **The Trainer cheat is left with Begin Adventuring** (Tom, 2026-11-14:
   "B doesn't leave, and that's OK") - don't make B leave it.
+- **A scan-tag bump (`kScanTag`) makes every journal anew** at the next
+  start (v0.10.1) - bump it whenever the journal making changes, here or
+  in the engine (its tables too: their ids don't change).
 - **A highlighted word must act on A, and the list keys must not drop out
   of a prompt** (Tom, 2026-11-14, the Dark Queen's Pick Character): where
   they don't, it is an engine bug in `play::nav` / `nav_point` - fix it
@@ -257,8 +260,11 @@ and maintains it; it is the primary output of the Claude Project
   overland Move, Area, the Companion, Encamp / Save, Journal, Quick
   Actions, the Cheats, a fight. Needs real game files, so it is run by
   hand on a COPY of the games folder before every release Tom is to
-  announce, every game; the Dark Queen (pictures behind its text) by
-  `play_shots.py`. **The engine's `play::walking()` decides what the D-pad
+  announce, every game (since v0.10.1 the reader takes text over pictures
+  and off the 8-pixel grid - lines after the 25 - so Treasures and the
+  Dark Queen are played too; a boxed word = WHITE paper; `canvas=` in the
+  state is the picture's sum, `title=` / `dock=` the title screens / the
+  docked Companion). **The engine's `play::walking()` decides what the D-pad
   does** - a place where the boards' movement keys work but walking() is
   false is a place this port can't move (v0.9.1: the Krynn / Darkness
   overland). The ARM program can be run here too: qemu-user plus an arm64

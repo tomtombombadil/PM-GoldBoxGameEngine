@@ -1061,7 +1061,7 @@ void apply_options()
 // lists what it does and stays until Continue.
 unsigned shape_seen = ~0u;      // (the picture shape the game list's pictures were last checked for: pictures_follow)
 constexpr char kScanMark[] = "PMSCAN.TXT";      // in the game's _CYD folder: found and its files made
-constexpr char kScanTag[] = "scan 4";       // (2: engine 0.198.1 - journals read anew, music 16-bit; 3: 0.199 - Queen's and Champions' music; 4: 0.200.4 - journal sections read anew; 5: 0.200.6 - the Steam Treasures journal)
+constexpr char kScanTag[] = "scan 5";       // (2: engine 0.198.1 - journals read anew, music 16-bit; 3: 0.199 - Queen's and Champions' music; 4: 0.200.4 - journal sections read anew; 5: 0.200.6 / 0.201.0 - the Steam Treasures journal, GOG Secret entry 45: journals made anew)
 std::vector<std::string> scan_log;
 bool                     scan_done = false, scan_progress = false;
 
@@ -1179,7 +1179,9 @@ bool discover(bool all, bool pictures = true)
         if (!g.hlib) play::prepare_program(g.data_dir.c_str(), g.game, cache.c_str());
         scan_picture(g, cache);
         // Its Adventurer's Journal, from the player's own PDF
-        if (all) {
+        // (anew on Rescan, and when an older version's scan made it - a new
+        //  scan tag means the journal making changed, here or in the engine)
+        if (all || plat::exists((cache + "/" + kScanMark).c_str())) {
             plat::remove((cache + "/JOURNAL.DAT").c_str());
             plat::remove((cache + "/BOOK.TXT").c_str());
         }
@@ -2043,41 +2045,106 @@ void drive_text()
             glyphs[ch] = v;
         }
     }
+    // A cell at any pixel place: its letter ('?' unread, ' ' empty) and its mark
+    auto cell = [&](int x0, int y0, char& out, char& mark) {
+        // The cell's paper: the colour most of it has; its ink: the rest
+        int count[256] = {};
+        uint8_t px[64];
+        for (int j = 0; j < 8; ++j)
+            for (int i = 0; i < 8; ++i) ++count[px[j * 8 + i] = cv.get(x0 + i, y0 + j)];
+        int paper = 0, ink = -1;
+        for (int v = 1; v < 256; ++v)
+            if (count[v] > count[paper]) paper = v;
+        uint64_t bits = 0;
+        for (int k = 0; k < 64; ++k) {
+            bits = bits << 1 | (px[k] != paper ? 1u : 0u);
+            if (px[k] != paper) ink = px[k];
+        }
+        char ch = bits == 0 ? ' ' : '?';
+        for (int c = 33; c < 127 && ch == '?'; ++c)
+            if (glyphs[c] == bits) ch = static_cast<char>(c);
+        // (a heavy letter - M, N, W - fills more than half its cell: the ink is the common colour)
+        for (int c = 33; c < 127 && ch == '?'; ++c)
+            if (glyphs[c] == ~bits) {
+                ch = static_cast<char>(c);
+                const int was = paper;
+                paper = ink;
+                ink = was;
+            }
+        // (text over a picture - Treasures, the Dark Queen: the paper is many
+        //  colours, the letter one. A colour whose pixels alone are a letter's.)
+        bool over = false;
+        for (int v = 0; v < 256 && ch == '?'; ++v) {
+            if (count[v] < 8 || count[v] > 40) continue;
+            uint64_t b2 = 0;
+            for (int k = 0; k < 64; ++k) b2 = b2 << 1 | (px[k] == v ? 1u : 0u);
+            for (int c = 33; c < 127; ++c)
+                if (glyphs[c] == b2) {
+                    ch = static_cast<char>(c);
+                    ink = v;
+                    over = true;
+                    break;
+                }
+        }
+        // (white paper: a boxed word - the highlight. The Dark Queen's keys have a paper of their own.)
+        const uint32_t rgb = video::palette(paper);
+        const bool white = (rgb >> 16 & 255) + (rgb >> 8 & 255) + (rgb & 255) > 600;
+        const bool boxed = !over && white && (ch != '?' || bits == 0);
+        out = ch;
+        mark = boxed ? 'H' : ch == ' ' || ink < 0 ? '.' : "0123456789abcdef"[ink & 15];
+    };
+    int unread = 0;
     for (int row = 0; row < 25; ++row) {
         char text[41], lit[41];
         for (int col = 0; col < 40; ++col) {
-            // The cell's paper: the colour most of it has; its ink: the rest
-            int count[256] = {};
-            uint8_t px[64];
-            for (int j = 0; j < 8; ++j)
-                for (int i = 0; i < 8; ++i) ++count[px[j * 8 + i] = cv.get(col * 8 + i, row * 8 + j)];
-            int paper = 0, ink = -1;
-            for (int v = 1; v < 256; ++v)
-                if (count[v] > count[paper]) paper = v;
-            uint64_t bits = 0;
-            for (int k = 0; k < 64; ++k) {
-                bits = bits << 1 | (px[k] != paper ? 1u : 0u);
-                if (px[k] != paper) ink = px[k];
-            }
-            char ch = bits == 0 ? ' ' : '?';
-            for (int c = 33; c < 127 && ch == '?'; ++c)
-                if (glyphs[c] == bits) ch = static_cast<char>(c);
-            // (a heavy letter - M, N, W - fills more than half its cell: the ink is the common colour)
-            for (int c = 33; c < 127 && ch == '?'; ++c)
-                if (glyphs[c] == ~bits) {
-                    ch = static_cast<char>(c);
-                    const int was = paper;
-                    paper = ink;
-                    ink = was;
-                }
-            // (paper that isn't black: a boxed word - the highlight)
-            const bool boxed = paper != 0 && (ch != '?' || bits == 0);
-            text[col] = ch;
-            lit[col] = boxed ? 'H' : ch == ' ' || ink < 0 ? '.' : "0123456789abcdef"[ink & 15];
+            cell(col * 8, row * 8, text[col], lit[col]);
+            if (text[col] == '?') ++unread;
         }
         text[40] = lit[40] = 0;
         printf("T|%s|\nL|%s|\n", text, lit);
     }
+    // Text that isn't on the 8-pixel grid (the Dark Queen's party menu: its
+    // keys stand where its picture has them): lines read at any pixel place,
+    // after the 25 - only on a screen the grid left mostly unread
+    if (unread < 200) return;
+    for (int y = 0; y <= 192; ++y) {
+        int  best = 0;
+        char bt[41], bl[41];
+        for (int xo = 0; xo < 8; ++xo) {
+            if (y % 8 == 0 && xo == 0) continue;
+            char text[41], lit[41];
+            int  got = 0, run = 0, longest = 0;
+            for (int col = 0; col < 40; ++col) {
+                text[col] = '?';
+                lit[col] = '.';
+                if (col * 8 + xo + 8 <= 320) cell(col * 8 + xo, y, text[col], lit[col]);
+                const bool letter = text[col] != '?' && text[col] != ' ';
+                // (a boxed space belongs to a boxed word; a plain one over a picture reads '?')
+                run = letter || (text[col] == ' ' && run > 0) ? run + 1 : 0;
+                if (letter) ++got;
+                if (run > longest) longest = run;
+            }
+            if (longest >= 4 && got > best) {
+                best = got;
+                text[40] = lit[40] = 0;
+                memcpy(bt, text, 41);
+                memcpy(bl, lit, 41);
+            }
+        }
+        if (best >= 4) {
+            printf("T|%s|\nL|%s|\n", bt, bl);
+            y += 7;
+        }
+    }
+}
+
+// (the game screen's pixels as one number: has the picture changed?)
+uint32_t canvas_sum()
+{
+    uint32_t h = 2166136261u;
+    for (int y = 0; y < 200; ++y)
+        for (int x = 0; x < 320; ++x) h = (h ^ cv.get(x, y)) * 16777619u;
+    return h;
 }
 
 void drive_answer()
@@ -2085,11 +2152,11 @@ void drive_answer()
     char l1[64] = "", l2[64] = "";
     if (playing) play::describe(l1, l2, sizeof l1);
     printf("[state] screen=%s playing=%d walking=%d fighting=%d pad=%d input=%d journal=%d jlist=%d menu=%d quick=%d notice=%d "
-           "panel=%d dock=%d title=%d pos=%d,%d,%d desc=%s|%s\n",
+           "panel=%d dock=%d title=%d canvas=%08x pos=%d,%d,%d desc=%s|%s\n",
            screen == Screen::Games ? "games" : screen == Screen::Play ? "play" : screen == Screen::Scan ? "scan" : "message",
            playing ? 1 : 0, playing && play::walking() ? 1 : 0, playing && play::fighting() ? 1 : 0,
            playing && play::fight_pad() ? 1 : 0, playing ? static_cast<int>(play::input()) : 0, jour::active() ? 1 : 0,
-           jlist_open ? 1 : 0, menu_open ? 1 : 0, quick_open ? 1 : 0, notice.open ? 1 : 0, panel::open() ? 1 : 0, panel::docked_on() ? 1 : 0, in_title() ? 1 : 0,
+           jlist_open ? 1 : 0, menu_open ? 1 : 0, quick_open ? 1 : 0, notice.open ? 1 : 0, panel::open() ? 1 : 0, panel::docked_on() ? 1 : 0, in_title() ? 1 : 0, canvas_sum(),
            playing ? play::pos_x() : 0, playing ? play::pos_y() : 0, playing ? play::dir() : 0, l1, l2);
     if (playing) drive_text();
     printf("[end]\n");

@@ -5,7 +5,7 @@
 
 The port is started with --drive (src/main.cpp): script steps come in on stdin, and after each
 line it answers with its state and the game screen read back as text (each 8 x 8 cell matched
-against the Clear font; pictures read as '?'). The test never taps: every step is a button a
+against the game's font, also over a picture and off the 8-pixel grid; what can't be read is '?'). The test never taps: every step is a button a
 handheld has. Per game it does: title -> party menu, Load Saved Game (or two characters made
 and added where the release ships no saved game), View, Begin Adventuring, D-pad walking (an
 overland map: Move, steps, B = Exit), X = Area, Y = the Companion, Encamp -> Save, the Start
@@ -15,8 +15,8 @@ pad, then Quick / Auto to its end, the treasure, back to exploring).
 It needs real game files, so it is run by hand, not by CI; give each run a COPY of the games
 folder (it saves over slot A). Notes go to <out>/<n>.notes as they are made, every press with
 the menu line it led to to <out>/<n>.trail, screenshots (real game screens: scratch only, never
-the repo) to <out>. The Dark Queen's screens are pictures the reader can't read: check that
-game with --script and shot: steps (tools/play_shots.py).
+the repo) to <out>. The Dark Queen is played too since v0.10.1 (its menus read off the grid; its
+saved game starts in Palanthas - the Palace's errand, then Leave).
 """
 import os, random, re, subprocess, sys, time
 
@@ -47,6 +47,11 @@ class Port:
             elif line.startswith("L|"): lit.append(line[2:42])
             elif line == "[end]": break
             elif not line.startswith("[script]"): self.log.append(line + "\n")
+        # (the Dark Queen's menu line stands off the 8-pixel grid, on its picture: the port sends
+        # such lines after the 25 - the lowest of them stands for row 24 when that one can't be read)
+        if len(text) > 25 and text[24].count("?") > 20:
+            text[24] = text[-1].replace("?", " ")
+            lit[24] = lit[-1]
         self.text, self.lit = text, lit
         return self
     def show(self):
@@ -67,7 +72,10 @@ class Port:
                     return r, c
         return None
     def has(self, word): return self.find(word) is not None
-    def lit_at(self, r, c): return self.lit[r][c] == "H"
+    def lit_at(self, r, c, n=1):
+        # (over a picture single cells read as boxed by chance: a lit word is lit nearly all along)
+        seg = self.lit[r][c:c + n]
+        return seg.count("H") * 10 >= len(seg) * 8
     def quit(self):
         try:
             self.p.stdin.write("quit\n"); self.p.stdin.flush(); self.p.wait(10)
@@ -82,13 +90,17 @@ def to_party_menu(p, tries=30):
         p.do("a,wait:700")
     return -1
 
+def pm(p):
+    """The party menu is up (the Dark Queen's says Create Character)"""
+    return p.has("Create New Character") or p.has("Create Character")
+
 def goto_line(p, word, key="r2", tries=16):
     """The list's highlight moved (L2 / R2) onto the line holding word; True when it is lit"""
     for i in range(tries):
         at = p.find(word)
         if at is None: return False
         r, c = at
-        if p.lit_at(r, c): return True
+        if p.lit_at(r, c, len(word)): return True
         p.do(key + ",wait:120")
     return False
 
@@ -141,6 +153,10 @@ class Run:
             return self.do("a,wait:600")
         if ("Press" in b or "press" in b or "continue" in b or len(self.words()) <= 1):
             return self.do("a,wait:500")
+        if "Palace" in self.words() and "Leave" in self.words():
+            # (the Dark Queen's first city: the Palace's errand first, then Leave lets the party go)
+            self.city = getattr(self, "city", 0) + 1
+            if goto_word(self.p, "Palace" if self.city % 2 else "Leave"): return self.do("a,wait:500")
         for w in ("Exit", "Continue", "No", "Leave", "Done"):
             if w in self.words() and goto_word(self.p, w):
                 return self.do("a,wait:500")
@@ -164,20 +180,23 @@ def create(r, name):
     typed on the port's keyboard, the icon as it comes"""
     p = r.p
     before = count(p)
-    if not goto_line(p, "Create New"): return False
+    if not (goto_line(p, "Create New") or goto_line(p, "Create Character")): return False
     r.do("a,wait:600")
     for i in range(60):
-        if p.has("Create New Character") and i > 3: return True
+        if pm(p) and i > 3: return True
         b = r.bottom()
         w = r.words()
         if p.st["input"] != "0":
             r.do(f"type:{name},wait:200,y,wait:600")
+        elif p.has("PICK RACE"):
+            # (the Dark Queen's form: the choices as they stand; L1 / R1 light Done, A takes it)
+            r.do("r1,wait:200"); r.do("a,wait:700")
         elif "Reroll" in b and goto_word(p, "No"): r.do("a,wait:600")
         elif "Keep" in w and goto_word(p, "Keep"): r.do("a,wait:600")
         elif "Done" in w and goto_word(p, "Done"): r.do("a,wait:600")
         elif "Yes" in w and goto_word(p, "Yes"): r.do("a,wait:600")
         else: r.do("a,wait:600")
-    return p.has("Create New Character") and count(p) >= before
+    return pm(p) and count(p) >= before
 
 def add(r, name):
     p = r.p
@@ -192,7 +211,7 @@ def add(r, name):
         r.do("a,wait:600")
     ok = count(p) > before
     for i in range(6):
-        if p.has("Create New Character") and "Select" in r.bottom(): break
+        if pm(p) and "Select" in r.bottom(): break
         r.do("b,wait:500")
     return ok
 
@@ -229,7 +248,8 @@ def start(r):
             r.do("a,wait:1500")
         elif goto_line(p, "View Character"):
             r.do("a,wait:600")
-            if "Pick Character" in r.bottom(): r.do("a,wait:600")
+            # ("Pick Character" - or its like: the party menu still up - takes one more A)
+            if "Pick Character" in r.bottom() or p.st["desc"].startswith("Party"): r.do("a,wait:600")
             v = p.st["desc"].startswith("View") or "Items" in r.bottom(); r.do("b,wait:500")
             r.note("  View Character, B back:", "OK" if v and p.has("Begin Adventuring") else "FAILED")
         if p.has("Begin Adventuring"):
@@ -276,7 +296,10 @@ def phase2(r, games, t0):
     for k in ["up", "right", "up", "left", "left", "up", "right", "right", "up", "down", "up"]:
         r.do(k + ",wait:450")
         seen.add(p.st["pos"])
-        if not r.exploring(): break
+        if not r.exploring():
+            # (a step set a story or a fight off: through it, then on with the walk)
+            calm(r)
+            if not r.exploring(): break
     if r.words() == ["Move", "Encamp"]:
         # an overland map with a marker: Move, then the D-pad steps, B = Exit
         from PIL import Image, ImageChops
@@ -292,8 +315,12 @@ def phase2(r, games, t0):
         r.note("  D-pad walks / turns:", "OK" if len(seen) > 2 else "FAILED", f"({len(seen)} positions from {pos0})")
     calm(r)
     # --- X = Area
-    a = "".join(p.text[:16]); r.do("x,wait:500"); b = "".join(p.text[:16]); shot(r, "area"); r.do("x,wait:500"); c = "".join(p.text[:16])
-    r.note("  X = Area map and back:", "OK" if a != b and a == c else f"? (changed {a != b}, back {a == c})")
+    # (the picture's own sum: Treasures' and the Dark Queen's screens don't read as text)
+    # (back: the 3D view again - its text as before; the picture's sum where the text can't tell,
+    # though an animated picture's sum moves on)
+    def look(): return p.st.get("canvas"), "".join(p.text[:16])
+    a = look(); r.do("x,wait:500"); b = look(); shot(r, "area"); r.do("x,wait:500"); c = look()
+    r.note("  X = Area map and back:", "OK" if a[0] != b[0] and (a[0] == c[0] or (a[1] == c[1] and a[1] != b[1])) else f"? (changed {a[0] != b[0]}, back {a[0] == c[0]})")
     # --- Y = Companion (beside / under the game on a wide / square panel: Y takes it away and brings it back)
     if p.st.get("dock") == "1":
         shot(r, "companion")
@@ -393,6 +420,10 @@ def fight(r):
         n += 1
     r.note("  fight ended:", "OK" if p.st["fighting"] != "1" else "STILL FIGHTING", f"after {n} presses ->", r.bottom())
     shot(r, "afterfight")
+    if p.st["desc"].startswith("Party") and "|0 char" in p.st["desc"]:
+        # (Quick lost the fight: the game is back at its party menu with nobody - not a fault)
+        r.note("  the party fell in that fight: the game went back to its party menu, as it does")
+        return
     ok = r.settle(60)
     r.note("  back to exploring after the fight / treasure:", "OK" if ok and r.exploring() else "FAILED - " + r.bottom() + " | " + p.st["desc"])
 

@@ -34,11 +34,13 @@ Tick off with the version that did it. Never ask Tom the same thing twice.
       not a bug fix; your OK needed.
 
 ## Claude
-- [ ] Button test gaps (tools/play_test.py, 2026-11-14): fights were
-      scripted only in PoolRad, Champions and Knights (the others met none
-      in 260 steps); Queen was checked by screenshots as far as the first
-      city menu; the Steam copies and a 16:9 window got a short run only;
-      no game was played far past its start.
+- [ ] Button test gaps (tools/play_test.py; v0.10.1's runs, 2026-11-15:
+      all nine GOG games at 640 x 480, 1280 x 720 and 720 x 720, the ten
+      Steam folders at 640 x 480): a fight was met and played to its end
+      only in PoolRad, Treasures (GOG - the party fell), Champions and
+      Knights (Steam); Curse, Secret, Darkness, Gateway and Queen met none
+      in 260 steps. No game was played far past its start. Nothing on a
+      device or under ARM emulation this round.
 - [ ] **Buttons through every screen kind** with the game files (SPEC
       roadmap 3). Checked so far, Curse (GOG), v0.2.0: titles, party
       menu, Load, Modify, Create Character to the name's keyboard (type,
@@ -80,12 +82,17 @@ Tick off with the version that did it. Never ask Tom the same thing twice.
 - [ ] Before a PortMaster submission: `port.json` against their
       generator / checks (`availability`, `store`, `min_glibc` unverified),
       the gameplay screenshot (Tom: later), an armhf build if wanted.
-- [ ] Keep the `cyd` pin current (built on CYD 0.200.9). Tom, 2026-11-14:
+- [ ] Keep the `cyd` pin current (built on CYD 0.201.2). Tom, 2026-11-14:
       Companion map / party-info changes are in work in the CYD (small
       boards first; the party-info layout may be rearranged) - when they
       land, move the pin and bring `src/panel.*` along.
 
 ## Done
+- [x] v0.10.1 (Tom, 2026-11-15: "Go ahead with your testing"; engine 0.201.2): the button test on
+      every game in three window shapes and both releases. Found and fixed: the Dark Queen's Create
+      Character form's two highlights (engine 0.201.1), its knights "Monk" on the Party view
+      (0.201.2), journals not made anew by v0.10.0's update. The test reads Treasures and the Dark
+      Queen now (text over pictures, off the grid).
 - [x] v0.10.0 (Tom, 2026-11-15; engine 0.200.9): `play::titles()` added to the engine and used; the demo keeps
       the Companion; square panels - the Companion under the game; the CYD's Companion look (0.200.7 / .8).
 - [x] v0.9.5: no Companion beside a game's title screens on wide panels - the game centred until its party menu (Tom, 2026-11-14).
