@@ -18,7 +18,9 @@ constexpr int kH = video::kH;
 enum class View : uint8_t { None, Map, Party, Battle };
 View     view = View::None;
 uint32_t buf[2][kW * kH];                   // the panel (0), drawn only when it changes; 1: the party under it, beside the game
+uint32_t below[video::kBelowW * video::kBelowH];   // under the game on a square panel: map / battle | party
 uint32_t* pixels = buf[0];                  // the one being drawn
+int      pw = kW, ph = kH;                  // (its size)
 uint32_t sig = 0, sig2 = 0;
 bool     side_wanted = true;                // beside the game on a wide panel (Y: off / on)
 bool     side_shown = false;
@@ -34,8 +36,8 @@ constexpr uint32_t rgb(uint16_t c)
 
 void put(int x, int y, int w, int h, uint32_t c)
 {
-    for (int j = y < 0 ? 0 : y; j < y + h && j < kH; ++j)
-        for (int i = x < 0 ? 0 : x; i < x + w && i < kW; ++i) pixels[j * kW + i] = c;
+    for (int j = y < 0 ? 0 : y; j < y + h && j < ph; ++j)
+        for (int i = x < 0 ? 0 : x; i < x + w && i < pw; ++i) pixels[j * pw + i] = c;
 }
 
 void letters(int x, int y, const char* s, uint32_t c)
@@ -48,9 +50,13 @@ void letters(int x, int y, const char* s, uint32_t c)
     }
 }
 
-// The engine's views draw through this: across stretched by 4 / 3
+// The engine's views draw through this: across stretched by 4 / 3 (its 6-wide
+// text cells become 8-pixel letters) - from `knee` on; left of it as it is
+// (square pixels under the game: the party's icons keep their shape), all
+// of it `off` to the right
 struct Paint : companion::Painter {
-    static int sx(int x) { return x * 4 / 3; }
+    int knee = 0, off = 0;
+    int sx(int x) const { return off + (x <= knee ? x : knee + (x - knee) * 4 / 3); }
     void fill(int x, int y, int w, int h, uint16_t c) override { put(sx(x), y, sx(x + w) - sx(x), h, rgb(c)); }
     void text(int x, int y, const char* s, uint16_t c) override { letters(sx(x), y, s, rgb(c)); }
     uint16_t colour(int value) override
@@ -83,24 +89,26 @@ uint16_t plain_walls(const geo::Map& m)
 View first() { return play::fighting() ? View::Battle : View::Map; }
 
 // The auto-map: walls a pixel wide, doors a band on the wall line (gold;
-// red: locked), a secret door an S, the party a green arrow
-void draw_map()
+// red: locked), a secret door a cyan S, the party a green arrow (the CYD's
+// colours and legend - Tom, 2026-11-14: no heading, the words alone).
+// In the zone zx, zy, zw x zh. square: the buffer's pixels are square
+// (under the game; the legend to the map's right) - else squares 12 x 10,
+// about square once a 4:3 screen has stretched the rows, the legend under.
+void draw_map(int zx, int zy, int zw, int zh, bool square)
 {
-    put(0, 0, kW, kH, video::kBlack);
-    Paint p;
-    companion::draw_tabs(p, 2, 1, companion::View::Map, false);
+    put(zx, zy, zw, zh, video::kBlack);
     const geo::Map* m = play::map();
     if (!m) {
-        letters(8, 40, "No map here.", video::kCream);
+        letters(zx + 8, zy + (square ? 8 : 40), "No map here.", video::kCream);
         return;
     }
-    // (squares 12 x 10: about square once a 4:3 screen has stretched the rows)
-    int cw = (kW - 10) / m->w, ch = (kH - 44) / m->h;
-    if (cw > 12) cw = 12;
-    if (ch > 10) ch = 10;
+    int cw = square ? (zh - 6) / m->h : (zw - 10) / m->w, ch = square ? cw : (zh - 24) / m->h;
+    const int cap_w = square ? 9 : 12, cap_h = square ? 9 : 10;
+    if (cw > cap_w) cw = cap_w;
+    if (ch > cap_h) ch = cap_h;
     if (cw < 2) cw = 2;
     if (ch < 2) ch = 2;
-    const int mx = (kW - cw * m->w) / 2, my = 14;
+    const int mx = square ? zx + 4 : zx + (zw - cw * m->w) / 2, my = zy + (square ? (zh - ch * m->h) / 2 : 4);
     const uint16_t plain = plain_walls(*m);
     static const uint8_t kS[7] = {0x0E, 0x11, 0x10, 0x0E, 0x01, 0x11, 0x0E};
     for (int pass = 0; pass < 2; ++pass)
@@ -121,7 +129,7 @@ void draw_map()
                         const int ox = across ? lx + cw / 2 - 2 : lx - 2, oy = across ? ly - 3 : ly + ch / 2 - 3;
                         for (int r = 0; r < 7; ++r)
                             for (int c = 0; c < 5; ++c)
-                                if (kS[r] >> (4 - c) & 1) put(ox + c, oy + r, 1, 1, video::kGold);
+                                if (kS[r] >> (4 - c) & 1) put(ox + c, oy + r, 1, 1, video::kCyan);
                         continue;
                     }
                     const uint32_t col = door == 1 ? video::kGold : video::kWarn;
@@ -138,20 +146,22 @@ void draw_map()
         const int half = (len - k) / 2;
         for (int s = -half; s <= half; ++s) put(cx + fx * k + (fx ? 0 : s), cy + fy * k + (fy ? 0 : s), 1, 1, 0xFF28FF28u);
     }
-    const int ly = my + m->h * ch + 6;
-    letters(4, ly, "Gold", video::kGold);
-    letters(44, ly, "Door", video::kMuted);
-    letters(92, ly, "Red", video::kWarn);
-    letters(124, ly, "Locked", video::kMuted);
-    letters(4, ly + 10, "S", video::kGold);
-    letters(20, ly + 10, "Secret Door", video::kMuted);
+    if (square) {
+        const int lx = mx + m->w * cw + 10;
+        letters(lx, my, "Locked", video::kWarn);
+        letters(lx, my + 12, "Secret", video::kCyan);
+    } else {
+        const int ly = my + m->h * ch + 6;
+        letters(zx + 4, ly, "Locked", video::kWarn);
+        letters(zx + 68, ly, "Secret", video::kCyan);
+    }
 }
 
 void redraw(View v, bool blink_on, bool edge)
 {
     Paint p;
     const companion::Area a{0, 0, kVW, kH};
-    if (v == View::Map) draw_map();
+    if (v == View::Map) draw_map(0, 0, kW, kH, false);
     else if (v == View::Party) companion::draw_party(p, a, true, true);
     else companion::draw_battle(p, a, blink_on, false, true);
     if (edge) put(0, 0, 1, kH, video::kGold);
@@ -198,16 +208,61 @@ void draw_side(uint32_t now_ms)
     video::set_side(buf[0], buf[1]);
 }
 
+// Under the game (a square panel - Tom, 2026-11-15): the map (a fight: the
+// battlefield) at the left, the party at the right, in square pixels
+constexpr int kLeftW = 262, kPartyX = 268, kPartyKnee = 29;   // (the knee: past the party's icons)
+void draw_below(uint32_t now_ms)
+{
+    const bool blink_on = (now_ms / 400) & 1;
+    const View left = first();
+    const uint32_t s = signature(left, blink_on), s2 = signature(View::Party, blink_on);
+    const bool fresh = !side_shown;
+    pixels = below;
+    pw = video::kBelowW;
+    ph = video::kBelowH;
+    if (fresh) put(0, 0, pw, ph, video::kBlack);
+    if (fresh || s != sig) {
+        sig = s;
+        if (left == View::Map) {
+            draw_map(0, 0, kLeftW, ph, true);
+        } else {
+            put(0, 0, kLeftW, ph, video::kBlack);
+            Paint p;
+            companion::draw_battle(p, companion::Area{0, 0, kLeftW * 3 / 4, ph}, blink_on, false, true);
+        }
+        put(kLeftW + 2, 4, 1, ph - 8, 0xFF3C3A32u);
+    }
+    if (fresh || s2 != sig2) {
+        sig2 = s2;
+        Paint p;
+        p.off = kPartyX;
+        p.knee = kPartyKnee;
+        const int w = kPartyKnee + (pw - kPartyX - kPartyKnee) * 3 / 4;
+        companion::draw_party(p, companion::Area{0, 0, w, ph}, true, true);
+    }
+    pixels = buf[0];
+    pw = kW;
+    ph = kH;
+    side_shown = true;
+    video::set_below(below);
+}
+
+bool docked() { return video::side_room() || video::below_room(); }
+
 } // namespace
 
 bool open() { return view != View::None; }
+bool docked_on() { return side_shown; }
 void close() { view = View::None; }
 
 void leave()
 {
     close();
     shown = 0;
-    if (side_shown) video::set_side(nullptr, nullptr);
+    if (side_shown) {
+        video::set_side(nullptr, nullptr);
+        video::set_below(nullptr);
+    }
     side_shown = false;
 }
 
@@ -221,7 +276,7 @@ void next()
 {
     if (held) return;
     sig = sig2 = 0;
-    if (video::side_room()) {
+    if (docked()) {
         side_wanted = !side_wanted;
         view = View::None;
         return;
@@ -233,14 +288,25 @@ void next()
 
 void draw(uint32_t now_ms)
 {
-    if (video::side_room() && side_wanted && !held) {
+    if (docked() && side_wanted && !held) {
         view = View::None;
         shown = 0;
-        draw_side(now_ms);
+        // (the panel's shape changed under it - a window resized: the other picture, drawn anew)
+        static bool was_beside = false;
+        const bool beside = video::side_room();
+        if (side_shown && beside != was_beside) {
+            video::set_side(nullptr, nullptr);
+            video::set_below(nullptr);
+            side_shown = false;
+        }
+        was_beside = beside;
+        if (beside) draw_side(now_ms);
+        else draw_below(now_ms);
         return;
     }
     if (side_shown) {
         video::set_side(nullptr, nullptr);
+        video::set_below(nullptr);
         side_shown = false;
         sig = 0;
     }

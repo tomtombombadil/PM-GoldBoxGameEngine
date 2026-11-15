@@ -26,6 +26,8 @@ namespace panel {
 void next();
 void close();
 bool open();
+// It stands beside the game (a wide panel) or under it (a square one) now
+bool docked_on();
 // The game screen is left: nothing beside it either
 void leave();
 // Each frame: slides, redraws when what it shows changed, and puts itself

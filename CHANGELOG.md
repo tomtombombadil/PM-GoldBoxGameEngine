@@ -3,6 +3,15 @@
 Every version of Gold Box Game Engine for PortMaster. A release's notes are
 its part of this file.
 
+## [0.10.0] - 2026-11-15
+
+Engine 0.200.9.
+
+- **Square screens (1:1, 720 x 720 - RG CubeXX, RGB30 and the like): the game moves to the top and the Companion fills the room under it** - the map (in a fight: the battlefield) at the left, the party at the right. Y takes it away (the game centred, as before) and brings it back. Checked in a 720 x 720 window only - not on such a device.
+- The Companion follows the CYD's new look (engine 0.200.7 / 0.200.8): no "Map Party" heading, the party's names white (the chosen one) and cyan, secret doors a cyan S, the legend just "Locked" and "Secret".
+- The title screens' "no Companion" now asks the engine properly (`play::titles()`, new in engine 0.200.9). The demo keeps the Companion.
+- Engine 0.200.6: the Steam Treasures journal's entries 17, 20, 21 and 23 are found (the scan reads the journals anew).
+
 ## [0.9.5] - 2026-11-14
 
 - **Wide screens (16:9): the title screens are centred, with no Companion beside them.** The Companion (map and party) comes in, and the game moves to the left, when the game reaches its party menu (the one with Begin Adventuring). Y does nothing during the title screens.

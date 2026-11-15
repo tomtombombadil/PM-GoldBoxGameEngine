@@ -153,16 +153,8 @@ void sync_palette(bool all)
 }
 
 // The game's title screens are up (its pictures and the Play / Demo line -
-// not yet its party menu). play.h has no call of its own for this: flash()
-// writes `index` only while the title runs (TODO: a question for Tom).
-// play_test.py checks it in every game (title=1 at the start, 0 at the menu).
-bool in_title()
-{
-    if (!playing) return false;
-    int index = -9999;
-    play::flash(index);
-    return index != -9999;
-}
+// not its demo, nor its party menu): no Companion beside them (Tom)
+bool in_title() { return playing && play::titles(); }
 
 // ---- Drawing the port's own screens ----------------------------------------
 void centred(int row, const char* s, uint32_t fg, uint32_t bg = video::kClear)
@@ -1069,7 +1061,7 @@ void apply_options()
 // lists what it does and stays until Continue.
 unsigned shape_seen = ~0u;      // (the picture shape the game list's pictures were last checked for: pictures_follow)
 constexpr char kScanMark[] = "PMSCAN.TXT";      // in the game's _CYD folder: found and its files made
-constexpr char kScanTag[] = "scan 4";       // (2: engine 0.198.1 - journals read anew, music 16-bit; 3: 0.199 - Queen's and Champions' music; 4: 0.200.4 - journal sections read anew)
+constexpr char kScanTag[] = "scan 4";       // (2: engine 0.198.1 - journals read anew, music 16-bit; 3: 0.199 - Queen's and Champions' music; 4: 0.200.4 - journal sections read anew; 5: 0.200.6 - the Steam Treasures journal)
 std::vector<std::string> scan_log;
 bool                     scan_done = false, scan_progress = false;
 
@@ -2093,11 +2085,11 @@ void drive_answer()
     char l1[64] = "", l2[64] = "";
     if (playing) play::describe(l1, l2, sizeof l1);
     printf("[state] screen=%s playing=%d walking=%d fighting=%d pad=%d input=%d journal=%d jlist=%d menu=%d quick=%d notice=%d "
-           "panel=%d title=%d pos=%d,%d,%d desc=%s|%s\n",
+           "panel=%d dock=%d title=%d pos=%d,%d,%d desc=%s|%s\n",
            screen == Screen::Games ? "games" : screen == Screen::Play ? "play" : screen == Screen::Scan ? "scan" : "message",
            playing ? 1 : 0, playing && play::walking() ? 1 : 0, playing && play::fighting() ? 1 : 0,
            playing && play::fight_pad() ? 1 : 0, playing ? static_cast<int>(play::input()) : 0, jour::active() ? 1 : 0,
-           jlist_open ? 1 : 0, menu_open ? 1 : 0, quick_open ? 1 : 0, notice.open ? 1 : 0, panel::open() ? 1 : 0, in_title() ? 1 : 0,
+           jlist_open ? 1 : 0, menu_open ? 1 : 0, quick_open ? 1 : 0, notice.open ? 1 : 0, panel::open() ? 1 : 0, panel::docked_on() ? 1 : 0, in_title() ? 1 : 0,
            playing ? play::pos_x() : 0, playing ? play::pos_y() : 0, playing ? play::dir() : 0, l1, l2);
     if (playing) drive_text();
     printf("[end]\n");

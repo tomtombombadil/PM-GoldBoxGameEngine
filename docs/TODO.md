@@ -21,11 +21,11 @@ Tick off with the version that did it. Never ask Tom the same thing twice.
 - [ ] v0.9.5 on the RGB10 MAX3: the title screens centred with nothing
       beside them, the Companion from the party menu on. (Checked here at
       1280 x 720 by script in all nine games, not on a device.)
-- [ ] Question: the port tells "the title screens are up" from a side
-      effect of `play::flash` (it has no call for it). A one-line
-      `play::titles()` in the CYD engine would be the proper way, and could
-      say "the demo is playing" too (the Companion now shows beside a
-      demo) - not a bug fix; your OK needed.
+- [ ] v0.10.0, if you know someone with a 1:1 handheld (RG CubeXX,
+      RGB30): the Companion under the game - readable? (Checked here in a
+      720 x 720 window: PoolRad's play test with a fight, Curse walking.
+      Its letters are 9.6 device pixels there - smaller than the 14 of the
+      RGB10 MAX3's Companion.)
 - [ ] Other handhelds / firmwares you can test on, when it matters (a
       PortMaster submission wants several).
 - [ ] `cyd/src/app/library.cpp` (the game scan) is tied to Arduino's
@@ -64,7 +64,7 @@ Tick off with the version that did it. Never ask Tom the same thing twice.
       no screen for it); a real mention reached by playing (the test hook
       `journal:K:N` so far). Known gaps (the CYD's TODO too): the Dark
       Queen's Introduction is only its heading lines; GOG's Dark Queen
-      journal comes from the PDF's text (no table) and lacks entries 13
+      journal comes from the PDF's text (no table) and lacks entry 13 (26 found since engine 0.200.6)
       and 26; Death Knights has no entry 13 in any source.
 - [ ] Tom: after v0.7.0 on the RGB10 MAX3 - do the game list's pictures
       show at once, at every start? If not: Send Logs (the log's
@@ -80,12 +80,14 @@ Tick off with the version that did it. Never ask Tom the same thing twice.
 - [ ] Before a PortMaster submission: `port.json` against their
       generator / checks (`availability`, `store`, `min_glibc` unverified),
       the gameplay screenshot (Tom: later), an armhf build if wanted.
-- [ ] Keep the `cyd` pin current (built on CYD 0.200.5). Tom, 2026-11-14:
+- [ ] Keep the `cyd` pin current (built on CYD 0.200.9). Tom, 2026-11-14:
       Companion map / party-info changes are in work in the CYD (small
       boards first; the party-info layout may be rearranged) - when they
       land, move the pin and bring `src/panel.*` along.
 
 ## Done
+- [x] v0.10.0 (Tom, 2026-11-15; engine 0.200.9): `play::titles()` added to the engine and used; the demo keeps
+      the Companion; square panels - the Companion under the game; the CYD's Companion look (0.200.7 / .8).
 - [x] v0.9.5: no Companion beside a game's title screens on wide panels - the game centred until its party menu (Tom, 2026-11-14).
 - [x] 2026-11-14: PoolRad's and Curse's party menus set beside the
       originals in DOSBox (any answer passes GOG's code wheel - Tom): the

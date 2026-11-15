@@ -104,7 +104,22 @@ direction keys (`play::fight_dir`, `fight_select`), typed keys
   **Not on the game's title screens** (Tom, 2026-11-14, v0.9.5: a blank
   Companion beside the intro "look bad"): until the party menu (Begin
   Adventuring) is reached the game stays centred with nothing beside it
-  and Y does nothing, on every panel (`panel::hold`, main.cpp `in_title`).
+  and Y does nothing, on every panel (`panel::hold`; the engine's
+  `play::titles()`). A demo (Play / Demo) has the Companion.
+  **Square panels** (Tom, 2026-11-15; 1:1, 720 x 720 - RG CubeXX, RGB30):
+  when the Original 4:3 picture leaves 150 device pixels or more UNDER it
+  on a panel 600 or more across (`video::below_room`), the game stands at
+  the top and the Companion fills the room under it all the time - one
+  picture of 600 x 150 square pixels as large as fits (1.2 x on 720 x
+  720): the map at 9 pixels a square with its legend beside it (a fight:
+  the battlefield) at the left, the party's rows at the right
+  (`panel.cpp` `draw_below`; the engine's rows through a Painter that
+  stretches only past the icons, so those keep their shape). Y takes it
+  away (the game centred) and brings it back, as beside the game.
+  The views carry no "Map Party" heading and the map's legend is the words
+  "Locked" (red) and "Secret" (cyan, as the S on the map) - the CYD's
+  (0.200.7 / .8; Tom, 2026-11-14); the party's names white (the chosen
+  one) / cyan.
   Other fits (Square Pixels, Stretch) and 4:3 panels: the slide-out.
 - "Press a key" text goes on with A only - not the D-pad (a held Forward
   would skip the story).

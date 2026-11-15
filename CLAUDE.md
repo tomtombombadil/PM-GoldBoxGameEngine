@@ -79,7 +79,16 @@ and maintains it; it is the primary output of the Claude Project
 - **No Companion on a game's title screens** (Tom, 2026-11-14, v0.9.5:
   blank beside the intro on 16:9, "look bad"): the game centred and
   nothing beside it until the party menu (Begin Adventuring); then the
-  Companion and the game at the left (`panel::hold`, SPEC 4).
+  Companion and the game at the left (`panel::hold`, SPEC 4; the engine's
+  `play::titles()`, CYD 0.200.9 - Tom OK'd the call, 2026-11-15). **The
+  demo keeps the Companion** (Tom, 2026-11-15: "don't turn off the
+  companion for the demo").
+- **Square panels** (Tom, 2026-11-15: 1:1, 720 x 720 - RG CubeXX, RGB30:
+  "Could the game area be shifted up and the companion info fit at the
+  bottom?"): the game at the top, the Companion in the room under it - map
+  (a fight: the battlefield) left, party right (`video::below_room` /
+  `set_below`, `panel.cpp` `draw_below`; SPEC 4). Tom has no such device:
+  checked at `--window 720x720` only; check it there before a release.
 - **Tom's devices**: RG40XX H / ROCKNIX (4:3, primary), PowKiddy RGB10
   MAX3 (16:9), an **R36H** on ROCKNIX (4:3, 640 x 480; it reports itself
   as "R33S (Game Console R33S)" - "those devices are sketchy"; logs

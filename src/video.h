@@ -56,7 +56,7 @@ void small_text(uint32_t* buf, int bw, int bh, int x, int y, const char* s, uint
 // ---- The overlay (colours: 0xAARRGGBB; alpha 0 = the game shows through)
 constexpr uint32_t kClear = 0;
 constexpr uint32_t kBlack = 0xFF000000, kNavy = 0xFF101838, kKey = 0xFF182652, kEdge = 0xFF465C96;
-constexpr uint32_t kCream = 0xFFF0E6C8, kMuted = 0xFF96917F, kGold = 0xFFE8B840, kWarn = 0xFFDC5A46;
+constexpr uint32_t kCream = 0xFFF0E6C8, kCyan = 0xFF55FFFF, kMuted = 0xFF96917F, kGold = 0xFFE8B840, kWarn = 0xFFDC5A46;
 constexpr uint32_t kLit = 0xFF96701E;
 void clear(uint32_t colour = kClear);
 void fill(int x, int y, int w, int h, uint32_t colour);
@@ -92,6 +92,15 @@ void set_backdrop(const uint32_t* argb, int top = 0);
 constexpr int kSideW = 208, kSideH = kH;
 bool side_room();
 void set_side(const uint32_t* top, const uint32_t* bottom);
+
+// A square or tall panel (1:1, 720 x 720 and the like - Tom, 2026-11-15):
+// the 4:3 game picture leaves room UNDER it; the game moves to the top and
+// the Companion fills that room - one picture of kBelowW x kBelowH square
+// pixels (0xAARRGGBB), as large as fits. below_room: the panel has that
+// room (Original 4:3 fit only). set_below(nullptr): none.
+constexpr int kBelowW = 600, kBelowH = 150;
+bool below_room();
+void set_below(const uint32_t* px);
 
 // The pointer's arrow, its tip at (x, y)
 void pointer(int x, int y);

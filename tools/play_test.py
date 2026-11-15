@@ -294,13 +294,17 @@ def phase2(r, games, t0):
     # --- X = Area
     a = "".join(p.text[:16]); r.do("x,wait:500"); b = "".join(p.text[:16]); shot(r, "area"); r.do("x,wait:500"); c = "".join(p.text[:16])
     r.note("  X = Area map and back:", "OK" if a != b and a == c else f"? (changed {a != b}, back {a == c})")
-    # --- Y = Companion
+    # --- Y = Companion (beside / under the game on a wide / square panel: Y takes it away and brings it back)
+    if p.st.get("dock") == "1":
+        shot(r, "companion")
+        r.do("y,wait:500"); off = p.st.get("dock"); r.do("y,wait:500"); on = p.st.get("dock")
+        r.note("  Y = Companion beside / under the game off and on:", "OK" if (off, on) == ("0", "1") else f"? ({off}, {on})")
     v = []
-    for i in range(4):
+    for i in range(0 if p.st.get("dock") == "1" else 4):
         r.do("y,wait:700"); v.append(p.st["panel"])
         if i == 0: shot(r, "companion")
         if p.st["panel"] in ("0", "none", "off"): break
-    r.note("  Y = Companion views:", " -> ".join(v))
+    if v: r.note("  Y = Companion views:", " -> ".join(v))
     while p.st["panel"] not in ("0", "none", "off") and len(v) < 8: r.do("y,wait:500"); v.append(p.st["panel"])
     calm(r)
     # --- Encamp, Save
