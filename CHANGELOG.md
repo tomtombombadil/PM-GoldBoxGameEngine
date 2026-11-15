@@ -3,6 +3,11 @@
 Every version of Gold Box Game Engine for PortMaster. A release's notes are
 its part of this file.
 
+## [0.9.5] - 2026-11-14
+
+- **Wide screens (16:9): the title screens are centred, with no Companion beside them.** The Companion (map and party) comes in, and the game moves to the left, when the game reaches its party menu (the one with Begin Adventuring). Y does nothing during the title screens.
+- If you choose Demo at a game's Play / Demo line, the Companion is beside the demo while it plays and goes again when the titles come back.
+
 ## [0.9.4] - 2026-11-14
 
 Engine 0.200.5 - the rest of the party-menu check against the originals (a character made and added in each, since they ship no usable saved game):

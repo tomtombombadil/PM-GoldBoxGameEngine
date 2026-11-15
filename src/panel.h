@@ -9,6 +9,7 @@
 // 4:3 game picture: there the Companion stands to the game's right all
 // the time, as on the CYD's bigger boards - the map (a fight: the
 // battlefield) above the party. Y there takes it away and brings it back.
+// Not during the game's title screens (hold): the game stays centred there.
 //
 // The Party and Battle views are the engine's own (cyd/src/game/
 // companion.*), drawn through its Painter; its 6 x 8 text cells become
@@ -30,5 +31,9 @@ void leave();
 // Each frame: slides, redraws when what it shows changed, and puts itself
 // into the overlay (nothing when closed)
 void draw(uint32_t now_ms);
+// The game's title screens are up (Tom, 2026-11-14: a blank Companion
+// beside them "look bad"): no Companion, the game centred, Y does nothing -
+// until the game's party menu (Begin Adventuring) is reached
+void hold(bool on);
 
 } // namespace panel

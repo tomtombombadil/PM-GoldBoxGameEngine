@@ -152,6 +152,18 @@ void sync_palette(bool all)
     show_flash(index, colour);
 }
 
+// The game's title screens are up (its pictures and the Play / Demo line -
+// not yet its party menu). play.h has no call of its own for this: flash()
+// writes `index` only while the title runs (TODO: a question for Tom).
+// play_test.py checks it in every game (title=1 at the start, 0 at the menu).
+bool in_title()
+{
+    if (!playing) return false;
+    int index = -9999;
+    play::flash(index);
+    return index != -9999;
+}
+
 // ---- Drawing the port's own screens ----------------------------------------
 void centred(int row, const char* s, uint32_t fg, uint32_t bg = video::kClear)
 {
@@ -911,6 +923,7 @@ void draw_frame()
         draw_message();
     } else {
         video::clear();
+        panel::hold(in_title());           // (no Companion beside the title screens: Tom)
         panel::draw(SDL_GetTicks());
         if (!menu_open && !prompt_open) draw_keys();
         if (ptr_on && !menu_open) video::pointer(static_cast<int>(ptr_x), static_cast<int>(ptr_y));
@@ -2080,11 +2093,11 @@ void drive_answer()
     char l1[64] = "", l2[64] = "";
     if (playing) play::describe(l1, l2, sizeof l1);
     printf("[state] screen=%s playing=%d walking=%d fighting=%d pad=%d input=%d journal=%d jlist=%d menu=%d quick=%d notice=%d "
-           "panel=%d pos=%d,%d,%d desc=%s|%s\n",
+           "panel=%d title=%d pos=%d,%d,%d desc=%s|%s\n",
            screen == Screen::Games ? "games" : screen == Screen::Play ? "play" : screen == Screen::Scan ? "scan" : "message",
            playing ? 1 : 0, playing && play::walking() ? 1 : 0, playing && play::fighting() ? 1 : 0,
            playing && play::fight_pad() ? 1 : 0, playing ? static_cast<int>(play::input()) : 0, jour::active() ? 1 : 0,
-           jlist_open ? 1 : 0, menu_open ? 1 : 0, quick_open ? 1 : 0, notice.open ? 1 : 0, panel::open() ? 1 : 0,
+           jlist_open ? 1 : 0, menu_open ? 1 : 0, quick_open ? 1 : 0, notice.open ? 1 : 0, panel::open() ? 1 : 0, in_title() ? 1 : 0,
            playing ? play::pos_x() : 0, playing ? play::pos_y() : 0, playing ? play::dir() : 0, l1, l2);
     if (playing) drive_text();
     printf("[end]\n");

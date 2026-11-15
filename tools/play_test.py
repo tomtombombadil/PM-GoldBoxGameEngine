@@ -75,6 +75,8 @@ class Port:
 
 def to_party_menu(p, tries=30):
     p.do("wait:1500")
+    # (the title screens: the port keeps the Companion off them - its title= must say so)
+    if p.st.get("title") != "1": print("!! title=0 while the title screens are up")
     for i in range(tries):
         if p.has("Load Saved") or p.has("Create New"): return i
         p.do("a,wait:700")

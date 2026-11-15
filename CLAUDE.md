@@ -76,6 +76,10 @@ and maintains it; it is the primary output of the Claude Project
   <games>` (target `jlist`; counts by kind, gaps, the shortest section)
   with the last run; a section far shorter than its neighbours is a miss.
   A miss in the engine's reading is an engine bug: fixed in the CYD repo.
+- **No Companion on a game's title screens** (Tom, 2026-11-14, v0.9.5:
+  blank beside the intro on 16:9, "look bad"): the game centred and
+  nothing beside it until the party menu (Begin Adventuring); then the
+  Companion and the game at the left (`panel::hold`, SPEC 4).
 - **Tom's devices**: RG40XX H / ROCKNIX (4:3, primary), PowKiddy RGB10
   MAX3 (16:9), an **R36H** on ROCKNIX (4:3, 640 x 480; it reports itself
   as "R33S (Game Console R33S)" - "those devices are sketchy"; logs

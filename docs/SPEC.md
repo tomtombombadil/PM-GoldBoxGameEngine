@@ -101,6 +101,10 @@ direction keys (`play::fight_dir`, `fight_select`), typed keys
   the rest all the time - Map (a fight: Battle) above Party
   (`video::set_side`, two 208 x 200 pictures smoothed into the strip). Y
   there takes it away (the game centred) and brings it back; no slide-out.
+  **Not on the game's title screens** (Tom, 2026-11-14, v0.9.5: a blank
+  Companion beside the intro "look bad"): until the party menu (Begin
+  Adventuring) is reached the game stays centred with nothing beside it
+  and Y does nothing, on every panel (`panel::hold`, main.cpp `in_title`).
   Other fits (Square Pixels, Stretch) and 4:3 panels: the slide-out.
 - "Press a key" text goes on with A only - not the D-pad (a held Forward
   would skip the story).

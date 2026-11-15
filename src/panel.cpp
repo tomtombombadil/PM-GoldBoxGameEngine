@@ -22,6 +22,7 @@ uint32_t* pixels = buf[0];                  // the one being drawn
 uint32_t sig = 0, sig2 = 0;
 bool     side_wanted = true;                // beside the game on a wide panel (Y: off / on)
 bool     side_shown = false;
+bool     held = false;                      // the game's title screens: no Companion
 float    shown = 0;                         // how far out it is: 0 closed, 1 fully
 uint32_t last_ms = 0;
 
@@ -210,8 +211,15 @@ void leave()
     side_shown = false;
 }
 
+void hold(bool on)
+{
+    if (on && !held) close();
+    held = on;
+}
+
 void next()
 {
+    if (held) return;
     sig = sig2 = 0;
     if (video::side_room()) {
         side_wanted = !side_wanted;
@@ -225,7 +233,7 @@ void next()
 
 void draw(uint32_t now_ms)
 {
-    if (video::side_room() && side_wanted) {
+    if (video::side_room() && side_wanted && !held) {
         view = View::None;
         shown = 0;
         draw_side(now_ms);

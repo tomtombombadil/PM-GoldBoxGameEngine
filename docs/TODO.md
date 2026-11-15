@@ -18,6 +18,14 @@ Tick off with the version that did it. Never ask Tom the same thing twice.
       the port had been started once. The release zip holds
       `goldbox/games/` and the installer makes it; say if v0.4's install
       (or a refresh of the Explorer window) still doesn't show it.
+- [ ] v0.9.5 on the RGB10 MAX3: the title screens centred with nothing
+      beside them, the Companion from the party menu on. (Checked here at
+      1280 x 720 by script in all nine games, not on a device.)
+- [ ] Question: the port tells "the title screens are up" from a side
+      effect of `play::flash` (it has no call for it). A one-line
+      `play::titles()` in the CYD engine would be the proper way, and could
+      say "the demo is playing" too (the Companion now shows beside a
+      demo) - not a bug fix; your OK needed.
 - [ ] Other handhelds / firmwares you can test on, when it matters (a
       PortMaster submission wants several).
 - [ ] `cyd/src/app/library.cpp` (the game scan) is tied to Arduino's
@@ -78,6 +86,7 @@ Tick off with the version that did it. Never ask Tom the same thing twice.
       land, move the pin and bring `src/panel.*` along.
 
 ## Done
+- [x] v0.9.5: no Companion beside a game's title screens on wide panels - the game centred until its party menu (Tom, 2026-11-14).
 - [x] 2026-11-14: PoolRad's and Curse's party menus set beside the
       originals in DOSBox (any answer passes GOG's code wheel - Tom): the
       same as the engine, no "Pick Character" there. All nine done.
