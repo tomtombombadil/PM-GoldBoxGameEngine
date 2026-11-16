@@ -344,6 +344,36 @@ and maintains it; it is the primary output of the Claude Project
   taken FROM, what its script shows. `tools/guide.py` reads it and plans
   the way; `BOOK=<file> tools/newgame_test.py ...` walks it. Books are
   made from game files: scratch only.
+- **Play-throughs, start to finish, every game** (Tom, 2026-11-16, the
+  same brief he gave the CYD session; its CLAUDE.md "Play-throughs" /
+  "Function checks" hold here too). This session's order: **Gateway
+  first** (the CYD session has PoolRad - done - and Curse), then the
+  games it hasn't taken. A new party rolled up, then adventuring to the
+  end by a web walkthrough; the check is that every triggered event
+  fires at the right time and place, every chain of events to the ending
+  works, and a player can finish and enjoy the game. **Don't fail over
+  and over - cheat**: no grinding (one or two random encounters to see
+  they work, then grant the experience the guides give for the next
+  area - never go in too low); no trips back to town to rest / sell /
+  train - the Cheats' Healer, Sanctuary, Merchant, Trainer where the
+  party stands; save often, reload after a level drain.
+  Tom's party: 2 fighters, a fighter/thief, a cleric, a cleric/magic-
+  user, a magic-user (two clerics matter). His fight advice: a tight
+  line so only one or two foes reach each member, the best armour on the
+  corners, casters behind, a doorway or hall when there is one; everyone
+  with a missile weapon (slings for casters, composite bows for the
+  strong); gang up on one foe at a time; missiles / Silence 15' / a wand
+  of Magic Missiles on enemy casters (a hit stops a spell); Sleep to
+  hold a group, then shoot their archers and casters first - later Hold
+  Person, Stinking Cloud; undead: Protection from Evil against ghouls'
+  touch, the level-drainers first, Turn Undead kept for them, magic or
+  silver weapons.
+  How: the CYD repo's play-through kit on the playsim
+  (`cyd/tools/devkit/playthrough/README.txt`, a folder a game - Gateway's
+  is `gateway/`), the engine at full speed; an engine fault found is
+  fixed in the CYD repo, then the pin moves. What only the port can show
+  (buttons, screens) stays with newgame_test's walks. Progress and
+  findings: the Project's `claude/playtest_gateway.md` and TODO.
 - **A direction let go before its step was taken still steps** (v0.10.3:
   a fight waits 70 ms for a diagonal's second direction; shorter taps
   were lost) - `button()` in main.cpp; keep it when touching the D-pad.
