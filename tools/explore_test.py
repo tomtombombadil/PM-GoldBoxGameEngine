@@ -2,7 +2,8 @@
 """Playing further in, by buttons: a character made, the icon screen tried, then the maps walked
 through for a long while - fights fought (Quick), every shop / temple / training hall met walked
 through word by word, journal mentions counted, and every place the walk couldn't get out of noted.
-   explore_test.py <binary> <COPY of the games dir> <game n> <out dir> [steps] [minutes]
+   explore_test.py <binary> <COPY of the games dir> <game n> <out dir> [steps] [minutes] [strong]
+(strong: the party kept alive with the Cheats - Trainer's Modify and free training, the Healer after fights)
 Through play_test.py's driver and hand_test.py's menu walk (needs real game files; scratch only).
 The notes end with one line of counts; "!!" marks what needs a look (a shot is taken there)."""
 import sys, os, re, random, time
@@ -52,6 +53,9 @@ def quick_fight(r):
     p = r.p; n = 0
     while p.st["fighting"] == "1" and n < 1200:
         w = ht.fmw(p)
+        if os.environ.get("FIGHTDUMP") and n < 60:
+            print(f"[fight {n}] pad {p.st['pad']} input {p.st['input']} fmw {w} flit {ht.flit(p)}")
+            for i in (22, 23, 24): print(f"    {i} [{p.text[i].rstrip()}] [{p.lit[i].rstrip('.')}]")
         if "Quick" in w and ht.fgoto(p, "Quick"): r.do("a,wait:200")
         elif "Auto" in w and ht.fgoto(p, "Auto"): r.do("a,wait:200")
         elif "Move" in w and "Done" in w and ht.fgoto(p, "Done"): r.do("a,wait:200")
@@ -60,6 +64,116 @@ def quick_fight(r):
         else: r.do("a,wait:200")
         n += 1
     return p.st["fighting"] != "1"
+
+# ---- A party that lasts (Tom, 2026-11-15: "using the cheats to enable your party to survive longer") --------
+# The Start menu's Cheats, by buttons: the Trainer's Modify (every figure to its highest) and its free
+# training, the Healer's temple for the fallen and the hurt. Max Hit Points is on for these runs.
+def cheat(r, name):
+    p = r.p
+    r.do("start,wait:300"); r.do("menu:Cheats,a,wait:400"); r.do(f"menu:{name},a,wait:1200")
+    if p.st["notice"] != "0":
+        r.do("a,wait:300")
+        while p.st["menu"] == "1": r.do("b,wait:300")
+        return False
+    return not r.exploring()
+
+def members(p):
+    m = re.search(r"\|(\d+) char", p.st["desc"])
+    return int(m.group(1)) if m else 0
+
+def chosen(p):
+    return p.text[24].strip().startswith("Choose a")
+
+def trainer(r, modify, S):
+    """Everyone's figures to their highest (modify), then Train for everyone; left by Begin"""
+    p = r.p
+    if not cheat(r, "Trainer"): return False
+    n = members(p); did = {"modified": 0, "trained": 0}
+    for i in range(n):
+        if modify and pt.goto_line(p, "Modify"):
+            r.do("a,wait:500")
+            if "Keep" in ht.mw(p) or "Modify" in p.text[24]:
+                for item in range(12):
+                    if ht.litword(p): break               # (down from the last item: the menu line's word boxed)
+                    for k in range(90):
+                        a = "".join(p.text[:23]); r.do("right,wait:50")
+                        if "".join(p.text[:23]) == a: break
+                    r.do("down,wait:120")
+                if pt.goto_word(p, "Keep"): r.do("a,wait:500"); did["modified"] += 1
+            for k in range(8):
+                if chosen(p): break
+                r.do("b,wait:400")
+        if pt.goto_line(p, "Train"):
+            r.do("a,wait:700"); first = p.text[24].strip()
+            for k in range(14):
+                if chosen(p): break
+                if "Yes" in ht.mw(p) and pt.goto_word(p, "Yes"): r.do("a,wait:500")
+                else: r.do("a,wait:500")
+            if "Not Enough" not in first and "not" not in first.lower(): did["trained"] += 1
+        r.do("r1,wait:200")
+    ok = pt.goto_line(p, "Begin")
+    r.do("a,wait:1200")
+    for k in range(10):
+        if r.exploring() or p.st["fighting"] == "1": break
+        r.step_on()
+    S["trained"] = S.get("trained", 0) + did["trained"]
+    return did if ok else False
+
+def party_hp(p):
+    """name -> hit points now, from the party list on the screen"""
+    out = {}
+    for t in p.text[3:12]:
+        m = re.match(r"^\s*(\S.*?)\s+(-?\d+)\s+(\d+)\s*$", re.sub(r"[?]+", " ", t))
+        if m: out[m.group(1).strip()] = int(m.group(3))
+    return out
+
+def healer(r, S):
+    """The Healer's temple: Raise Dead for the fallen, the strongest cure for the hurt (those under the
+    most hit points they were seen with) - until the temple says they need none"""
+    p = r.p
+    best = S.setdefault("hp", {})
+    now = party_hp(p)
+    for k, v in now.items(): best[k] = max(best.get(k, 0), v)
+    if now and all(v >= best[k] for k, v in now.items()): return 0
+    if not cheat(r, "Healer"): return False
+    if "Heal" not in ht.mw(p): pt.back_out(r); return False
+    n = members(p); casts = 0
+    def cast(line):
+        nonlocal casts
+        if not pt.goto_line(p, line): return False
+        r.do("a,wait:400")
+        if "Yes" in ht.mw(p):                             # ("is not ... cast cure anyway": No)
+            if pt.goto_word(p, "No"): r.do("a,wait:300")
+            return False
+        casts += 1
+        for k in range(6):
+            if ht.litword(p) and "Heal" in ht.mw(p): break
+            r.do("a,wait:300")
+        return True
+    for i in range(n):
+        if not pt.goto_word(p, "Heal"): break
+        r.do("a,wait:400")
+        who = re.sub(r"[?]+", " ", p.text[1]).strip().split(",")[0]
+        hp = now.get(who)
+        if hp is None or hp < best.get(who, 0):
+            if (hp is None or hp == 0) and p.find("Raise Dead"): cast("Raise Dead")
+            line = next((x for x in (" Heal", "Cure Critical", "Cure Serious", "Cure Light") if p.find(x) and (x != " Heal" or p.find(x)[0] < 23)), None)
+            for k in range(10):
+                if line is None or not cast(line): break
+        for k in range(5):
+            if "View" in ht.mw(p) or "Pool" in ht.mw(p): break
+            if "Exit" in ht.mw(p) and pt.goto_word(p, "Exit"): r.do("a,wait:300")
+            else: r.do("b,wait:300")
+        r.do("r2,wait:150")
+    for k in range(8):
+        if r.exploring() or p.st["fighting"] == "1": break
+        if "Exit" in ht.mw(p) and pt.goto_word(p, "Exit"): r.do("a,wait:400")
+        else: r.do("b,wait:400")
+    for k, v in party_hp(p).items(): best[k] = max(best.get(k, 0), v)
+    S["healed"] = S.get("healed", 0) + casts
+    return casts
+
+STRONG = False
 
 def explore(r, steps_max, minutes):
     p = r.p; rnd = random.Random(11 + r.n); t_end = time.time() + minutes * 60
@@ -154,6 +268,12 @@ def explore(r, steps_max, minutes):
                     for k in ("a", "b", "a", "b"): r.do(k + ",wait:500")
                     if not settle(): break
             continue
+        if mend[0] and STRONG:
+            # (a party that lasts: the Healer's temple after every fight, free training after every third)
+            mend[0] = False
+            if healer(r, S) is False: S["cheat_miss"] = S.get("cheat_miss", 0) + 1
+            if S["fights"] % 3 == 0 and r.exploring(): trainer(r, False, S)
+            continue
         if mend[0]:
             # (after a fight: Encamp - Fix, so the stock party lasts longer)
             mend[0] = False
@@ -223,12 +343,16 @@ def explore(r, steps_max, minutes):
     kinds = {k: sum(1 for w in S["places"] if k in w.split()) for k in PLACE}
     kinds["hall"] = 1 if "hall" in S["places"] else 0
     r.note(f"  WALK: {S['steps']} steps, {len(S['squares'])} squares on {len(S['maps'])} maps | {S['fights']} fights | {S['journal']} journal mentions opened |",
-           f"places walked through: {len(S['places'])} {kinds} | other menus met: {len(S['menus'])} | could not get on: {S['stuck']}")
+           f"places walked through: {len(S['places'])} {kinds} | other menus met: {len(S['menus'])} | could not get on: {S['stuck']}",
+           f"| cheats: {S.get('healed', 0)} temple spells, {S.get('trained', 0)} trainings, {S.get('cheat_miss', 0)} not opened" if STRONG else "")
 
 def main():
     exe, games, n, out = sys.argv[1], sys.argv[2], int(sys.argv[3]), sys.argv[4]
     steps = int(sys.argv[5]) if len(sys.argv) > 5 else 6000
     minutes = float(sys.argv[6]) if len(sys.argv) > 6 else 22
+    global STRONG
+    STRONG = len(sys.argv) > 7 and sys.argv[7] == "strong"
+    if STRONG: pt.CFG_EXTRA = "max_hp=1\n"
     pt.EXE, pt.OUT = exe, out
     os.makedirs(out, exist_ok=True)
     r = pt.Run(games, n, "x")
@@ -245,7 +369,10 @@ def main():
                     if pt.pm(p): break
                     r.do("b,wait:400")
         if pt.start(r):
-            icon_screen(r)
+            if STRONG:
+                S0 = {}
+                r.note("  the Trainer cheat - everyone's figures to their highest, then Train:", trainer(r, True, S0))
+            else: icon_screen(r)
             explore(r, steps, minutes)
     except Exception as e:
         import traceback

@@ -3,6 +3,14 @@
 Every version of Gold Box Game Engine for PortMaster. A release's notes are
 its part of this file.
 
+## [0.10.6] - 2026-11-16
+
+Engine 0.203.7.
+
+- **Pools of Darkness: a new game could not be played.** After Rolf's tour of New Phlan (or after saying No to it) the screen stayed on his last words with a black view and no menu, and no button did anything. Games loaded from a save were fine, which is why it wasn't seen before. Fixed in the engine (the CYD boards had the same fault). Found by a new test that starts every game the way a new player does: six characters made, armour and weapons bought, then out into the first map.
+- Engine 0.203.4 - 0.203.6 (the CYD session's): Pool of Radiance - loading a save, the dice's order in fights, clerics on Quick.
+- New test tool `tools/newgame_test.py`; `tools/explore_test.py` can keep the party alive with the Cheats.
+
 ## [0.10.5] - 2026-11-15
 
 Engine 0.203.3.

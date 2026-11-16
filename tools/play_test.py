@@ -22,11 +22,13 @@ import os, random, re, subprocess, sys, time
 
 EXE = "build/goldbox"
 OUT = "."
+CFG_EXTRA = ""          # more settings.cfg lines for the runs (explore_test's strong party: max_hp=1)
+
 class Port:
     def __init__(self, games, game, conf, window=None):
         os.makedirs(conf, exist_ok=True)
         with open(conf + "/settings.cfg", "w") as f:
-            f.write("font=1\nvolume=0\nreply_asked=1\n")
+            f.write("font=1\nvolume=0\nreply_asked=1\n" + CFG_EXTRA)
         env = dict(os.environ, SDL_VIDEODRIVER="dummy", SDL_AUDIODRIVER="dummy")
         args = [EXE, "--games", games, "--conf", conf, "--game", str(game), "--drive"] + (["--window", window] if window else [])
         self.p = subprocess.Popen(args, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, env=env, text=True, bufsize=1)
@@ -190,10 +192,10 @@ def create(r, name):
         w = r.words()
         if p.st["input"] != "0":
             r.do(f"type:{name},wait:200,y,wait:600")
-        elif p.has("PICK RACE"):
+        elif any("PICK RACE" in t for t in p.text):       # (in capitals - not a list headed "Pick Race")
             # (the Dark Queen's form: the choices as they stand; L1 / R1 light Done, A takes it)
             r.do("r1,wait:200"); r.do("a,wait:700")
-        elif "Reroll" in b and goto_word(p, "No"): r.do("a,wait:600")
+        elif "reroll" in b.lower() and goto_word(p, "No"): r.do("a,wait:600")
         elif "Keep" in w and goto_word(p, "Keep"): r.do("a,wait:600")
         elif "Done" in w and goto_word(p, "Done"): r.do("a,wait:600")
         elif "Yes" in w and goto_word(p, "Yes"): r.do("a,wait:600")

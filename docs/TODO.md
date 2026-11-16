@@ -123,7 +123,7 @@ Tick off with the version that did it. Never ask Tom the same thing twice.
 - [ ] Before a PortMaster submission: `port.json` against their
       generator / checks (`availability`, `store`, `min_glibc` unverified),
       the gameplay screenshot (Tom: later), an armhf build if wanted.
-- [ ] Keep the `cyd` pin current (built on CYD 0.203.3). Tom, 2026-11-14:
+- [ ] Keep the `cyd` pin current (built on CYD 0.203.7). Tom, 2026-11-14:
       Companion map / party-info changes are in work in the CYD (small
       boards first; the party-info layout may be rearranged) - when they
       land, move the pin and bring `src/panel.*` along.
