@@ -336,6 +336,14 @@ and maintains it; it is the primary output of the Claude Project
   playsim on the game files, `ecl::find_shops`, the map's walls for the
   way there), then send the party straight to the shop, the temple, the
   hall, the first fight, the way out - as a player with the cluebook.
+  How (2026-11-16): the book = the CYD sweep's `events` run with EVMAP=1
+  (`cyd/tools/devkit/build.sh sw "" tools/playsim/sweep.cpp`, then
+  `GAME=n EVMAP=1 sw <folder> events`; the folder's parent stands for
+  /GOLDBOX with a `_CYD` beside it; PoolRad's folder is its inner
+  POOLRAD) - each block's walls and, by the square and facing a step was
+  taken FROM, what its script shows. `tools/guide.py` reads it and plans
+  the way; `BOOK=<file> tools/newgame_test.py ...` walks it. Books are
+  made from game files: scratch only.
 - **A direction let go before its step was taken still steps** (v0.10.3:
   a fight waits 70 ms for a diagonal's second direction; shorter taps
   were lost) - `button()` in main.cpp; keep it when touching the D-pad.

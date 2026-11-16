@@ -26,6 +26,19 @@ Tick off with the version that did it. Never ask Tom the same thing twice.
       720 x 720 window: PoolRad's play test with a fight, Curse walking.
       Its letters are 9.6 device pixels there - smaller than the 14 of the
       RGB10 MAX3's Companion.)
+- [ ] **Buck Rogers** (Tom, 2026-11-16: "Consider the impact of adding the
+      two Buck Rogers games (Countdown to Doomsday & Matrix Cubed)" - no
+      GOG or Steam release, only the old DOS files; they run with
+      Gateway's DOSBox settings; files to be uploaded to the Project).
+      Claude's first reading, before the files: an ENGINE job (the CYD
+      repo) - two new game profiles and the XXVc rules (skills, careers,
+      ranged fights with guns, ship-to-ship combat, their own items) -
+      then little here: the scan's folder names and logos (no GOG / Steam
+      folder shape, no launcher art, no GOG journal PDF: what journal /
+      manual files will players have?), the play / new-game tests. To do
+      when the files are in: look at them (DAX or the newer format, the
+      program's size, what Gateway's profile already reads) and give Tom
+      a sized plan before any code.
 - [ ] Other handhelds / firmwares you can test on, when it matters (a
       PortMaster submission wants several).
 - [ ] `cyd/src/app/library.cpp` (the game scan) is tied to Arduino's
@@ -109,6 +122,24 @@ Tick off with the version that did it. Never ask Tom the same thing twice.
       1,200 presses). Nothing wrong found in the port's own handling.
       **Still not reached**: a shop walked INTO (only the Merchant's);
       later maps; fights in Secret and Darkness.
+      Phase 4 (2026-11-16, Tom: "Don't wander randomly ... Think like a
+      player would"; `tools/guide.py` + newgame_test's cluebook walk, GOG,
+      new games, engine 0.203.7): the party sent straight to each place by
+      the book made from the game's own scripts and walls. **A shop WALKED
+      INTO and bought from**: PoolRad, Curse, Gateway, Treasures; Secret's
+      shop walked into and its list opened (nothing cheap on the test's
+      list). **A temple walked into, Heal's list opened**: PoolRad,
+      Darkness, Gateway, Treasures. **A training hall walked into, Train
+      tried**: Darkness, Gateway ("Training costs 1000 gp."). **A fight
+      gone to and won**: PoolRad. Every place left again to the exploring
+      menu. Not yet: Champions (its new game starts on the overland map -
+      the walk doesn't drive Move there), Knights (the opening battle),
+      Queen (book not made in time); fights on the start maps of Curse,
+      Secret, Gateway ("no way there" - behind doors the walk found shut;
+      Bash / Pick / the next map not driven yet); going from map to map.
+- [ ] Next for the cluebook walk: doors (Bash / Pick), the way from one
+      map to the next (the book's NEWECL squares), Champions' / Queen's
+      overland, then each game's first quest step by step.
 - [ ] Question for the CYD side (2026-11-16): Death Knights' NEW
       characters start high in level but with no armour or weapons (AC 6 -
       10) and meet the opening battle before any shop. Is that the
@@ -160,6 +191,7 @@ Tick off with the version that did it. Never ask Tom the same thing twice.
       land, move the pin and bring `src/panel.*` along.
 
 ## Done
+- [x] 2026-11-16 (Tom: use the game files' own knowledge, no random walks): `tools/guide.py`, the CYD sweep's EVMAP; shops / temples / halls walked into. Coverage above.
 - [x] v0.10.6 (Tom, 2026-11-15: "Go ahead with your testing ... using the cheats"; engine 0.203.7): a new game in every game by buttons;
       Pools of Darkness' new game hung after the tour - fixed in the engine. `tools/newgame_test.py`. Coverage above.
 - [x] v0.10.5 on Tom's RG40XX V (his log, 2026-11-15): the firmware reports itself "knulli scarab", the launch script

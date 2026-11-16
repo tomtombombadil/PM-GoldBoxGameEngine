@@ -186,6 +186,114 @@ def outfit(r):
     pt.back_out(r)
     return f"bought {got} | readied {ready} | the party now: {party}"
 
+# ---- The walk with the cluebook (tools/guide.py): straight to the shop, the temple, the hall, a fight --------
+def where(p):
+    m = re.match(r"Area (\d+), script (\d+)", p.st["desc"])
+    try: x, y, d = (int(v) for v in p.st["pos"].split(","))
+    except Exception: return None, None
+    return ((int(m.group(1)), int(m.group(2))) if m else None), (x, y, d)
+
+ASKS = {"temple": "HEAL", "shop": "SHOW YOU|WARES|SELECTION|FOR SALE", "training": "TRAIN"}
+PLACE_WORDS = {"shop": "Buy", "temple": "Heal", "training": "Train", "inn": "Rest"}
+
+def in_place(p, kind):
+    w = PLACE_WORDS.get(kind)
+    return bool(w) and (w in ht.mw(p) or (kind == "training" and p.find("Train") is not None and pt.pm(p)))
+
+def go(r, book, kind, goal, S, max_keys=200):
+    """To the book's square and facing (x, y, dir), by its walls - a side found closed is left out and
+    the way planned anew - then the step forward the book took there, and its questions answered Yes.
+    "in" at the place's own menu, "fight" after one, "nothing" when the step showed none, else why not"""
+    p = r.p; key0, at = where(p); shut = set(); fought = False; stepped = False; up_from = None
+    b = book.get(key0)
+    if b is None: return "no map in the book"
+    for n in range(max_keys):
+        if p.st["fighting"] == "1":
+            S["fights"] = S.get("fights", 0) + 1; fought = True
+            if not ex.quick_fight(r): return "the fight was not got through"
+            for i in range(30):
+                if r.exploring(): break
+                r.step_on()
+            ex.healer(r, S)
+            if kind == "fight": return "fight"
+            continue
+        if in_place(p, kind): return "in"
+        if not r.exploring():
+            if p.st.get("playing") != "1" or (pt.pm(p) and ex.members(p) == 0): return "the party fell"
+            w = ht.mw(p)
+            said = " ".join(p.text[12:24]).upper()
+            # (the place met on the way counts too; in a town a question on the way to a shop, a temple or a
+            # hall is taken as its door's unless it speaks of a fight)
+            if "Yes" in w and (stepped or re.search(ASKS.get(kind, "$^"), said) or (kind in ASKS and not re.search("FIGHT|ATTACK|STEAL|FLEE", said))) \
+               and pt.goto_word(p, "Yes"): r.do("a,wait:500")
+            elif stepped and kind == "fight" and "Fight" in w and pt.goto_word(p, "Fight"): r.do("a,wait:500")
+            elif stepped and kind == "fight" and "Attack" in w and pt.goto_word(p, "Attack"): r.do("a,wait:500")
+            else: r.step_on()
+            continue
+        if stepped: return "fight" if fought and kind == "fight" else "nothing"
+        key, at = where(p)
+        if key != key0: return f"left the map (now {key})"
+        if up_from and at[:2] == up_from[:2]: shut.add(up_from)      # (the step was turned back - a question answered No, a closed door)
+        up_from = None
+        if at == tuple(goal):
+            r.do("up,wait:500"); stepped = True
+            continue
+        keys = b.path(at, goal, shut)
+        if not keys: return "no way there"
+        if keys[0] == "up": up_from = at
+        r.do(keys[0] + ",wait:250")
+    return "too far"
+
+def visit(r, book, kind, S, tries=4):
+    """The nearest squares of a kind tried in turn; at the place its own screen used. A line for the notes"""
+    p = r.p; key, at = where(p); b = book.get(key)
+    if b is None: return f"{kind}: this map ({key}) is not in the book"
+    sq = [(len(b.path(at, g) or []) or 999, g) for g in b.find(kind)]
+    sq = [g for n, g in sorted(sq) if n < 999]
+    if not sq: return f"{kind}: none on this map by the book"
+    for g in sq[:tries]:
+        how = go(r, book, kind, g, S)
+        if how == "in":
+            did = ""
+            if kind == "shop":
+                if pt.goto_word(p, "Buy"):
+                    r.do("a,wait:600"); did = f"bought {shop_buy(r, ('Dagger', 'Dart', 'Club', 'Quarter Staff', 'Sling', 'Hand Axe', 'Arrow', '10 Arrows', 'Flask of Oil'))}"
+                    if "None" in did: did = "the list opened: " + " / ".join(" ".join(t.split()) for t in rows(p)[2:8] if t.strip())[:90]
+            elif kind == "temple":
+                if pt.goto_word(p, "Heal"): r.do("a,wait:500"); did = "Heal's list: " + " / ".join(t.strip() for t in rows(p)[2:12] if t.strip())[:90]
+            elif kind == "training":
+                if pt.goto_line(p, "Train"):
+                    r.do("a,wait:700"); did = f"Train says [{r.bottom()[:40]}]"
+                    if "Select" in ht.mw(p) and pt.goto_word(p, "Select"):       # ("Pick Character")
+                        r.do("a,wait:700"); did += f" then [{r.bottom()[:40]}]"
+            for k in range(24):
+                if r.exploring() or p.st["fighting"] == "1": break
+                w = ht.mw(p)
+                if pt.pm(p) and (ex.chosen(p) or not ht.litword(p)) and pt.goto_line(p, "Begin"): r.do("a,wait:900")   # (a hall is left by Begin)
+                elif "Exit" in w and pt.goto_word(p, "Exit"): r.do("a,wait:400")
+                elif "Leave" in w and pt.goto_word(p, "Leave"): r.do("a,wait:400")
+                elif "Press" in r.bottom() or not w: r.do("a,wait:400")
+                else: r.do("b,wait:400")
+            return f"{kind}: WALKED IN at {g} ({b.says(g)[:60]}) - {did} - back to exploring: {'OK' if r.exploring() else '!! ' + r.bottom()[:40]}"
+        if how == "fight": return f"{kind}: fought at {g} and came through - {'exploring' if r.exploring() else '!! ' + r.bottom()[:40]}"
+        if how in ("the party fell", "the fight was not got through") or how.startswith("left"): return f"{kind}: {how} (going to {g})"
+        S.setdefault("miss", []).append(f"{kind} {g}: {how}")
+    return f"{kind}: not got into - tried {sq[:tries]}: {S.get('miss', [])[-tries:]}"
+
+def guided(r, book_path):
+    import guide
+    book = guide.load(book_path); S = {}
+    p = r.p; key, at = where(p)
+    r.note(f"  the cluebook walk - at {at} on map {key}; the book has it: {key in book}")
+    for kind in ("shop", "temple", "training", "fight", "fight"):
+        for k in range(12):
+            if r.exploring() or p.st.get("playing") != "1": break
+            if p.st["fighting"] == "1": ex.quick_fight(r)
+            else: r.step_on()
+        if p.st.get("playing") != "1" or not r.exploring(): r.note("    (the walk ends:", r.bottom()[:40], "|", p.st["desc"], ")"); break
+        r.note("   ", visit(r, book, kind, S), "| now at", where(p)[1])
+    return S
+
 def main():
     exe, games, n, out = sys.argv[1], sys.argv[2], int(sys.argv[3]), sys.argv[4]
     steps = int(sys.argv[5]) if len(sys.argv) > 5 else 6000
@@ -214,7 +322,9 @@ def main():
         r.note("  Begin Adventuring - a new game - to the exploring menu:", "OK" if ok else "!! " + r.bottom()[:50], "| walking", p.st["walking"], "|", p.st["desc"])
         if ok: r.note("  the Merchant cheat - armour, a shield and a weapon bought and readied for everyone:", outfit(r))
         if ok and len(sys.argv) > 7 and sys.argv[7] == "stop": return
-        if ok: ex.explore(r, steps, minutes)
+        book = os.environ.get("BOOK")
+        if ok and book: guided(r, book)
+        elif ok: ex.explore(r, steps, minutes)
     except Exception as e:
         import traceback
         r.note("  !! THE RUN STOPPED:", repr(e)[:160], "|", " / ".join(x.strip() for x in traceback.format_exc().strip().splitlines()[-4:])[:300])
