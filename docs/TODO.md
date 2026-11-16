@@ -195,9 +195,24 @@ Tick off with the version that did it. Never ask Tom the same thing twice.
       offered.
 - [ ] Not tried on a device: the installer's games-list refresh, the
       firmware's curl / unzip / sha256sum, Restart Now under ROCKNIX.
-- [ ] Before a PortMaster submission: `port.json` against their
-      generator / checks (`availability`, `store`, `min_glibc` unverified),
-      the gameplay screenshot (Tom: later), an armhf build if wanted.
+- [ ] Before a PortMaster submission (their packaging page, read
+      2026-11-16; Tom asked how we stand): HAVE - folder / script names,
+      port.json, README (notes, controls, compile, thanks), gameinfo.xml,
+      licenses, control.txt / get_controls / mod_<CFW> / gptokeyb /
+      pm_platform_helper / pm_finish / log.txt, aarch64, no game files.
+      NEED - (1) a testing thread in their Discord's #testing-n-dev with
+      runs on AmberELEC, dArkOS, muOS, ROCKNIX (Libmali and Panfrost) and
+      Knulli, 640 x 480 and a higher resolution - "Pull Requests submitted
+      without documented testing ... will not be accepted" (have: ROCKNIX,
+      Knulli, dArkOS; not AmberELEC, muOS; which ROCKNIX variant?);
+      (2) screenshot.png - gameplay, 4:3, 640 x 480 or more (Tom: later;
+      a real game screen in their repo - his call); (3) port.json through
+      their generator: `store` (GOG / Steam links), `min_glibc`, the arch
+      name for x86 ("x64"?); (4) Claude's guess, not in their rules: a
+      catalogue build without Check for Updates / the installer (their
+      app updates ports) and a word with them about Send Logs (a port
+      that uploads logs) - ask in the testing thread; (5) the PR itself
+      from Tom's fork of PortsMaster/PortMaster-New, branch `goldbox`.
 - [ ] Keep the `cyd` pin current (built on CYD 0.203.7). Tom, 2026-11-14:
       Companion map / party-info changes are in work in the CYD (small
       boards first; the party-info layout may be rearranged) - when they
