@@ -39,6 +39,18 @@ Tick off with the version that did it. Never ask Tom the same thing twice.
       when the files are in: look at them (DAX or the newer format, the
       program's size, what Gateway's profile already reads) and give Tom
       a sized plan before any code.
+      Rights and PortMaster (looked up 2026-11-16): not abandoned in any
+      legal sense - the Buck Rogers name is fought over by the Nowlan and
+      Dille heirs and claimed by studios; the games are sold nowhere.
+      PortMaster's published packaging rules say nothing on games no
+      longer sold; its two kinds are Ready to Run (free / licensed files
+      shipped) and ports where the player supplies files they own - ours
+      is the second kind, and it ships no game files. Its port.json has
+      `store` (where to buy) and `availability` fields: for Buck Rogers
+      there is no store to name. Not written down anywhere found: how
+      its reviewers treat that - ask on their Discord at submission time
+      (Tom's call). Docs to say only "your own original copy"; no
+      download links; keep the Buck Rogers name out of the port's title.
 - [ ] Other handhelds / firmwares you can test on, when it matters (a
       PortMaster submission wants several).
 - [ ] `cyd/src/app/library.cpp` (the game scan) is tied to Arduino's
