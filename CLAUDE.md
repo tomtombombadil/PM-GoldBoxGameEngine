@@ -326,6 +326,16 @@ and maintains it; it is the primary output of the Claude Project
   looked for the party menu; now the member count / the Add list). At
   most four runs at once here (2 cores); the walks' fights and temple
   visits are slow - 30 minutes a game goes a few hundred steps.
+- **Play tests go where things are - no random wandering** (Tom,
+  2026-11-16: "you have access to the actual game files themselves and
+  the inner workings of the game. You already KNOW where the encounters /
+  fights / inns / shops / trainers / etc are. Use that information. Don't
+  wander randomly. That's a waste of time and effort. Be smart. Think like
+  a player would"; game guides too). Before a walk: get the map's squares
+  and what each one's script does from the engine (the CYD's sweep /
+  playsim on the game files, `ecl::find_shops`, the map's walls for the
+  way there), then send the party straight to the shop, the temple, the
+  hall, the first fight, the way out - as a player with the cluebook.
 - **A direction let go before its step was taken still steps** (v0.10.3:
   a fight waits 70 ms for a diagonal's second direction; shorter taps
   were lost) - `button()` in main.cpp; keep it when touching the D-pad.
