@@ -26,7 +26,8 @@ Tick off with the version that did it. Never ask Tom the same thing twice.
       720 x 720 window: PoolRad's play test with a fight, Curse walking.
       Its letters are 9.6 device pixels there - smaller than the 14 of the
       RGB10 MAX3's Companion.)
-- [ ] **Buck Rogers** (Tom, 2026-11-16: "Consider the impact of adding the
+- [ ] **Buck Rogers - SET ASIDE** (Tom, 2026-11-16: "disregard the Buck
+      Rogers games for now"; don't raise it until he does). Notes kept: (Tom, 2026-11-16: "Consider the impact of adding the
       two Buck Rogers games (Countdown to Doomsday & Matrix Cubed)" - no
       GOG or Steam release, only the old DOS files; they run with
       Gateway's DOSBox settings; files to be uploaded to the Project).
