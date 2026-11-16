@@ -26,6 +26,15 @@ Tick off with the version that did it. Never ask Tom the same thing twice.
       720 x 720 window: PoolRad's play test with a fight, Curse walking.
       Its letters are 9.6 device pixels there - smaller than the 14 of the
       RGB10 MAX3's Companion.)
+- [ ] Question: in a training hall (the game's whole party menu) the
+      line "Exit to DOS" leaves the game at once, unsaved, on one A press
+      (seen in Curse; the Dark Queen asks "Exit to DOS?" since engine
+      0.201.0). Should the others ask too, or is that the originals' way?
+      An engine matter - yours to decide.
+- [ ] Question (RG40XX V / Knulli, your report of 2026-11-15: A and B
+      reversed, put right by Settings - Confirm Button): do you want the
+      port to ask once at its first start ("Press the button you use to
+      confirm") so nobody has to find the setting? Not done - your call.
 - [ ] Other handhelds / firmwares you can test on, when it matters (a
       PortMaster submission wants several).
 - [ ] `cyd/src/app/library.cpp` (the game scan) is tied to Arduino's
@@ -64,10 +73,24 @@ Tick off with the version that did it. Never ask Tom the same thing twice.
       Treasures whole; Champions its camp only (its save starts
       overland); Queen in part (the test can't read its coin prompt).
       Nothing found wrong in them.
-      **Still to do (Tom's list, 2026-11-15)**: 3 shops / temples /
-      training in place, 4 creation to the end + icon screens, 6 a journal
-      mention reached by playing, 8 playing further in (would also reach
-      fights in Secret, Darkness, Knights).
+      Phase 2 (2026-11-15, tools/explore_test.py, GOG, no port change):
+      **Create New Character to its end** by buttons - all nine. **The
+      icon screen** (Encamp - Alter - Icon): the D-pad and L2 / R2 change
+      the picture, A on Heads / Weapons / Colors too, Edit opens, B asks
+      "Is this icon ok?", Yes leaves - eight games (Champions' save starts
+      overland, no Alter there; Queen has no Icon word). **Places met by
+      walking**: Curse's temple (Heal / View / Pool / Appraise walked
+      through) and training hall, Gateway's temple - no shop was reached
+      in any game. **Journal mentions opened by playing**: PoolRad 1,
+      Secret 2, Darkness 1, Queen 1, Gateway 2. **Playing further in**:
+      Secret 3,330 steps / 203 squares, Darkness 4,120 / 62, Knights
+      3,417 / 126 with nothing wrong and no fight; in the other six the
+      stock party fell on Quick within 41 - 645 steps (1 - 8 fights).
+      Nowhere did the walk get stuck through the port's fault.
+      **Not reached**: shops; a second map in most games; fights in
+      Secret, Darkness, Knights. A walk that goes deep needs a party that
+      survives - made strong with the Trainer cheat first, or a save from
+      further in (Tom's, if he has any).
 - [ ] **Buttons through every screen kind** with the game files (SPEC
       roadmap 3). Checked so far, Curse (GOG), v0.2.0: titles, party
       menu, Load, Modify, Create Character to the name's keyboard (type,
@@ -115,6 +138,7 @@ Tick off with the version that did it. Never ask Tom the same thing twice.
       land, move the pin and bring `src/panel.*` along.
 
 ## Done
+- [x] 2026-11-15, Tom on devices: RG40XX V / Knulli (A and B reversed - Confirm Button puts it right), R36S / dArkOS ("ran fine").
 - [x] v0.10.3 (Tom, 2026-11-15: phase 1 - fights by hand, camp / spells / items; engine 0.203.2): a D-pad tap
       under 70 ms in a fight's Move / Aim was lost - fixed; `tools/hand_test.py`. Coverage above.
 - [x] v0.10.2 (Tom, 2026-11-15: the five cheap tests; engine 0.202.1): results above; `tools/save_test.py`, `tools/monkey_test.py`.

@@ -92,7 +92,12 @@ and maintains it; it is the primary output of the Claude Project
 - **Tom's devices**: RG40XX H / ROCKNIX (4:3, primary), PowKiddy RGB10
   MAX3 (16:9), an **R36H** on ROCKNIX (4:3, 640 x 480; it reports itself
   as "R33S (Game Console R33S)" - "those devices are sketchy"; logs
-  headed R33S are this one. v0.8.0's Send Logs worked there).
+  headed R33S are this one. v0.8.0's Send Logs worked there). And an
+  **RG40XX V on Knulli** (Tom, 2026-11-15, v0.10.x): runs; **A and B come
+  out reversed there** - Settings - Confirm Button puts it right ("easy
+  enough"). Not every firmware reports the buttons the same way: keep
+  that switch easy to find. And an **R36S on dArkOS** (Tom, 2026-11-15):
+  "It ran fine".
 - **The CYD repo keeps moving while Tom works on both** (2026-11-14: "I
   probably shouldn't have made them separate projects, but here we
   are"): when he says the CYD changed, fetch it, move the pin once its
@@ -290,6 +295,15 @@ and maintains it; it is the primary output of the Claude Project
   the Dark Queen's off-grid prompts). Script steps: a direction is HELD
   while it acts (a fight's pad reads what is held), `up+right` = two
   together.
+- `tools/explore_test.py <binary> <games copy> <n> <out> [steps] [minutes]`
+  (2026-11-15): a character made, the icon screen tried, then the maps
+  walked through - fights on Quick (Encamp - Fix after each), shops /
+  temples / halls walked through word by word, journal mentions counted,
+  stuck places noted with a shot. The stock parties fall within a few
+  fights: for a deep walk make the party strong first. **A training hall
+  is the game's whole party menu - leave it by BEGIN Adventuring; its
+  "Exit to DOS" leaves the game.** Never start two lane scripts on the
+  same folders (a half-copied games folder gives nonsense).
 - **A direction let go before its step was taken still steps** (v0.10.3:
   a fight waits 70 ms for a diagonal's second direction; shorter taps
   were lost) - `button()` in main.cpp; keep it when touching the D-pad.

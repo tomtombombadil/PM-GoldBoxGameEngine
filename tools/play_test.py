@@ -52,6 +52,8 @@ class Port:
         if len(text) > 25 and text[24].count("?") > 20:
             text[24] = text[-1].replace("?", " ")
             lit[24] = lit[-1]
+        while len(text) < 25:             # (not in a game - the port's own page: no rows; empty ones, so readers needn't care)
+            text.append(" " * 40); lit.append("." * 40)
         self.text, self.lit = text, lit
         return self
     def show(self):

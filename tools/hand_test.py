@@ -335,7 +335,7 @@ class Crawl:
         started = False
         for w in words:
             if w in SKIP or self.left <= 0: continue
-            if depth == 0 and w not in ("Cast", "View", "Encamp", "Inv"): continue
+            if depth == 0 and not getattr(self, "any_top", False) and w not in ("Cast", "View", "Encamp", "Inv"): continue
             if depth > 0 and w == "View" and "Encamp" in path: continue      # (the same screens as View's own)
             if mw(p) != words:            # (a word's act went up a menu or two: in again)
                 if mw(p) not in self.stack: self.left = 0; self.note(depth, "(the walk of this menu ended: now", mw(p), ")"); return
