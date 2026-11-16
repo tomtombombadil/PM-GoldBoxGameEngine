@@ -311,6 +311,21 @@ and maintains it; it is the primary output of the Claude Project
   is the game's whole party menu - leave it by BEGIN Adventuring; its
   "Exit to DOS" leaves the game.** Never start two lane scripts on the
   same folders (a half-copied games folder gives nonsense).
+- `tools/newgame_test.py <binary> <games copy> <n> <out> [steps] [minutes]`
+  (2026-11-16, v0.10.6): a NEW game as a player starts one - six
+  characters made and added, Modify, Begin, armour / shield / weapon
+  bought at the Merchant cheat's shop and readied (View - Items), then
+  explore_test's walk with `strong` on (the Healer cheat after fights,
+  the Trainer's free training every third; Max Hit Points on). It found
+  Darkness's new game hanging (engine 0.203.7). **Saves only show what a
+  save holds - run this after any engine pin move that touches a game's
+  start.** A fault that shows in the CYD's playsim too (`GAME=n
+  NEWGAME=1`, tools/devkit/build.sh sim) is the engine's.
+  **A test that says OK must look at the result** (2026-11-16: creation
+  "OK" for a day while the test had left the race list by Exit - it only
+  looked for the party menu; now the member count / the Add list). At
+  most four runs at once here (2 cores); the walks' fights and temple
+  visits are slow - 30 minutes a game goes a few hundred steps.
 - **A direction let go before its step was taken still steps** (v0.10.3:
   a fight waits 70 ms for a diagonal's second direction; shorter taps
   were lost) - `button()` in main.cpp; keep it when touching the D-pad.

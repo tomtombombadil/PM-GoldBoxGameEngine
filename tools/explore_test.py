@@ -58,7 +58,8 @@ def quick_fight(r):
             for i in (22, 23, 24): print(f"    {i} [{p.text[i].rstrip()}] [{p.lit[i].rstrip('.')}]")
         if "Quick" in w and ht.fgoto(p, "Quick"): r.do("a,wait:200")
         elif "Auto" in w and ht.fgoto(p, "Auto"): r.do("a,wait:200")
-        elif "Move" in w and "Done" in w and ht.fgoto(p, "Done"): r.do("a,wait:200")
+        elif "Guard" in w and "Move" not in w and ht.fgoto(p, "Guard"): r.do("a,wait:200")    # (Done's own menu)
+        elif "Done" in w and ht.fgoto(p, "Done"): r.do("a,wait:200")      # (no Quick word: a fighter that can't act on its own)
         elif "Exit" in w and "Move" not in w and "Quick" not in w and "Auto" not in w and ht.fgoto(p, "Exit"): r.do("a,wait:200")
         elif p.st["pad"] == "1": r.do(("b" if n % 2 else "a") + ",wait:200")
         else: r.do("a,wait:200")
@@ -340,6 +341,7 @@ def explore(r, steps_max, minutes):
             m["open"].setdefault(now, {})[(dd + 4) % 8] = cur
             m["tried"].setdefault(now, set()).add((dd + 4) % 8)
     r.do = orig
+    if S["menus"]: r.note("  other menus met on the way:", " / ".join(sorted(S["menus"]))[:400])
     kinds = {k: sum(1 for w in S["places"] if k in w.split()) for k in PLACE}
     kinds["hall"] = 1 if "hall" in S["places"] else 0
     r.note(f"  WALK: {S['steps']} steps, {len(S['squares'])} squares on {len(S['maps'])} maps | {S['fights']} fights | {S['journal']} journal mentions opened |",

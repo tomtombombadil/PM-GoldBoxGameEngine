@@ -124,10 +124,12 @@ def shop_buy(r, wants):
             for i, t in enumerate(rw):
                 m = re.match(r"^\s*(.+?)\s+(\d+)\s*$", t)
                 if m and m.group(1).strip() == w and to_row(r, i) and pt.goto_word(p, "Buy"):
-                    r.do("a,wait:400")
-                    for k in range(4):                     # (a message - "Not enough Money" - passes or wants a press)
+                    r.do("a,wait:400"); poor = "enough" in p.text[24].lower()
+                    for k in range(4):                     # (a message - "Not enough Money." - passes or wants a press)
                         if "Buy" in ht.mw(p) and ht.litword(p): break
+                        poor = poor or "enough" in p.text[24].lower()
                         r.do("a,wait:400")
+                    if poor: continue                      # (too dear: the next of wants)
                     return w
         if "Next" not in ht.mw(p) or not pt.goto_word(p, "Next"): return None
         before = "".join(rw); r.do("a,wait:400")

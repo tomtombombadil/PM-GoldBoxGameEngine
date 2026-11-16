@@ -65,7 +65,10 @@ Tick off with the version that did it. Never ask Tom the same thing twice.
       overland); Queen in part (the test can't read its coin prompt).
       Nothing found wrong in them.
       Phase 2 (2026-11-15, tools/explore_test.py, GOG, no port change):
-      **Create New Character to its end** by buttons - all nine. **The
+      **Create New Character to its end** by buttons - all nine (WRONG,
+      found 2026-11-16: the test left the race list by Exit in every game
+      whose list is headed "Pick Race" and still said OK - only PoolRad
+      and Queen were really made. Put right and done again: phase 3). **The
       icon screen** (Encamp - Alter - Icon): the D-pad and L2 / R2 change
       the picture, A on Heads / Weapons / Colors too, Edit opens, B asks
       "Is this icon ok?", Yes leaves - eight games (Champions' save starts
@@ -82,6 +85,34 @@ Tick off with the version that did it. Never ask Tom the same thing twice.
       Secret, Darkness, Knights. A walk that goes deep needs a party that
       survives - made strong with the Trainer cheat first, or a save from
       further in (Tom's, if he has any).
+      Phase 3 (2026-11-16, tools/newgame_test.py, GOG, 640 x 480; v0.10.6):
+      **a NEW game as a player starts one**, buttons only - six characters
+      made (Human Fighters where offered) and found in the party: all nine;
+      Modify to the highest figures: PoolRad, Curse, Gateway (the Add /
+      Subtract kind of Modify - Secret, Darkness, Krynn, Treasures - not
+      driven yet by the test); Begin to the exploring menu: eight at once,
+      **Darkness hung after Rolf's tour - an engine fault, fixed (0.203.7,
+      v0.10.6)**; armour, shield and weapon **bought at the Merchant's and
+      readied** through View - Items: PoolRad, Curse, Champions, Treasures
+      (Secret's first tries were too dear - "Not enough Money."; Gateway's
+      and Queen's shop not driven: the test's). Then the walk with the
+      Healer after fights and free training:
+      PoolRad 361 steps / 12 fights (fell, still level 1) - Curse 753 / 13
+      fights, a temple walked through - Secret 4,112 steps, 203 squares,
+      its tavern and vault met, no fight (the town's Yes / No answered No)
+      - Darkness 2,123 steps, no fight - Champions: stopped in its second
+      fight (the test met a fight menu without Quick; put right after) -
+      Knights: the six new characters, unarmed, fell in the opening battle
+      on Quick - Queen 1,000+ steps, 104 squares, 1 fight - Gateway 565
+      steps, 260 squares on 5 maps, 18 fights, 36 trainings - Treasures
+      206 steps, 6 fights, 6 trainings (one fight outlasted the test's
+      1,200 presses). Nothing wrong found in the port's own handling.
+      **Still not reached**: a shop walked INTO (only the Merchant's);
+      later maps; fights in Secret and Darkness.
+- [ ] Question for the CYD side (2026-11-16): Death Knights' NEW
+      characters start high in level but with no armour or weapons (AC 6 -
+      10) and meet the opening battle before any shop. Is that the
+      original's way? Not checked in DOSBox.
 - [ ] **Buttons through every screen kind** with the game files (SPEC
       roadmap 3). Checked so far, Curse (GOG), v0.2.0: titles, party
       menu, Load, Modify, Create Character to the name's keyboard (type,
@@ -129,6 +160,8 @@ Tick off with the version that did it. Never ask Tom the same thing twice.
       land, move the pin and bring `src/panel.*` along.
 
 ## Done
+- [x] v0.10.6 (Tom, 2026-11-15: "Go ahead with your testing ... using the cheats"; engine 0.203.7): a new game in every game by buttons;
+      Pools of Darkness' new game hung after the tour - fixed in the engine. `tools/newgame_test.py`. Coverage above.
 - [x] v0.10.5 on Tom's RG40XX V (his log, 2026-11-15): the firmware reports itself "knulli scarab", the launch script
       found it ("Knulli: Confirm starts on B"), `ab_set=1` written. His unit was already swapped by hand, so the flip
       itself was seen only in the smoke test - a fresh Knulli install by a tester would show it.
