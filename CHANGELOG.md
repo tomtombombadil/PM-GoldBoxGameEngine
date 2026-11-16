@@ -3,6 +3,15 @@
 Every version of Gold Box Game Engine for PortMaster. A release's notes are
 its part of this file.
 
+## [0.10.4] - 2026-11-15
+
+Engine 0.203.3. Nothing in the port itself changed; this is the fourth test round's result and the newest engine.
+
+- Engine 0.203.3 (the CYD session's): Pool of Radiance's wilderness places set against the original - the cave's status line, the first run's frame.
+- Fourth test round (creating a character to the end, the icon screen, walking the maps with fights on Quick): no fault found in the port. What it reached and what it did not is in docs/TODO.md.
+- Tom's reports: runs on an RG40XX V with Knulli (A and B come out reversed there - Settings - Confirm Button) and on an R36S with dArkOS.
+- New test tool `tools/explore_test.py`.
+
 ## [0.10.3] - 2026-11-15
 
 Engine 0.203.2. From the third test round: fights played by hand and the camp / spells / items menus walked through, by buttons.
