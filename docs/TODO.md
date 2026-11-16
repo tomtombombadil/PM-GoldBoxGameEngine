@@ -26,11 +26,11 @@ Tick off with the version that did it. Never ask Tom the same thing twice.
       720 x 720 window: PoolRad's play test with a fight, Curse walking.
       Its letters are 9.6 device pixels there - smaller than the 14 of the
       RGB10 MAX3's Companion.)
-- [ ] v0.10.5 on the RG40XX V / Knulli: set Settings - Confirm Button back
-      to A (or delete nothing - just update): after the update A should
-      confirm without touching the setting. If it doesn't, Send Logs - the
-      log's head shows what the firmware calls itself (the port looks for
-      "knulli").
+- [ ] v0.10.5 on the RG40XX V / Knulli: before updating, set Settings -
+      Confirm Button back to the way it was when wrong; then Check for
+      Updates. After the restart the button marked A should confirm by
+      itself. If it doesn't: Send Logs - the log's head shows what the
+      firmware calls itself (the port looks for "knulli").
 - [ ] Other handhelds / firmwares you can test on, when it matters (a
       PortMaster submission wants several).
 - [ ] `cyd/src/app/library.cpp` (the game scan) is tied to Arduino's
