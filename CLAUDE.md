@@ -94,9 +94,12 @@ and maintains it; it is the primary output of the Claude Project
   as "R33S (Game Console R33S)" - "those devices are sketchy"; logs
   headed R33S are this one. v0.8.0's Send Logs worked there). And an
   **RG40XX V on Knulli** (Tom, 2026-11-15, v0.10.x): runs; **A and B come
-  out reversed there** - Settings - Confirm Button puts it right ("easy
-  enough"). Not every firmware reports the buttons the same way: keep
-  that switch easy to find. And an **R36S on dArkOS** (Tom, 2026-11-15):
+  out reversed there** - so on Knulli Confirm starts on B by itself (Tom,
+  2026-11-15: "just go ahead and reverse the buttons in it by default";
+  v0.10.5: the launch script finds Knulli and passes `--ab-reversed`,
+  applied once - `ab_set` - then Settings - Confirm Button is the
+  player's). Another firmware with the same fault gets the same line in
+  the launch script - no first-start question. And an **R36S on dArkOS** (Tom, 2026-11-15):
   "It ran fine".
 - **The CYD repo keeps moving while Tom works on both** (2026-11-14: "I
   probably shouldn't have made them separate projects, but here we
@@ -124,6 +127,10 @@ and maintains it; it is the primary output of the Claude Project
   rearranged party-info layout ("It's hard to read as is"). Don't
   redesign `src/panel.*`'s Party view meanwhile; when it lands, move the
   pin and make the port's panel show it in the same version.
+- **"Exit to DOS" in a training hall leaves at once, unsaved - leave it**
+  (Tom, 2026-11-15: "It's a port of an old DOS game, not a babysitter.
+  It's from the era when actions had consequences"). No confirmations
+  added where the originals have none.
 - **The Trainer cheat is left with Begin Adventuring** (Tom, 2026-11-14:
   "B doesn't leave, and that's OK") - don't make B leave it.
 - **A scan-tag bump (`kScanTag`) makes every journal anew** at the next

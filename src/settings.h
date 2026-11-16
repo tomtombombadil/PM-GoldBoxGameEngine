@@ -10,6 +10,7 @@ struct Settings {
     uint8_t volume = 70;        // percent
     uint8_t font = 0;           // the game's text: 0 its own, 1 Clear, 2 Darkness's, 3 Clear Caps
     bool    swap_ab = false;    // Confirm / Back the other way round
+    bool    ab_set = false;     // the firmware's default was applied, or the player chose (never applied again)
     bool    music = true;       // the games' own music (the later games)
     bool    pad_moves = true;   // exploring: the D-pad walks (off: it always moves the highlight)
     uint16_t comforts_off = 0;  // the engine's comforts switched off (kOff* bits; 0: all on)

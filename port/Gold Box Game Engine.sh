@@ -116,6 +116,14 @@ $ESUDO chmod +x "$GAMEDIR/$BINARY" "$GAMEDIR"/tools/*.sh 2>/dev/null
 $GPTOKEYB "$BINARY" &
 pm_platform_helper "$GAMEDIR/$BINARY"
 
+# Knulli reports A and B the other way round (Tom's RG40XX V, 2026-11-15):
+# the port starts with Confirm on B there - once; Settings - Confirm Button
+# stays the player's
+if echo "${CFW_NAME}" | grep -qi knulli || grep -qi knulli /etc/os-release 2>/dev/null || [ -d /usr/share/knulli ]; then
+  GOLDBOX_ARGS="$GOLDBOX_ARGS --ab-reversed"
+  echo "[goldbox] Knulli: Confirm starts on B"
+fi
+
 ./"$BINARY" --games "$GAMEDIR/games" --conf "$CONFDIR" --tools "$GAMEDIR/tools" $GOLDBOX_ARGS
 echo "[goldbox] the port ended with code $?"
 

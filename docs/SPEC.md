@@ -136,6 +136,10 @@ direction keys (`play::fight_dir`, `fight_select`), typed keys
 - Held D-Pad repeats (380 ms, then every 110 ms).
 - **Confirm Button** (menu): A / B swapped, for handhelds whose labels are
   the other way round.
+  On **Knulli** (A and B reported the other way round - Tom's RG40XX V) it
+  starts on B: the launch script finds the firmware (`CFW_NAME`,
+  `/etc/os-release`, `/usr/share/knulli`) and passes `--ab-reversed`; applied
+  once (`ab_set` in settings.cfg), the player's own choice stands after.
 - Extras: either stick moves the pointer; a mouse or touch screen taps
   directly (also the on-screen keyboard's keys); a PC keyboard: arrows,
   Enter, Esc, Tab / F1 = Start, PgUp / PgDn = L1 / R1, Home / End = L2 / R2,

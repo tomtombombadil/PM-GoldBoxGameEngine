@@ -15,10 +15,10 @@ import sys
 import tempfile
 
 
-def run(exe, games, conf, script, window=None):
+def run(exe, games, conf, script, window=None, extra=()):
     env = dict(os.environ, SDL_VIDEODRIVER="dummy", SDL_AUDIODRIVER="dummy")
     r = subprocess.run([exe, "--games", str(games), "--conf", str(conf), "--script", script]
-                       + (["--window", window] if window else []),
+                       + (["--window", window] if window else []) + list(extra),
                        env=env, capture_output=True, text=True, timeout=60)
     print(r.stdout, r.stderr, sep="")
     if r.returncode != 0:
@@ -210,6 +210,17 @@ def main():
         assert (conf / "settings.cfg").is_file(), "settings not saved"
         cfg = (conf / "settings.cfg").read_text()
         assert "comforts_off=0" in cfg and "max_hp=0" in cfg and "swap_ab=1" in cfg, cfg
+        (conf / "settings.cfg").unlink()
+        # 1b. A firmware with A and B reversed (Knulli; the launch script's
+        # --ab-reversed): Confirm starts on B, once - the player's change stands
+        run(exe, t / "nothing", conf, "wait:100,quit", extra=["--ab-reversed"])
+        cfg = (conf / "settings.cfg").read_text()
+        assert "swap_ab=1" in cfg and "ab_set=1" in cfg, cfg
+        # (Confirm is B now: b opens what a would)
+        run(exe, t / "nothing", conf, "wait:100,b,start,menu:Settings,b,menu:Confirm_Button,b,quit", extra=["--ab-reversed"])
+        run(exe, t / "nothing", conf, "wait:100,quit", extra=["--ab-reversed"])
+        cfg = (conf / "settings.cfg").read_text()
+        assert "swap_ab=0" in cfg and "ab_set=1" in cfg, cfg
         (conf / "settings.cfg").unlink()
         # 2. Folders: lower-case names, files a folder down, an unknown one,
         # the engine's own folder

@@ -26,15 +26,11 @@ Tick off with the version that did it. Never ask Tom the same thing twice.
       720 x 720 window: PoolRad's play test with a fight, Curse walking.
       Its letters are 9.6 device pixels there - smaller than the 14 of the
       RGB10 MAX3's Companion.)
-- [ ] Question: in a training hall (the game's whole party menu) the
-      line "Exit to DOS" leaves the game at once, unsaved, on one A press
-      (seen in Curse; the Dark Queen asks "Exit to DOS?" since engine
-      0.201.0). Should the others ask too, or is that the originals' way?
-      An engine matter - yours to decide.
-- [ ] Question (RG40XX V / Knulli, your report of 2026-11-15: A and B
-      reversed, put right by Settings - Confirm Button): do you want the
-      port to ask once at its first start ("Press the button you use to
-      confirm") so nobody has to find the setting? Not done - your call.
+- [ ] v0.10.5 on the RG40XX V / Knulli: set Settings - Confirm Button back
+      to A (or delete nothing - just update): after the update A should
+      confirm without touching the setting. If it doesn't, Send Logs - the
+      log's head shows what the firmware calls itself (the port looks for
+      "knulli").
 - [ ] Other handhelds / firmwares you can test on, when it matters (a
       PortMaster submission wants several).
 - [ ] `cyd/src/app/library.cpp` (the game scan) is tied to Arduino's
@@ -138,6 +134,7 @@ Tick off with the version that did it. Never ask Tom the same thing twice.
       land, move the pin and bring `src/panel.*` along.
 
 ## Done
+- [x] v0.10.5 (Tom, 2026-11-15): Knulli starts with Confirm on B; "Exit to DOS" in a training hall stays as the originals' (no question).
 - [x] 2026-11-15, Tom on devices: RG40XX V / Knulli (A and B reversed - Confirm Button puts it right), R36S / dArkOS ("ran fine").
 - [x] v0.10.3 (Tom, 2026-11-15: phase 1 - fights by hand, camp / spells / items; engine 0.203.2): a D-pad tap
       under 70 ms in a fight's Move / Aim was lost - fixed; `tools/hand_test.py`. Coverage above.

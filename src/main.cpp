@@ -1514,7 +1514,7 @@ void menu_change(int step)
         if (playing) apply_options();
         break;
     case MPadMoves: cfg.pad_moves = !cfg.pad_moves; break;
-    case MSwap: cfg.swap_ab = !cfg.swap_ab; break;
+    case MSwap: cfg.swap_ab = !cfg.swap_ab; cfg.ab_set = true; break;
     case MMaxHp:
         cfg.max_hp = !cfg.max_hp;
         if (playing) apply_options();
@@ -2310,11 +2310,17 @@ void usage()
            "  --tools <dir>    the port's helper scripts (default: tools)\n"
            "  --window <WxH>   a window instead of the whole screen\n"
            "  --game <n>       start game n of the list at once (from 1)\n"
+           "  --ab-reversed    this firmware gives A and B reversed: Confirm starts on B (once)\n"
            "  --script <steps> inputs to play back (checks)\n",
            PM_VERSION);
 }
 
 } // namespace
+
+// --ab-reversed (the launch script, on a firmware whose A and B come out the
+// other way round - Knulli): Confirm Button starts on B, once; the player's
+// own choice in Settings stands afterwards
+bool ab_reversed = false;
 
 int main(int argc, char** argv)
 {
@@ -2328,6 +2334,7 @@ int main(int argc, char** argv)
         else if (a == "--window" && v) sscanf(argv[++i], "%dx%d", &win_w, &win_h);
         else if (a == "--game" && v) auto_game = atoi(argv[++i]);
         else if (a == "--drive") drive = true;
+        else if (a == "--ab-reversed") ab_reversed = true;
         else if (a == "--script" && v) {
             std::string s = argv[++i];
             size_t p = 0;
@@ -2352,6 +2359,10 @@ int main(int argc, char** argv)
     }
     plat::log("[port] Gold Box Game Engine for PortMaster %s; games in %s\n", PM_VERSION, pm::games_root().c_str());
     settings_load(conf_dir, cfg);
+    if (ab_reversed && !cfg.ab_set) {
+        cfg.swap_ab = cfg.ab_set = true;
+        settings_save(conf_dir, cfg);
+    }
     if (!video::begin(win_w, win_h)) {
         fprintf(stderr, "SDL video: %s\n", SDL_GetError());
         SDL_Quit();

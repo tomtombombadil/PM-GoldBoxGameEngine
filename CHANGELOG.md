@@ -3,6 +3,12 @@
 Every version of Gold Box Game Engine for PortMaster. A release's notes are
 its part of this file.
 
+## [0.10.5] - 2026-11-15
+
+Engine 0.203.3.
+
+- **Knulli: A confirms without touching Settings.** Knulli reports A and B the other way round, so the port now starts there with Confirm Button on B (which is the button marked A on the device). It does this once; whatever you set in Settings - Confirm Button afterwards stays. If you had already switched it by hand on Knulli, nothing changes for you. Other firmwares are untouched.
+
 ## [0.10.4] - 2026-11-15
 
 Engine 0.203.3. Nothing in the port itself changed; this is the fourth test round's result and the newest engine.
