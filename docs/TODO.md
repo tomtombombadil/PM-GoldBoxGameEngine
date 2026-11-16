@@ -60,6 +60,27 @@ Tick off with the version that did it. Never ask Tom the same thing twice.
       not a bug fix; your OK needed.
 
 ## Claude
+- [ ] **Gateway play-through** (Tom, 2026-11-16; the CYD kit's `gateway/`
+      folder, engine at full speed, a new party of Tom's shape; notes in
+      the Project's claude/playtest_gateway.md). 2026-11-16, v0.10.7: from
+      the party menu to Luskan with the Statuette of the East - Yartar
+      (Krevish, the mission), Nesme (the Banite shrine), Silverymoon (Erek;
+      Broadhand's forge on the festival day), Everlund (Amanitas, the
+      ring), Yartar again (the capture at the gate, the Kraken base and its
+      captain), Neverwinter (Lord Nasher, a garden), Port Llast (the ship's
+      password door), Luskan's Host Tower (Brinshaar, the statuette). Every
+      event on that chain fired where the script puts it once the three
+      faults below were fixed. Found and fixed (engine 0.203.9 / .10): Yes /
+      No always No; the cell's grating (Dex / thief level read as 0; the
+      fall's damage). Still to play: Gundarlun, the Purple Rocks, Trisk,
+      Secomber, Loudwater, Llorkh, the Star Mounts, Sundabar, Ascore.
+      Open, to look at: (1) after entering a town from the overland's
+      Move, the menu line still reads "Move (Use arrow keys): Exit" until
+      the next step - compare with the original; (2) no random encounter
+      met on the overland in ~60 squares - check the original's rate;
+      (3) the playsim's dice never rolled a 19 / 20 on the grating in 200
+      tries (the fall was forced with DIEFIX) - the test dice, not the
+      game's, but look.
 - [ ] Button test gaps (tools/play_test.py; v0.10.1's runs, 2026-11-15:
       all nine GOG games at 640 x 480, 1280 x 720 and 720 x 720, the ten
       Steam folders at 640 x 480): a fight was met and played to its end

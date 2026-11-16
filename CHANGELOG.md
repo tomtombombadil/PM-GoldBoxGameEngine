@@ -3,6 +3,14 @@
 Every version of Gold Box Game Engine for PortMaster. A release's notes are
 its part of this file.
 
+## [0.10.7] - 2026-11-16
+
+Engine 0.203.10. Three faults found by playing Gateway from a new party (the play-through is at Luskan, the first statuette taken - about a third of the game).
+
+- **Gateway: every Yes / No question took the No branch** unless something earlier happened to fit. At the start of the game the thugs who corner Krevish in Yartar could not be fought ("The little man continues to dodge his attackers" whatever was answered), so the first quest could not start. Fixed in the engine.
+- **Gateway: the Kraken cell under Yartar could not be left, and each try killed someone.** The script asks who climbs through the grating and tests that member's Dexterity and thief level; the engine gave it 0 for both, so everyone fell - and the fall, 2 points in the original, did 130 to a random member. Checked against the original in DOSBox from the same save: there the thief gets through, and a fighter who fell lost 2 hit points. The engine now does the same.
+- Engine 0.203.8 (the CYD session's): on Quick, Missile no longer swaps the melee weapon for a bow when no foe is in sight.
+
 ## [0.10.6] - 2026-11-16
 
 Engine 0.203.7.
