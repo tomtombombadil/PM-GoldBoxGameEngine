@@ -3,6 +3,14 @@
 Every version of Gold Box Game Engine for PortMaster. A release's notes are
 its part of this file.
 
+## [0.11.0] - 2026-11-17
+
+Engine 0.207.2.
+
+- **Save Slot Info** (the engine's new option, on by default; Settings - Save Slot Info; As Original turns it off). "Save Which Game" shows the slots that hold a save in white and the empty ones in grey. While Save or Load Which Game asks, the game screen shows the highlighted slot's save: when it was saved (the handheld's clock - "Nov 7 2026 9:41 PM"), where the party is, the game's clock, and each member with icon, class, level and hit points. On a 4:3 panel the party is the right half of the game screen; on a wide or square panel the Companion beside / under the game shows that party and the words get the whole game screen. Looked at with Curse's own save at 640 x 480, 1280 x 720 and 720 x 720: Load Which Game and Save Which Game, a used slot and empty ones. The Companion's map stays empty for a save for now - the save's own map there (Tom's request) is the next version.
+- **Treasures: characters brought from Gateway keep their things as in the original.** Their items read as other things ("Banded Mail" as "Dragon Breath Armor") and stayed readied; now the same names as in Gateway, nothing readied, as the original does it (compared in DOSBox: two members' lists).
+- **Darkness and Treasures: Strength counted again.** A character loaded from a saved game lost the Strength bonus to hit and damage the first time anything was readied or changed (a fighter with 18/00: 3 worse to hit). Found in the Treasures play-through's first hour; the games' own stock saves now give back their own figures.
+
 ## [0.10.10] - 2026-11-17
 
 Engine 0.205.1. Gateway to the Savage Frontier has been played to its end, and its last place and its ending were not as the original's - found by running the original in DOSBox beside the engine and reading its program.

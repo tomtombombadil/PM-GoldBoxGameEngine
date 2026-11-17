@@ -22,7 +22,7 @@ struct Settings {
 // comforts_off's bits - play::Options' switches
 enum : uint16_t {
     kOffGallery = 1, kOffDemoTap = 2, kOffMoreGuys = 4, kOffPortrait = 8, kOffFixes = 16, kOffRolls = 32,
-    kOffCampFix = 64, kOffCheats = 128, kOffQuick = 256, kOffReadTime = 512, kOffAutoJoin = 1024, kOffAll = 2047
+    kOffCampFix = 64, kOffCheats = 128, kOffQuick = 256, kOffReadTime = 512, kOffAutoJoin = 1024, kOffSaveInfo = 2048, kOffAll = 4095
 };
 
 bool settings_load(const std::string& dir, Settings& s);

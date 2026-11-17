@@ -155,6 +155,16 @@ and maintains it; it is the primary output of the Claude Project
   needs to be added"): a new `play::Options` field or Game-menu tab in
   the CYD gets a Settings line / menu page in the same version that
   moves the pin, with its words at the page's foot.
+- **Save Slot Info** (Tom, 2026-11-17: "The CYD engine has created changes
+  to the save/load menu screens ... review them and update this repo";
+  v0.11.0, engine 0.207.x): the engine draws it; the port gives it three
+  things - the Settings line (`kOffSaveInfo`), `plat::file_time` (the
+  save's date from the file, the device's local time; 18 letters is the
+  4:3 column - `platform_sdl.cpp` closes "9:41 PM" up to "9:41PM" rather
+  than let it wrap badly), and `play::set_side_panel(panel::docked_on())`
+  each frame so a Companion beside / under the game shows the slot's party
+  and the words get the whole game screen. Check it at 640 x 480, 1280 x
+  720 and 720 x 720 after an engine change there.
 - **What the CYD version has, this port must have** (Tom, 2026-11-14,
   after v0.3: the journals "a very big deal", the launcher's box art on
   the game chooser, the Darkness / Gateway / Treasures sound sets were all
@@ -354,7 +364,10 @@ and maintains it; it is the primary output of the Claude Project
   same brief he gave the CYD session; its CLAUDE.md "Play-throughs" /
   "Function checks" hold here too). This session's order: **Gateway
   first** (the CYD session has PoolRad - done - and Curse), then the
-  games it hasn't taken. A new party rolled up, then adventuring to the
+  games it hasn't taken. **Gateway: done, 2026-11-17. Treasures next** (Tom,
+  2026-11-17: "Go ahead with testing Treasures") - the finished Gateway
+  party brought over (Add Character - Gateway), scratch `/tmp/claude-0/tplay`,
+  notes the Project's `claude/playtest_treasures.md`. A new party rolled up, then adventuring to the
   end by a web walkthrough; the check is that every triggered event
   fires at the right time and place, every chain of events to the ending
   works, and a player can finish and enjoy the game. **Don't fail over

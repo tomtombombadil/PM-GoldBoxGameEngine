@@ -31,7 +31,7 @@ def run(exe, games, conf, script, window=None, extra=()):
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 # Settings' lines (each changed and changed back by the first test)
 SETTINGS = ("Display", "Game_Sound", "Music", "Volume", "Game_Font", "D-Pad_Walks", "Confirm_Button", "Game_Fixes",
-            "Show_Rolls", "Readable", "Auto_Join", "Camp_Fix", "Icon_Gallery", "Icon_Portrait", "More_Char", "Button_Stops",
+            "Show_Rolls", "Readable", "Auto_Join", "Save_Slot", "Camp_Fix", "Icon_Gallery", "Icon_Portrait", "More_Char", "Button_Stops",
             "Quick_Actions", "Cheats", "Max_Hit")
 MENU_UPDATE = "start,menu:Check_for_Updates,"   # the Start menu's line
 

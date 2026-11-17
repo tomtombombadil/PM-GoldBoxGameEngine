@@ -179,6 +179,31 @@ bool exists(const char* path)
     return stat(pm::host_path(path).c_str(), &st) == 0;
 }
 bool remove(const char* path) { return ::remove(pm::host_path(path).c_str()) == 0; }
+// When the file was last written, as the player reads a date - the engine's
+// Save Slot Info shows it beside each save ("Nov 17 2026 9:41 PM", the
+// device's local time; the handhelds have a clock, the boards none)
+bool file_time(const char* path, char* out, size_t cap)
+{
+    if (cap) out[0] = 0;
+    struct stat st;
+    if (!cap || stat(pm::host_path(path).c_str(), &st) != 0) return false;
+    struct tm tmv;
+    const time_t t = st.st_mtime;
+    if (!localtime_r(&t, &tmv) || tmv.tm_year + 1900 < 2000) return false;   // (a device whose clock was never set: no date)
+    static const char* const kMon[12] = {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
+    const int h12 = tmv.tm_hour % 12 ? tmv.tm_hour % 12 : 12;
+    // (the save screen's column on a 4:3 panel is 18 letters and breaks a longer line at a space: "Nov 7 2026
+    // 9:41 PM" fits; a longer one closes up to "9:41PM" - then it fits, or breaks after the year, never
+    // leaving "PM" on a row of its own)
+    char full[32];
+    snprintf(full, sizeof full, "%s %d %d %d:%02d %s", kMon[tmv.tm_mon], tmv.tm_mday, tmv.tm_year + 1900, h12, tmv.tm_min,
+             tmv.tm_hour < 12 ? "AM" : "PM");
+    if (strlen(full) > 18)
+        snprintf(full, sizeof full, "%s %d %d %d:%02d%s", kMon[tmv.tm_mon], tmv.tm_mday, tmv.tm_year + 1900, h12, tmv.tm_min,
+                 tmv.tm_hour < 12 ? "AM" : "PM");
+    snprintf(out, cap, "%s", full);
+    return true;
+}
 bool rename(const char* from, const char* to)
 {
     if (!exists(from)) return false;

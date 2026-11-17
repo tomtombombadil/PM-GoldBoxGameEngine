@@ -178,6 +178,10 @@ uint32_t signature(View v, bool blink_on)
         // (a door opened shows too: the map's own bytes)
         if (m)
             for (int i = 0; i < m->squares(); ++i) s = s * 31 + m->pl(3)[i];
+        // (Save Slot Info: the highlighted slot's map stands here - another slot, another map in the same place)
+        if (m && play::saves_shown())
+            for (int k = 0; k < 3; ++k)
+                for (int i = 0; i < m->squares(); ++i) s = s * 31 + m->pl(k)[i];
     } else if (v == View::Party) {
         s ^= play::panel_party_sig(true);
     } else {
