@@ -72,15 +72,25 @@ Tick off with the version that did it. Never ask Tom the same thing twice.
       event on that chain fired where the script puts it once the three
       faults below were fixed. Found and fixed (engine 0.203.9 / .10): Yes /
       No always No; the cell's grating (Dex / thief level read as 0; the
-      fall's damage). Still to play: Gundarlun, the Purple Rocks, Trisk,
-      Secomber, Loudwater, Llorkh, the Star Mounts, Sundabar, Ascore.
-      Open, to look at: (1) after entering a town from the overland's
-      Move, the menu line still reads "Move (Use arrow keys): Exit" until
-      the next step - compare with the original; (2) no random encounter
-      met on the overland in ~60 squares - check the original's rate;
-      (3) the playsim's dice never rolled a 19 / 20 on the grating in 200
-      tries (the fall was forced with DIEFIX) - the test dice, not the
-      game's, but look.
+      fall's damage). 2026-11-16 evening, no new engine fault proved: on
+      through Tuern (the ore), Gundarlun (Jagaerda), the Purple Rocks,
+      Trisk, Neverwinter's sword-smith (the Sword of Stonecutting after 3
+      days), Secomber, Loudwater, Llorkh, the Star Mounts and Sundabar -
+      **all four statuettes, the party at the arena gate in Ascore**.
+      Random overland encounters: met, about ten. NEXT: (1) **the arena's
+      exits** - its script reads back the party's facing after each fight
+      (north: the next fight; east: "had enough"; the walkthrough's "exit
+      east, north ..."), so the original's fight must hand back the way the
+      party left the field; the engine keeps none (play_fight.inc's
+      flee_dir is never used), so every flight counts as north - even at
+      the last fight, where north is the ending. Check in DOSBox (flee east
+      from the first arena fight; the engine's save loads there), then fix
+      in the CYD repo. (2) the arena's fights and the ending. (3) the
+      magic-users got no new spells from the Trainer's level-ups (only
+      first-level ones at level 6) - the game's way (scrolls) or a miss?
+      (4) after entering a town from the overland's Move, the menu line
+      still reads "Move (Use arrow keys): Exit" until the next step -
+      compare with the original.
 - [ ] Button test gaps (tools/play_test.py; v0.10.1's runs, 2026-11-15:
       all nine GOG games at 640 x 480, 1280 x 720 and 720 x 720, the ten
       Steam folders at 640 x 480): a fight was met and played to its end
@@ -234,7 +244,7 @@ Tick off with the version that did it. Never ask Tom the same thing twice.
       app updates ports) and a word with them about Send Logs (a port
       that uploads logs) - ask in the testing thread; (5) the PR itself
       from Tom's fork of PortsMaster/PortMaster-New, branch `goldbox`.
-- [ ] Keep the `cyd` pin current (built on CYD 0.203.7). Tom, 2026-11-14:
+- [ ] Keep the `cyd` pin current (built on CYD 0.203.10). Tom, 2026-11-14:
       Companion map / party-info changes are in work in the CYD (small
       boards first; the party-info layout may be rearranged) - when they
       land, move the pin and bring `src/panel.*` along.
