@@ -83,9 +83,27 @@ Tick off with the version that did it. Never ask Tom the same thing twice.
       the way it left, and the field ends where the map does. Checked for
       the south way out only (one fighter, the first arena fight, the
       same save in both); east / west / north use the same code, not
-      tried in the original. NEXT: (2) the arena's fights and the ending.
-      (2b) the original asked no "Flee: Yes No" there, the engine does -
-      on the CYD's TODO. (3) the
+      tried in the original. **2026-11-17, v0.10.10 (engine 0.205.1): THE
+      END REACHED - the arena's four fights, the altar, the ending's six
+      pages, "Victory is sweet", Yartar.** On the way three more engine
+      faults, each proved against the original (DOSBox from the same save,
+      and its program read) and fixed: the arena's fights are maze fights
+      (no end at the last enemy, walk off an edge, no Flee question, over
+      as the first member is out); the ending was six empty pages and the
+      party menu; Krevish wasn't drawn in fights. Compared with DOSBox: the
+      first fight's field and view (same picture), the south way out, the
+      experience after a fight (20 a member with nobody out, 24 with one of
+      seven out - the same in both), all six ending pages (same pictures
+      and words; the original's colours are its own VGA shades). How the
+      end was reached: the party's hit points set to 220 (Tom: Modify
+      freely) and everyone put back up between the arena's fights - a
+      play-through aid in the test program only; the last fight was got
+      through with it, not won by tactics. In the original the ending was
+      watched by a scratch copy's script made to jump to it (its fights
+      skipped: the second one's trolls never stay down). NOT done: the
+      ending played with the port's buttons on a device (the same key path
+      as Curse's ending); the arena's east / west ways and its other
+      rooms; Neverwinter's other gardens and the optional places. (3) the
       magic-users got no new spells from the Trainer's level-ups (only
       first-level ones at level 6) - the game's way (scrolls) or a miss?
       (4) after entering a town from the overland's Move, the menu line

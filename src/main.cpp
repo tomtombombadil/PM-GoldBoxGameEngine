@@ -482,7 +482,7 @@ enum MenuItem : uint8_t {
     MResume, MJournal, MQuick, MCheats, MSettings, MControls, MUpdate, MSendLogs, MLeaveGame, MExit,
     // Settings
     MDisplay, MSound, MMusic, MVolume, MFont, MPadMoves, MSwap,
-    MFixes, MRolls, MReadTime, MCampFix, MGallery, MPortrait, MMoreGuys, MDemoTap, MQuickOn, MCheatsOn, MMaxHp,
+    MFixes, MRolls, MReadTime, MAutoJoin, MCampFix, MGallery, MPortrait, MMoreGuys, MDemoTap, MQuickOn, MCheatsOn, MMaxHp,
     MAsOriginal, MAllOn, MReplyAddr, MRescan,
     // Cheats
     MHealer, MMerchant, MSanctuary, MTrainer,
@@ -501,6 +501,7 @@ uint16_t comfort_bit(MenuItem m)
     case MFixes: return kOffFixes;
     case MRolls: return kOffRolls;
     case MReadTime: return kOffReadTime;
+    case MAutoJoin: return kOffAutoJoin;
     case MCampFix: return kOffCampFix;
     case MGallery: return kOffGallery;
     case MPortrait: return kOffPortrait;
@@ -516,8 +517,8 @@ void menu_build()
 {
     menu_items.clear();
     if (menu_page == Page::Settings) {
-        for (MenuItem m : {MDisplay, MSound, MMusic, MVolume, MFont, MPadMoves, MSwap, MFixes, MRolls, MReadTime, MCampFix,
-                           MGallery, MPortrait, MMoreGuys, MDemoTap, MQuickOn, MCheatsOn, MMaxHp, MAsOriginal, MAllOn,
+        for (MenuItem m : {MDisplay, MSound, MMusic, MVolume, MFont, MPadMoves, MSwap, MFixes, MRolls, MReadTime, MAutoJoin,
+                           MCampFix, MGallery, MPortrait, MMoreGuys, MDemoTap, MQuickOn, MCheatsOn, MMaxHp, MAsOriginal, MAllOn,
                            MReplyAddr})
             menu_items.push_back(m);
         menu_items.push_back(MBack);
@@ -555,6 +556,7 @@ void menu_label(MenuItem m, char* out, size_t cap)
         const char* name = m == MFixes     ? "Game Fixes"
                          : m == MRolls     ? "Show Rolls"
                          : m == MReadTime  ? "Readable Messages"
+                         : m == MAutoJoin  ? "Auto Join"
                          : m == MCampFix   ? "Camp Fix"
                          : m == MGallery   ? "Icon Gallery"
                          : m == MPortrait  ? "Icon Portrait"
@@ -623,6 +625,7 @@ const char* menu_help(MenuItem m)
     case MFixes: return "Corrects game mistakes and uses AD&D 1E rules. Off: as original game.";
     case MRolls: return "Fights show the dice behind each message: to hit, needed, damage, saves.";
     case MReadTime: return "The games' timed messages stay at least a second. Off: the games' own timing.";
+    case MAutoJoin: return "An item taken from a treasure joins the same thing its taker already carries. Off: Join by hand.";
     case MCampFix: return "Pool of Radiance's camp gets Fix, as the later games have it.";
     case MGallery: return "The icon editor opens on pages of ready-made combat icons. Off: the game's editor.";
     case MPortrait: return "View Character shows the combat icon large where a portrait would go.";
@@ -1058,6 +1061,7 @@ void apply_options()
     o.cheats = !(off & kOffCheats);
     o.quick_acts = !(off & kOffQuick);
     o.read_time = !(off & kOffReadTime);
+    o.auto_join = !(off & kOffAutoJoin);
     o.max_hp = cfg.max_hp;
     o.font = cfg.font;
     play::set_options(o);

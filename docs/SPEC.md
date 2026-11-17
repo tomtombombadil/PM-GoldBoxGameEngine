@@ -224,7 +224,7 @@ on screen the overlay is 320 again.
     Display, Game Sound, Music, Volume, Game Font (Original / Clear /
     Darkness / Clear Caps), D-Pad Walks, Confirm Button; the engine's
     comforts (`play::Options`, `settings.cfg` `comforts_off` bits) - Game
-    Fixes, Show Rolls, Readable Messages, Camp Fix, Icon Gallery, Icon
+    Fixes, Show Rolls, Readable Messages, Auto Join, Camp Fix, Icon Gallery, Icon
     Portrait, More Characters, Button Stops Demo, Quick Actions, Cheats -
     all on by default; Max Hit Points (off by default); As Original (all
     off), All On; Reply Address (Send Logs' - below).

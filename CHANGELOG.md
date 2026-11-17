@@ -3,6 +3,15 @@
 Every version of Gold Box Game Engine for PortMaster. A release's notes are
 its part of this file.
 
+## [0.10.10] - 2026-11-17
+
+Engine 0.205.1. Gateway to the Savage Frontier has been played to its end, and its last place and its ending were not as the original's - found by running the original in DOSBox beside the engine and reading its program.
+
+- **Gateway: Ascore's arena is now the maze it was.** In the original these fights don't end when the last enemy falls: "All enemies destroyed. (more) / Continue through the (more) / maze off any map edge. (more)" - and the party walks off an edge of the battlefield; the side it leaves by decides where it goes next (north: the next fight; the last fight's north: the ending). Stepping off the edge asks no "Flee?" there, and the fight is over as the first member is out. The engine ended each fight at the last enemy and always went north. (Trolls get up again in the second fight, so there the way on is the edge.)
+- **Gateway: the ending.** After the altar the engine showed six empty pages and dropped to the party menu. Now the original's six picture pages with its words, then "Victory is sweet", Krevish leaves, and the party is in Yartar - the game goes on, as in the original. All six pages were compared with the original's.
+- **Gateway: Krevish is drawn in fights** (he was an empty square), and the fight view stops at the battlefield's edge instead of showing floor that isn't there.
+- **Auto Join** (new in the engine, Settings): an item taken from a treasure joins the same thing its taker already carries - arrows with arrows - instead of taking a slot. On by default; As Original turns it off.
+
 ## [0.10.9] - 2026-11-17
 
 - **Knulli: the screens named the wrong buttons.** Knulli reports A and B the other way round, and the port already fixes that so the button marked A chooses and B goes back. But the words on screen still went by what the firmware reported, so they told you to press B for what the A button does (on the Quick page: "B Flip, A Back" when it is the other way). The names on screen now follow the letters printed on the buttons. Seen on a TrimUI Brick Pro with Knulli.
