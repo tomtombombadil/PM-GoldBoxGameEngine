@@ -256,6 +256,8 @@ Tick off with the version that did it. Never ask Tom the same thing twice.
 - [x] v0.10.5 on Tom's RG40XX V (his log, 2026-11-15): the firmware reports itself "knulli scarab", the launch script
       found it ("Knulli: Confirm starts on B"), `ab_set=1` written. His unit was already swapped by hand, so the flip
       itself was seen only in the smoke test - a fresh Knulli install by a tester would show it.
+- [x] v0.10.9 (Tom, 2026-11-17, TrimUI Brick Pro on Knulli): the screens' button names follow the printed
+      letters on a reversed firmware (`confirm_name` / `back_name` with `ab_reversed`). Tom to check on the Brick Pro.
 - [x] v0.10.5 (Tom, 2026-11-15): Knulli starts with Confirm on B; "Exit to DOS" in a training hall stays as the originals' (no question).
 - [x] 2026-11-15, Tom on devices: RG40XX V / Knulli (A and B reversed - Confirm Button puts it right), R36S / dArkOS ("ran fine").
 - [x] v0.10.3 (Tom, 2026-11-15: phase 1 - fights by hand, camp / spells / items; engine 0.203.2): a D-pad tap

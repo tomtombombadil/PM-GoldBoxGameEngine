@@ -39,6 +39,12 @@
 #define PM_VERSION "dev"
 #endif
 
+// --ab-reversed (the launch script, on a firmware whose A and B come out the
+// other way round - Knulli; every launch): Confirm starts on SDL's B, once -
+// the player's own choice in Settings stands afterwards - and the buttons'
+// names on screen are the device's printed letters (confirm_name)
+bool ab_reversed = false;
+
 namespace {
 
 // ---- Buttons ---------------------------------------------------------------
@@ -196,8 +202,12 @@ void box(int col, int row, int cols, int rows)
     video::frame(col * 8 - 4, row * 8 - 4, cols * 8 + 8, rows * 8 + 8, video::kGold);
 }
 
-const char* confirm_name() { return cfg.swap_ab ? "B" : "A"; }
-const char* back_name() { return cfg.swap_ab ? "A" : "B"; }
+// The letters printed on the device's buttons: on a firmware that reports A
+// and B the other way round (--ab-reversed, Knulli) SDL's "B" is the button
+// marked A - so the names follow the marks, not SDL's (Tom, 2026-11-17, TrimUI
+// Brick Pro on Knulli: the Quick page said "B" for the button marked A)
+const char* confirm_name() { return cfg.swap_ab != ab_reversed ? "B" : "A"; }
+const char* back_name() { return cfg.swap_ab != ab_reversed ? "A" : "B"; }
 
 // The game list: a game a page - its box art (the player's own, from the
 // Steam release's Launcher folder in games/) under the header, its name
@@ -2317,10 +2327,6 @@ void usage()
 
 } // namespace
 
-// --ab-reversed (the launch script, on a firmware whose A and B come out the
-// other way round - Knulli): Confirm Button starts on B, once; the player's
-// own choice in Settings stands afterwards
-bool ab_reversed = false;
 
 int main(int argc, char** argv)
 {

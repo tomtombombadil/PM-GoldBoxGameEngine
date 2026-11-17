@@ -3,6 +3,10 @@
 Every version of Gold Box Game Engine for PortMaster. A release's notes are
 its part of this file.
 
+## [0.10.9] - 2026-11-17
+
+- **Knulli: the screens named the wrong buttons.** Knulli reports A and B the other way round, and the port already fixes that so the button marked A chooses and B goes back. But the words on screen still went by what the firmware reported, so they told you to press B for what the A button does (on the Quick page: "B Flip, A Back" when it is the other way). The names on screen now follow the letters printed on the buttons. Seen on a TrimUI Brick Pro with Knulli.
+
 ## [0.10.8] - 2026-11-16
 
 Engine 0.203.11. One more fault from the Gateway play-through, in the last place of the game.
