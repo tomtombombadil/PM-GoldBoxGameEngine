@@ -368,6 +368,14 @@ and maintains it; it is the primary output of the Claude Project
   Person, Stinking Cloud; undead: Protection from Evil against ghouls'
   touch, the level-drainers first, Turn Undead kept for them, magic or
   silver weapons.
+  **Loot is a key part of the game - take it, every fight** (Tom,
+  2026-11-16: "if you're not taking advantage of it, you're going to
+  fail in a lot of fights, the big important fights"): after each fight
+  Take the items; at the Cheats' Merchant try to Sell each - a high
+  price means magic - and have the Merchant identify (ID) it; give it to
+  the member who can make the best use of it and ready it, sell what is
+  no use. Never leave a treasure by Exit (the kit's AUTOTAKE; a member
+  with room and strength to carry takes - not one already loaded).
   How: the CYD repo's play-through kit on the playsim
   (`cyd/tools/devkit/playthrough/README.txt`, a folder a game - Gateway's
   is `gateway/`), the engine at full speed; an engine fault found is
