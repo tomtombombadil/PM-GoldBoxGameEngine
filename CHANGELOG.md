@@ -3,6 +3,12 @@
 Every version of Gold Box Game Engine for PortMaster. A release's notes are
 its part of this file.
 
+## [0.11.2] - 2026-11-17
+
+Engine 0.208.1.
+
+- **Treasures: a spell cast where the story waits for one now counts.** In Llorkh's dungeon two women both claim to be Siulajia and the game offers Attack / Leave / Cast. Choosing Cast and then casting Dispel Magic from the Cast menu did nothing - the party could never tell them apart, so Siulajia could not be freed or join. The original passes the spell just cast to the story; the engine didn't. Found in the Treasures play-through, read from the original's program, and played here in the engine's test program: the false one shows herself, her guards attack, the two journal entries are given, Siulajia joins. Not compared in DOSBox. Other places in Treasures that wait for a spell use the same code.
+
 ## [0.11.1] - 2026-11-17
 
 Engine 0.208.0.

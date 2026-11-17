@@ -65,8 +65,22 @@ Tick off with the version that did it. Never ask Tom the same thing twice.
       from Gateway, the opening story, Llorkh's first fixed fight (the old
       tower's griffons and Lord's Men) won. Two engine faults found before
       the first step and fixed (engine 0.207.2, v0.11.0): Gateway's items at
-      the transfer; Strength lost after a load (Darkness too). Next: the
-      rest of Llorkh, then the walkthrough's order (notes.txt there).
+      the transfer; Strength lost after a load (Darkness too). 2026-11-17 afternoon: **Llorkh
+      town done** - all twelve fixed fights met and won (the taverns' dwarves
+      helped, the wounded Zhentil's room, the Bane temple, the drider party),
+      journal 1 / 3 / 5, the keep's courtyard (the easy version, as the script
+      picks after seven town fights), Geildarr's illusion and the efreet
+      behind it, the stairs down. **The keep's dungeon**: journal 8 and 10
+      (the trapped warrior), the barracks' and store rooms' fights, the
+      caped man's meeting, **the two Siulajias - an engine fault (Cast did
+      nothing), fixed: engine 0.208.1, v0.11.2** - then Dispel Magic, the
+      false one's guards (five cockatrices: three members turned to stone,
+      put right at the Healer cheat), journal 24 and 19, Siulajia joined.
+      Aids used: hit points 220, the Healer after each fight, the magic-users'
+      books filled by the test program (the Gateway party came with first-
+      level spells only - my Gateway training picks). NOT yet: loot taken
+      and sold (the walks so far left the treasure - to put right), Geildarr
+      himself (north of the dungeon), Loudwater on.
 - [ ] Tom, v0.11.0 on a handheld: Save Slot Info - Encamp - Save and the
       party menu's Load: the highlighted slot's date (is the device's clock
       right?), place and party; on the RGB10 MAX3 the party and (v0.11.1) the save's map in the
@@ -273,12 +287,13 @@ Tick off with the version that did it. Never ask Tom the same thing twice.
       app updates ports) and a word with them about Send Logs (a port
       that uploads logs) - ask in the testing thread; (5) the PR itself
       from Tom's fork of PortsMaster/PortMaster-New, branch `goldbox`.
-- [ ] Keep the `cyd` pin current (built on CYD 0.208.0). Tom, 2026-11-14:
+- [ ] Keep the `cyd` pin current (built on CYD 0.208.1). Tom, 2026-11-14:
       Companion map / party-info changes are in work in the CYD (small
       boards first; the party-info layout may be rearranged) - when they
       land, move the pin and bring `src/panel.*` along.
 
 ## Done
+- [x] v0.11.2 (engine 0.208.1): Treasures - a spell cast where a script waits for one (the two Siulajias in Llorkh) reaches the script.
 - [x] v0.11.1 (Tom, 2026-11-17; engine 0.208.0): Save Slot Info shows the highlighted save's map, square and heading in the Companion (16:9, 1:1).
       Seen at 1280 x 720: PoolRad, Curse, Secret, Darkness, Knights, Treasures; Curse at 720 x 720. Not seen: Gateway. Stock saves / overland: "No map here."
 - [x] v0.11.0 (Tom, 2026-11-17; engine 0.207.2): Save Slot Info - Settings line, the saves' dates, the docked Companion shows the slot's party.
