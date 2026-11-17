@@ -68,17 +68,17 @@ Tick off with the version that did it. Never ask Tom the same thing twice.
       the transfer; Strength lost after a load (Darkness too). 2026-11-17 afternoon: **Llorkh
       town done** - all twelve fixed fights met and won (the taverns' dwarves
       helped, the wounded Zhentil's room, the Bane temple, the drider party),
-      journal 1 / 3 / 5, the keep's courtyard (the easy version, as the script
+      the keep's courtyard (the easy version, as the script
       picks after seven town fights), Geildarr's illusion and the efreet
-      behind it, the stairs down. **The keep's dungeon**: journal 8 and 10
-      (the trapped warrior), the barracks' and store rooms' fights, the
+      behind it, the stairs down. **The keep's dungeon**: journal 8, the barracks' and store rooms' fights, the
       caped man's meeting, **the two Siulajias - an engine fault (Cast did
       nothing), fixed: engine 0.208.1, v0.11.2** - then Dispel Magic, the
       false one's guards (five cockatrices: three members turned to stone,
       put right at the Healer cheat), journal 24 and 19, Siulajia joined.
       Aids used: hit points 220, the Healer after each fight, the magic-users'
       books filled by the test program (the Gateway party came with first-
-      level spells only - my Gateway training picks). NOT yet: loot taken
+      level spells only - my Gateway training picks). NOT checked: the town's journal entries (1, 3, 5, 10 - my record of the
+      town's texts starts at the dungeon; to walk again). NOT yet: loot taken
       and sold (the walks so far left the treasure - to put right), Geildarr
       himself (north of the dungeon), Loudwater on.
 - [ ] Tom, v0.11.0 on a handheld: Save Slot Info - Encamp - Save and the
