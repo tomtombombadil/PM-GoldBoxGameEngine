@@ -3,6 +3,13 @@
 Every version of Gold Box Game Engine for PortMaster. A release's notes are
 its part of this file.
 
+## [0.11.1] - 2026-11-17
+
+Engine 0.208.0.
+
+- **Save Slot Info: the save's map** (Tom: the map area was blank on 16:9 and 1:1). While Save or Load Which Game asks, the Companion's map is now the highlighted save's own - its map, the party's square and the way it faces. "No map here." only where the save has none: out of doors (an overland map), a game's stock save from before the adventure begins, and an empty slot. Looked at in a 1280 x 720 window with a save made in each game: PoolRad, Curse, Secret, Darkness, Knights and Treasures show their map and the party's arrow; Champions (overland) none; Curse also at 720 x 720. Not looked at: Gateway (the test didn't reach its Save), the Dark Queen (it has no Save Slot Info screen).
+- **Treasures: a save in Llorkh said "Yartar".** The engine's place name for the game's first town was wrong.
+
 ## [0.11.0] - 2026-11-17
 
 Engine 0.207.2.

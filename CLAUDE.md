@@ -163,7 +163,11 @@ and maintains it; it is the primary output of the Claude Project
   4:3 column - `platform_sdl.cpp` closes "9:41 PM" up to "9:41PM" rather
   than let it wrap badly), and `play::set_side_panel(panel::docked_on())`
   each frame so a Companion beside / under the game shows the slot's party
-  and the words get the whole game screen. Check it at 640 x 480, 1280 x
+  and the words get the whole game screen. Since v0.11.1 (engine 0.208.0;
+  Tom: "we may as well show fill in the map display too") the Companion's map
+  is the highlighted save's meanwhile - the engine's `play::map()` / `pos_x` /
+  `pos_y` / `dir` give the save's; `panel.cpp`'s signature takes the map's
+  walls in so another slot redraws. Check it at 640 x 480, 1280 x
   720 and 720 x 720 after an engine change there.
 - **What the CYD version has, this port must have** (Tom, 2026-11-14,
   after v0.3: the journals "a very big deal", the launcher's box art on

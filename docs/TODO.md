@@ -67,13 +67,10 @@ Tick off with the version that did it. Never ask Tom the same thing twice.
       the first step and fixed (engine 0.207.2, v0.11.0): Gateway's items at
       the transfer; Strength lost after a load (Darkness too). Next: the
       rest of Llorkh, then the walkthrough's order (notes.txt there).
-- [ ] Save Slot Info: the highlighted save's map, place and heading in the
-      Companion's map on 16:9 / 1:1 (Tom, 2026-11-17) - needs the engine to
-      read the save's map (written, not pushed: a Llorkh save names itself
-      "Yartar", Curse's stock save shows no map - to settle first); v0.11.1.
 - [ ] Tom, v0.11.0 on a handheld: Save Slot Info - Encamp - Save and the
       party menu's Load: the highlighted slot's date (is the device's clock
-      right?), place and party; on the RGB10 MAX3 the party in the Companion.
+      right?), place and party; on the RGB10 MAX3 the party and (v0.11.1) the save's map in the
+      Companion.
 - [ ] **Gateway play-through** (Tom, 2026-11-16; the CYD kit's `gateway/`
       folder, engine at full speed, a new party of Tom's shape; notes in
       the Project's claude/playtest_gateway.md). 2026-11-16, v0.10.7: from
@@ -276,12 +273,15 @@ Tick off with the version that did it. Never ask Tom the same thing twice.
       app updates ports) and a word with them about Send Logs (a port
       that uploads logs) - ask in the testing thread; (5) the PR itself
       from Tom's fork of PortsMaster/PortMaster-New, branch `goldbox`.
-- [ ] Keep the `cyd` pin current (built on CYD 0.207.2). Tom, 2026-11-14:
+- [ ] Keep the `cyd` pin current (built on CYD 0.208.0). Tom, 2026-11-14:
       Companion map / party-info changes are in work in the CYD (small
       boards first; the party-info layout may be rearranged) - when they
       land, move the pin and bring `src/panel.*` along.
 
 ## Done
+- [x] v0.11.1 (Tom, 2026-11-17; engine 0.208.0): Save Slot Info shows the highlighted save's map, square and heading in the Companion (16:9, 1:1).
+      Seen at 1280 x 720: PoolRad, Curse, Secret, Darkness, Knights, Treasures; Curse at 720 x 720. Not seen: Gateway. Stock saves / overland: "No map here."
+- [x] v0.11.0 (Tom, 2026-11-17; engine 0.207.2): Save Slot Info - Settings line, the saves' dates, the docked Companion shows the slot's party.
 - [x] 2026-11-16 (Tom: use the game files' own knowledge, no random walks): `tools/guide.py`, the CYD sweep's EVMAP; shops / temples / halls walked into. Coverage above.
 - [x] v0.10.6 (Tom, 2026-11-15: "Go ahead with your testing ... using the cheats"; engine 0.203.7): a new game in every game by buttons;
       Pools of Darkness' new game hung after the tour - fixed in the engine. `tools/newgame_test.py`. Coverage above.
