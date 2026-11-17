@@ -376,6 +376,13 @@ and maintains it; it is the primary output of the Claude Project
   the member who can make the best use of it and ready it, sell what is
   no use. Never leave a treasure by Exit (the kit's AUTOTAKE; a member
   with room and strength to carry takes - not one already loaded).
+  **This is play-testing, not a marathon gaming session** (Tom,
+  2026-11-16: "We're not looking for a challenge here, we're checking to
+  see if the game works the way it is supposed to work"): the party
+  should survive its fights and carry on without replaying things. So:
+  the Merchant's ID instead of memorizing Detect Magic / Identify (the
+  slots go to fight spells); spend the money won on better equipment,
+  freely; Modify Character to raise the party's figures, freely.
   How: the CYD repo's play-through kit on the playsim
   (`cyd/tools/devkit/playthrough/README.txt`, a folder a game - Gateway's
   is `gateway/`), the engine at full speed; an engine fault found is
