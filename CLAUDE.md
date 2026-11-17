@@ -98,9 +98,15 @@ and maintains it; it is the primary output of the Claude Project
   2026-11-15: "just go ahead and reverse the buttons in it by default";
   v0.10.5: the launch script finds Knulli and passes `--ab-reversed`,
   applied once - `ab_set` - then Settings - Confirm Button is the
-  player's). Another firmware with the same fault gets the same line in
+  player's). **The hints name the button as MARKED on the device** (Tom,
+  2026-11-17, TrimUI Brick Pro on Knulli: "it has them labeled
+  incorrectly ... B is flip and A is back. But A is actually flip and B is
+  back"): on a reversed firmware the program's B is the button marked A -
+  `confirm_name` / `back_name` in main.cpp turn with `ab_reversed`; every
+  hint goes through those two, never a letter typed into a string. Another firmware with the same fault gets the same line in
   the launch script - no first-start question. And an **R36S on dArkOS** (Tom, 2026-11-15):
-  "It ran fine".
+  "It ran fine". And a **TrimUI Brick Pro on Knulli** (Tom, 2026-11-17, v0.10.8):
+  runs, the A / B turn found it by itself.
 - **The CYD repo keeps moving while Tom works on both** (2026-11-14: "I
   probably shouldn't have made them separate projects, but here we
   are"): when he says the CYD changed, fetch it, move the pin once its

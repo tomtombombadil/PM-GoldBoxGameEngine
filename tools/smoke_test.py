@@ -216,11 +216,19 @@ def main():
         run(exe, t / "nothing", conf, "wait:100,quit", extra=["--ab-reversed"])
         cfg = (conf / "settings.cfg").read_text()
         assert "swap_ab=1" in cfg and "ab_set=1" in cfg, cfg
-        # (Confirm is B now: b opens what a would)
-        run(exe, t / "nothing", conf, "wait:100,b,start,menu:Settings,b,menu:Confirm_Button,b,quit", extra=["--ab-reversed"])
+        # (the program's B confirms now - the button MARKED A on such a device,
+        # so every hint names A: Tom's TrimUI Brick Pro on Knulli, v0.10.8, said
+        # "B: Flip  A: Back" for buttons that worked the right way round)
+        out = run(exe, t / "nothing", conf, "wait:100,b,start,menu:Settings,b,menu:Confirm_Button:_A,b,menu:Confirm_Button:_B,quit",
+                  extra=["--ab-reversed"])
+        assert "no menu line" not in out, "the Confirm Button line names the wrong button on a reversed firmware"
         run(exe, t / "nothing", conf, "wait:100,quit", extra=["--ab-reversed"])
         cfg = (conf / "settings.cfg").read_text()
         assert "swap_ab=0" in cfg and "ab_set=1" in cfg, cfg
+        (conf / "settings.cfg").unlink()
+        # (and an ordinary firmware: Confirm on A reads A, turned round reads B)
+        out = run(exe, t / "nothing", conf, "wait:100,a,start,menu:Settings,a,menu:Confirm_Button:_A,a,menu:Confirm_Button:_B,quit")
+        assert "no menu line" not in out, "the Confirm Button line names the wrong button"
         (conf / "settings.cfg").unlink()
         # 2. Folders: lower-case names, files a folder down, an unknown one,
         # the engine's own folder

@@ -140,6 +140,9 @@ direction keys (`play::fight_dir`, `fight_select`), typed keys
   starts on B: the launch script finds the firmware (`CFW_NAME`,
   `/etc/os-release`, `/usr/share/knulli`) and passes `--ab-reversed`; applied
   once (`ab_set` in settings.cfg), the player's own choice stands after.
+  Every hint and the Confirm Button line name the button as it is MARKED
+  on the device (v0.10.9): there the program's B is the button marked A,
+  so the line reads "Confirm Button: A".
 - Extras: either stick moves the pointer; a mouse or touch screen taps
   directly (also the on-screen keyboard's keys); a PC keyboard: arrows,
   Enter, Esc, Tab / F1 = Start, PgUp / PgDn = L1 / R1, Home / End = L2 / R2,
