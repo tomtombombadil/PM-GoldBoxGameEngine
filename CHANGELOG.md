@@ -3,6 +3,12 @@
 Every version of Gold Box Game Engine for PortMaster. A release's notes are
 its part of this file.
 
+## [0.10.8] - 2026-11-16
+
+Engine 0.203.11. One more fault from the Gateway play-through, in the last place of the game.
+
+- **Gateway: Ascore's arena took every flight for "north".** The arena sends the party on by the side of the battlefield it leaves: north to the next fight, any other way to Vaalgamon's "Run away, little ones!" and back out. The engine never told the game which way the party had left, so running from any fight - even the last - counted as north, the way to the ending. And the south way out of the first fight was walled up. Checked in DOSBox from the same save: there one fighter stepped off the south edge, the party stood facing south, and Vaalgamon laughed it out of the arena. The engine now does the same.
+
 ## [0.10.7] - 2026-11-16
 
 Engine 0.203.10. Three faults found by playing Gateway from a new party (the play-through is at Luskan, the first statuette taken - about a third of the game).

@@ -77,15 +77,15 @@ Tick off with the version that did it. Never ask Tom the same thing twice.
       Trisk, Neverwinter's sword-smith (the Sword of Stonecutting after 3
       days), Secomber, Loudwater, Llorkh, the Star Mounts and Sundabar -
       **all four statuettes, the party at the arena gate in Ascore**.
-      Random overland encounters: met, about ten. NEXT: (1) **the arena's
-      exits** - its script reads back the party's facing after each fight
-      (north: the next fight; east: "had enough"; the walkthrough's "exit
-      east, north ..."), so the original's fight must hand back the way the
-      party left the field; the engine keeps none (play_fight.inc's
-      flee_dir is never used), so every flight counts as north - even at
-      the last fight, where north is the ending. Check in DOSBox (flee east
-      from the first arena fight; the engine's save loads there), then fix
-      in the CYD repo. (2) the arena's fights and the ending. (3) the
+      Random overland encounters: met, about ten. **The arena's exits:
+      an engine fault, proved in DOSBox and fixed (engine 0.203.11,
+      v0.10.8)** - the party now comes out of a fight it ran from facing
+      the way it left, and the field ends where the map does. Checked for
+      the south way out only (one fighter, the first arena fight, the
+      same save in both); east / west / north use the same code, not
+      tried in the original. NEXT: (2) the arena's fights and the ending.
+      (2b) the original asked no "Flee: Yes No" there, the engine does -
+      on the CYD's TODO. (3) the
       magic-users got no new spells from the Trainer's level-ups (only
       first-level ones at level 6) - the game's way (scrolls) or a miss?
       (4) after entering a town from the overland's Move, the menu line
@@ -244,7 +244,7 @@ Tick off with the version that did it. Never ask Tom the same thing twice.
       app updates ports) and a word with them about Send Logs (a port
       that uploads logs) - ask in the testing thread; (5) the PR itself
       from Tom's fork of PortsMaster/PortMaster-New, branch `goldbox`.
-- [ ] Keep the `cyd` pin current (built on CYD 0.203.10). Tom, 2026-11-14:
+- [ ] Keep the `cyd` pin current (built on CYD 0.203.11). Tom, 2026-11-14:
       Companion map / party-info changes are in work in the CYD (small
       boards first; the party-info layout may be rearranged) - when they
       land, move the pin and bring `src/panel.*` along.
