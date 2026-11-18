@@ -294,12 +294,13 @@ Tick off with the version that did it. Never ask Tom the same thing twice.
       app updates ports) and a word with them about Send Logs (a port
       that uploads logs) - ask in the testing thread; (5) the PR itself
       from Tom's fork of PortsMaster/PortMaster-New, branch `goldbox`.
-- [ ] Keep the `cyd` pin current (built on CYD 0.209.0). Tom, 2026-11-14:
+- [ ] Keep the `cyd` pin current (built on CYD 0.210.0). Tom, 2026-11-14:
       Companion map / party-info changes are in work in the CYD (small
       boards first; the party-info layout may be rearranged) - when they
       land, move the pin and bring `src/panel.*` along.
 
 ## Done
+- [x] v0.12.2 (engine 0.210.0): Coin Exchange and Flasks of Oil as Enhancement switches; the pin moved.
 - [x] v0.12.1 (Tom, 2026-11-17): Quit hung on Knulli (pm_finish an alias the launch script didn't know) - fixed; Rescan Game Files and
       Check for Updates on the main menu; Quick Actions one screen with its On / Off line at the top.
 - [x] v0.12.0 (Tom, 2026-11-17; engine 0.209.0): the menus as the CYD's tree - Display, Audio, Game Play (Original Games, Enhancements,

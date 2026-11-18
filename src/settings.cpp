@@ -53,6 +53,9 @@ bool settings_load(const std::string& dir, Settings& s)
     if (menus < 2 && (s.comforts_off & kOffFixes)) s.fixes_off = ~0ull;
     s.comforts_off &= kOffSwitches;
     s.saved_comforts_off &= kOffSwitches;
+    // Coin Exchange was an AD&D 1E Rule (bit 0x20) until engine 0.210.0: an Enhancement since
+    if (s.rules_off & 0x20) { s.comforts_off |= kOffCoins; s.rules_off &= ~0x20; }
+    if (s.saved_rules_off & 0x20) { s.saved_comforts_off |= kOffCoins; s.saved_rules_off &= ~0x20; }
     return true;
 }
 

@@ -3,6 +3,16 @@
 Every version of Gold Box Game Engine for PortMaster. A release's notes are
 its part of this file.
 
+## [0.12.2] - 2026-11-18
+
+Built on the CYD engine 0.210.0 (was 0.209.0).
+
+- **Coin Exchange and Flasks of Oil are Enhancements now** (the engine's change): two new lines on Game Play - Enhancements, each its own switch, on by default. Coin Exchange is no longer on the AD&D 1E Rules page (a player who had it off there keeps it off); the Magic Items rule is PoolRad's Flame Tongue alone.
+- With the engine: its switch-by-switch checks' fixes (Secret's outdoor fight field, the games each Game Fix lists, Treasures' flask of oil). The Game Fixes pages show the engine's corrected lists by themselves.
+- Not brought over: the CYD's journal-book changes (single-column pages, Page Width) - the port has no whole-book view yet.
+
+Checked: the smoke test (every menu page incl. the two new lines; Original Games on / off); tools/play_test.py on Curse (GOG) at 640 x 480 - menus, save, Journal, Quick Actions, the four cheats; no fight met.
+
 ## [0.12.1] - 2026-11-17
 
 - **Quit hung the device on Knulli** (Tom's RG40XX V, v0.12.0, from his log: "pm_finish: command not found" after "the port ended with code 0"). The port itself had ended; the launch script then failed to run PortMaster's clean-up, and the hotkey helper it had started was left behind, so the firmware's menu never came back. Why: Knulli's PortMaster gives that clean-up as an alias, and the script - read whole before it runs, so an update can replace it - didn't know aliases defined while it ran. Now the helpers are called by name when they are needed, the hotkey helper is ended by hand afterwards in any case, and a firmware with no clean-up at all gets one. The smoke test now gives the clean-up as an alias and fails if it isn't run. Not tried on a device.

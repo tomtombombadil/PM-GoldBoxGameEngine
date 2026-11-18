@@ -496,7 +496,7 @@ enum MenuItem : uint8_t {
     MDisplay,                               // Display
     MSound, MMusic, MVolume,                // Audio
     MOriginal, MEnhancePg, MRulesPg, MFixGamesPg,       // Game Play
-    MFont, MRolls, MSaveInfo, MAutoJoin, MKeepMem, MCampFix, MMoreGuys, MPortrait, MGallery,    // Enhancements
+    MFont, MRolls, MSaveInfo, MAutoJoin, MKeepMem, MCampFix, MCoins, MOil, MMoreGuys, MPortrait, MGallery,    // Enhancements
     MRule,                                  // AD&D 1E Rules (arg: rules::adnd_info's row)
     MFixGame,                               // Game Fixes (arg: games::Game; 0 Every Game)
     MFix,                                   // a game's fixes (arg: rules::Fix)
@@ -606,6 +606,8 @@ uint16_t comfort_bit(MenuItem m)
     case MAutoJoin: return kOffAutoJoin;
     case MSaveInfo: return kOffSaveInfo;
     case MKeepMem: return kOffKeepMem;
+    case MCoins: return kOffCoins;
+    case MOil: return kOffOil;
     case MCampFix: return kOffCampFix;
     case MGallery: return kOffGallery;
     case MPortrait: return kOffPortrait;
@@ -649,7 +651,7 @@ void menu_build()
         add(MFixGamesPg);
         break;
     case Page::Enhance:
-        for (MenuItem m : {MFont, MRolls, MSaveInfo, MAutoJoin, MKeepMem, MCampFix, MMoreGuys, MPortrait, MGallery}) add(m);
+        for (MenuItem m : {MFont, MRolls, MSaveInfo, MAutoJoin, MKeepMem, MCampFix, MCoins, MOil, MMoreGuys, MPortrait, MGallery}) add(m);
         break;
     case Page::Rules:
         for (int k = 0; k < rules::kAdndCount; ++k) add(MRule, k);
@@ -714,6 +716,8 @@ void menu_label(const MItem& it, char* out, size_t cap)
                          : m == MAutoJoin  ? "Auto Join Items"
                          : m == MSaveInfo  ? "Savegame Info"
                          : m == MKeepMem   ? "Keep Memorizing"
+                         : m == MCoins     ? "Coin Exchange"
+                         : m == MOil       ? "Flasks of Oil"
                          : m == MCampFix   ? "Camp Fix"
                          : m == MGallery   ? "Icon Gallery"
                          : m == MPortrait  ? "Icon Portrait"
@@ -802,6 +806,8 @@ const char* menu_help(const MItem& it)
     case MRolls: return "Fights show the dice behind each message: to hit, needed, damage, saves.";
     case MAutoJoin: return "An item taken from a treasure joins the same thing its taker already carries. Off: Join by hand.";
     case MSaveInfo: return "Save / Load Which Game shows the highlighted slot's save: when, where, the party, its map. Empty slots grey.";
+    case MCoins: return "Any mix of coins pays a price, with exact change, and money pooled or shared out is kept in the highest coins. Off: as the originals. PoolRad, Curse, Secret and Gateway.";
+    case MOil: return "A thrown flask of oil bursts into flames: fire damage. Off: as the originals, a plain blow.";
     case MKeepMem: return "A rest that is interrupted keeps the spells still to memorize for the next rest. Off: the list is forgotten.";
     case MCampFix: return "Pool of Radiance's camp gets Fix, as the later games have it.";
     case MGallery: return "The icon editor opens on pages of ready-made combat icons. Off: the game's editor.";
@@ -1351,6 +1357,8 @@ void apply_options()
     o.auto_join = !(off & kOffAutoJoin);
     o.save_info = !(off & kOffSaveInfo);
     o.keep_mem = !(off & kOffKeepMem);
+    o.coin_exchange = !(off & kOffCoins);
+    o.oil_burns = !(off & kOffOil);
     o.max_hp = cfg.max_hp;
     o.font = cfg.font;
     play::set_options(o);
