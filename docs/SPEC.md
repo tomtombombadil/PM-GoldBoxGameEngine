@@ -196,7 +196,7 @@ on screen the overlay is 320 again.
   what it does ("Found ...", "Processing the ... journal: page n of m",
   "Making its music...") in smaller letters (12 x 12, smoothed, on the
   backdrop's sharper picture: 52 across on 4:3, 69 on 16:9) and stays
-  until A. **Start - System - Rescan Game Files** does every game anew (journal files removed first, music
+  until A. **Start - Rescan Game Files** does every game anew (journal files removed first, music
   forced). Never at a game's start or on first use: a game starts with no
   loading screen, and the game list only reads `ART.BIN` (`art::load`).
   The picture is made for the screen's shape: a game found before whose
@@ -222,9 +222,11 @@ on screen the overlay is 320 again.
   meaning is under the list, in as many lines as it needs (the list
   scrolls in the rest).
   - **Top**, in a game: Back to Game, Display, Audio, Game Play, Journal,
-    Cheats, Quick Actions, Controls, System, Exit Game, Quit. At the game
-    list: Display, Audio, Game Play, Cheats (Max Hit Points only),
-    Controls, System, Quit.
+    Cheats, Quick Actions, Controls, System, Rescan Game Files, Check for
+    Updates, Exit Game, Quit. At the game list: Display, Audio, Game Play,
+    Cheats (Max Hit Points only), Controls, System, Rescan Game Files,
+    Check for Updates, Quit. (Rescan and Check for Updates on the top page
+    are the port's own - Tom, 2026-11-17: "not buried".)
   - **Display**: Picture (the fit, section 5).
   - **Audio**: Game Sound, AdLib Music, Volume.
   - **Game Play**: Original Games (a switch: on - every Enhancement, AD&D
@@ -243,18 +245,19 @@ on screen the overlay is 320 again.
   - **Cheats**: Healer, Merchant, Sanctuary, Trainer (`play::cheat_open` -
     the game's own screens; only at the exploring menu, else a message says
     so), Max Hit Points. Always there (no switch).
-  - **Quick Actions**: On / Off; Each Member's Actions - the screen
-    (`play::quick_*`): the party down the left (NPCs marked), the chosen
-    member's eight switches down the right. Up / Down a switch, L1 / R1 or
-    Left / Right a member, A flips it (kept at once in `_CYD/QUICK.TXT`
-    by the engine), B back.
+  - **Quick Actions**: one screen (`play::quick_*`; Tom, 2026-11-17 - no
+    page in between): the top line Quick Actions On / Off, under it the
+    party down the left (NPCs marked) and the chosen member's eight
+    switches down the right, dimmed when off. Up / Down: the top line and
+    the switches; L1 / R1 or Left / Right a member; A flips (a switch is
+    kept at once in `_CYD/QUICK.TXT` by the engine); B back.
   - **Controls** (the port's own): Button Guide, D-Pad Walks, Confirm
     Button.
-  - **System**: Rescan Game Files (in a game: leaves it first), Device
+  - **Rescan Game Files** (top page; in a game: leaves it first).
+  - **System**: Device
     Info (the port's and the engine's version, device.txt's lines, each
     game found and its release - Steam: files under `<folder>/GAME/`; GOG:
-    a `goggame-*` file; else unknown), Check for Updates, Send Logs, Reply
-    Address.
+    a `goggame-*` file; else unknown), Send Logs, Reply Address.
   - Always on, no switch (as the CYD): Readable Messages, a button stops
     the demo, the Cheats page. settings.cfg: `menus=2`; an older file's
     Game Fixes off = every fix off.

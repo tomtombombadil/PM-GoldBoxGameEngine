@@ -43,7 +43,7 @@ and maintains it; it is the primary output of the Claude Project
   or processing screens"). The scan (`discover()` in main.cpp, SPEC 6):
   the program's unpacked copy, the game list's picture (saved file; the
   list only reads it), the journal, the music - at the first run that
-  sees the folder, and anew on Rescan Game Files (Start - System). **No decoding,
+  sees the folder, and anew on Rescan Game Files (the Start menu). **No decoding,
   converting or "Loading" screen at a game's start, on a list page, or
   the first time a feature is used.** Anything new the port or the
   engine makes from game files gets a scan step in the same version -
@@ -60,11 +60,24 @@ and maintains it; it is the primary output of the Claude Project
 - **Journal viewer's X** (Tom, 2026-11-14): text entries - no zoom, X =
   next page, round to the top; picture entries - Width (start), Double,
   Whole, and Turned for very long maps (SPEC 6).
-- **Rescan Game Files**: Tom, 2026-11-14 - on the game list's first Start
-  menu, "Don't bury it at the bottom of the Settings menu". Since v0.12.0 it
-  is in Start - System, the first line there, as the CYD's tree has it (Tom
-  asked to mimic that tree; asked in TODO whether he wants it back on the
-  first menu). The game list's version reads "v0.6.2" (with the v).
+- **Rescan Game Files and Check for Updates are on the main menu** (Tom,
+  2026-11-14: "Don't bury it at the bottom of the Settings menu"; again
+  2026-11-17, v0.12.1, after the CYD's tree had put Rescan in System:
+  "unique to the port version ... in the main menu, not buried") - in a
+  game and at the game list, whatever the CYD's tree does. The game list's
+  version reads "v0.6.2" (with the v).
+- **Quick Actions is ONE screen** (Tom, 2026-11-17: "needlessly complex. It
+  should have a one-line enabler at the top and use the rest of the screen
+  for the party settings. No need to nest another menu in there"): the main
+  menu's line opens it; its top line is On / Off (`q_col` -1), the party
+  and the switches below, dimmed when off. Don't nest a page of one or two
+  lines anywhere - put the lines where the player already is.
+- **The launch script calls PortMaster's helpers through `pm_call`** (v0.12.1,
+  Tom's RG40XX V on Knulli: Quit hung - "pm_finish: command not found"):
+  the script is read whole before it runs, so a helper a firmware defines
+  as an alias is unknown as a bare word; and after pm_finish the hotkey
+  helper (gptokeyb) is ended by hand in any case. The smoke test's
+  PortMaster stand-in gives pm_finish as an alias.
 - **Nothing made for the screen's shape before the shape has settled**
   (Tom's RGB10 MAX3, v0.6.2: pictures remade at every start and not
   shown): a panel's real size can arrive after the first frames - check
@@ -167,8 +180,8 @@ and maintains it; it is the primary output of the Claude Project
   engine (`rules::adnd_info` / `fix_info`) - a new one needs nothing here.
   What the port keeps: `rules_off`, `fixes_off`, `original` + the saved set
   (settings.cfg, `menus=2`). When the CYD's tree changes, change this one in
-  the version that moves the pin. Rescan Game Files went to System with it
-  (it replaces "on the game list's first menu" unless Tom says otherwise).
+  the version that moves the pin - but the port's own choices above stay
+  (Rescan / Check for Updates on the main menu, Quick Actions one screen).
 - **Play-throughs check the journals and every text** (Tom, 2026-11-17: "This
   is a functionality test of the whole game, not just the parts you want to
   test"): keep every text of every leg from the first step of a place

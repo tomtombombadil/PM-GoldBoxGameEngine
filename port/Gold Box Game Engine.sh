@@ -106,15 +106,27 @@ export SDL_GAMECONTROLLERCONFIG="$sdl_controllerconfig"
 
 if [ ! -f "$GAMEDIR/$BINARY" ]; then
   echo "[goldbox] this port has no build for this device ($DEVICE_ARCH)"
-  pm_finish
+  eval pm_finish 2>/dev/null
   exit 1
 fi
 $ESUDO chmod +x "$GAMEDIR/$BINARY" "$GAMEDIR"/tools/*.sh 2>/dev/null
 
 # The port reads the controller itself; gptokeyb only gives the firmware's
 # Select + Start quit
+# PortMaster's helpers by name at RUN time: this whole script is read before it
+# runs (the brace above), so a helper a firmware defines as an alias would not
+# be known in it - Knulli's pm_finish, v0.12.0: "command not found", and the
+# port's Quit left the device hanging (Tom's RG40XX V)
+pm_call() {
+  if alias "$1" >/dev/null 2>&1 || type "$1" >/dev/null 2>&1; then
+    eval "$(printf '%q ' "$@")"
+    return 0
+  fi
+  return 1
+}
+
 $GPTOKEYB "$BINARY" &
-pm_platform_helper "$GAMEDIR/$BINARY"
+pm_call pm_platform_helper "$GAMEDIR/$BINARY" || echo "[goldbox] no pm_platform_helper here"
 
 # Knulli reports A and B the other way round (Tom's RG40XX V, 2026-11-15):
 # the port starts with Confirm on B there - once; Settings - Confirm Button
@@ -127,7 +139,18 @@ fi
 ./"$BINARY" --games "$GAMEDIR/games" --conf "$CONFDIR" --tools "$GAMEDIR/tools" $GOLDBOX_ARGS
 echo "[goldbox] the port ended with code $?"
 
-pm_finish
+# Back to the firmware's menu: PortMaster's own clean-up, and - where it has
+# none, or it left the hotkey helper behind - the helper ended by hand (a
+# launcher waits for it; that was the hang)
+if ! pm_call pm_finish; then
+  echo "[goldbox] no pm_finish here: cleaning up by hand"
+  command -v systemctl >/dev/null 2>&1 && $ESUDO systemctl restart oga_events >/dev/null 2>&1 &
+  printf "\033c" > /dev/tty0 2>/dev/null
+fi
+for gp in gptokeyb gptokeyb2; do
+  pids=$(pidof "$gp" 2>/dev/null)
+  [ -n "$pids" ] && $ESUDO kill -9 $pids 2>/dev/null
+done
 
 # "Restart Now" after an update was downloaded: straight into it
 if [ -z "$GOLDBOX_SKIP_UPDATE" ] && [ -f "$UPD/READY" ] && [ -f "$GAMEDIR/restart" ]; then

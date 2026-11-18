@@ -59,8 +59,9 @@ Tick off with the version that did it. Never ask Tom the same thing twice.
       Moving the CYD's onto the platform layer would let both share it -
       not a bug fix; your OK needed.
 
-- [ ] Tom, v0.12.0: the new menus on a handheld - anything hard to find or read? Rescan Game Files is in System now
-      (the CYD's place); say if it should be back on the game list's first menu too.
+- [ ] Tom, v0.12.1 on the RG40XX V (Knulli): does Quit come back to EmulationStation now? If it hangs again, Send Logs
+      after the next start (the log's last lines say what the launch script did). Also the new menus: anything hard to
+      find or read?
 ## Claude
 - [ ] **Treasures play-through** (Tom, 2026-11-17; scratch `/tmp/claude-0/tplay`,
       the finished Gateway party brought over). Started: the party added
@@ -299,6 +300,8 @@ Tick off with the version that did it. Never ask Tom the same thing twice.
       land, move the pin and bring `src/panel.*` along.
 
 ## Done
+- [x] v0.12.1 (Tom, 2026-11-17): Quit hung on Knulli (pm_finish an alias the launch script didn't know) - fixed; Rescan Game Files and
+      Check for Updates on the main menu; Quick Actions one screen with its On / Off line at the top.
 - [x] v0.12.0 (Tom, 2026-11-17; engine 0.209.0): the menus as the CYD's tree - Display, Audio, Game Play (Original Games, Enhancements,
       AD&D 1E Rules, Game Fixes - each rule and fix its own switch), Cheats, Quick Actions, Controls, System (Device Info new).
 - [x] v0.11.2 (engine 0.208.1): Treasures - a spell cast where a script waits for one (the two Siulajias in Llorkh) reaches the script.

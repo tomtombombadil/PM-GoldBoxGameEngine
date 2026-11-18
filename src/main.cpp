@@ -627,9 +627,12 @@ void menu_build()
         add(MPlayPg);
         if (playing) add(MJournal);
         add(MCheats);
-        if (playing) add(MQuickPg);
+        if (playing) add(MQuick);
         add(MControlsPg);
         add(MSystemPg);
+        // (the port's own, Tom 2026-11-17: on the main menu, "not buried")
+        add(MRescan);
+        add(MUpdate);
         if (playing) add(MLeaveGame);
         add(MExit);
         break;
@@ -669,19 +672,13 @@ void menu_build()
             for (MenuItem m : {MHealer, MMerchant, MSanctuary, MTrainer}) add(m);
         add(MMaxHp);
         break;
-    case Page::Quick:
-        add(MQuickOn);
-        add(MQuick);
-        break;
     case Page::Controls:
         add(MControls);
         add(MPadMoves);
         add(MSwap);
         break;
     case Page::System:
-        add(MRescan);
         add(MDevice);
-        add(MUpdate);
         add(MSendLogs);
         add(MReplyAddr);
         break;
@@ -742,7 +739,7 @@ void menu_label(const MItem& it, char* out, size_t cap)
     case MRule: snprintf(out, cap, "%s: %s", rules::adnd_info(it.arg).name, adnd_on() & rules::adnd_info(it.arg).bit ? "On" : "Off"); break;
     case MFixGame: snprintf(out, cap, "%s...", fix_game_name(it.arg)); break;
     case MFix: snprintf(out, cap, "%s: %s", rules::fix_info(it.arg).name, cfg.fixes_off >> it.arg & 1 ? "Off" : "On"); break;
-    case MQuick: snprintf(out, cap, "Each Member's Actions"); break;
+    case MQuick: snprintf(out, cap, "Quick Actions"); break;
     case MControls: snprintf(out, cap, "Button Guide"); break;
     case MDisplay: snprintf(out, cap, "Picture: %s", video::fit_name(static_cast<video::Fit>(cfg.fit))); break;
     case MSound: snprintf(out, cap, "Game Sound: %s", sound_name(sound_shown())); break;
@@ -780,7 +777,7 @@ const char* menu_help(const MItem& it)
     case MCheats: return playing ? "Healer, Merchant, Sanctuary, Trainer and Max Hit Points." : "Max Hit Points. The other cheats are here while a game is played.";
     case MQuickPg: return "What Quick may do for each member of the party in a fight.";
     case MControlsPg: return "What each button does, and the buttons' settings.";
-    case MSystemPg: return "Rescan Game Files, Device Info, Check for Updates, Send Logs.";
+    case MSystemPg: return "Device Info, Send Logs and its reply address.";
     case MLeaveGame: return "Back to the list of games. Save in the game first.";
     case MExit: return "Leaves the port.";
     case MOriginal:
@@ -811,7 +808,7 @@ const char* menu_help(const MItem& it)
     case MPortrait: return "View Character shows the combat icon large where a portrait would go.";
     case MMoreGuys: return "Add Character also lists your saved games' members and the earlier game's characters.";
     case MQuickOn: return "On: each member's own Quick Actions. Off: Quick as the originals play it.";
-    case MQuick: return "The party's members and what Quick may do for each: Melee, Missile, Spells, Items and more.";
+    case MQuick: return "What Quick may do for each member of the party in a fight; its On / Off switch.";
     case MMaxHp: return "Training gives the highest hit points the dice allow. A cheat: off unless you turn it on.";
     case MReplyAddr: return "Your email address, sent with Send Logs so the developer can write back. Optional.";
     case MRescan: return "Looks through the games folder again and makes every game's picture, journal and music anew.";
@@ -1018,33 +1015,45 @@ int  q_rows = 0, q_row = 0, q_col = 0;
 
 void draw_quick()
 {
+    // (Tom, 2026-11-17: one line at the top switches Quick Actions on or off,
+    // the rest of the screen is the party's settings - no menu in between)
+    const bool on = !(cfg.comforts_off & kOffQuick);
     video::fill(8, 2, 304, 196, video::kNavy);
     video::frame(8, 2, 304, 196, video::kGold);
     video::text_at(108, 7, "Quick Actions", video::kGold);
+    char top[40];
+    snprintf(top, sizeof top, "Quick Actions: %s", on ? "On" : "Off");
+    if (q_col < 0) video::fill(12, 19, 296, 11, video::kLit);
+    video::text_at(16, 21, top, q_col < 0 ? video::kCream : video::kMuted);
+    const uint32_t dim = video::kEdge;
     for (int r = 0; r < q_rows && r < 9; ++r) {
         char nm[24], line[24];
         if (!play::quick_name(r, nm, sizeof nm)) nm[0] = 0;
         snprintf(line, sizeof line, "%.15s", nm);
-        const int y = 22 + r * 11;
-        if (r == q_row) video::fill(12, y, 148, 11, video::kKey);
-        video::text_at(16, y + 2, line, r == q_row ? video::kGold : video::kMuted);
-        if (play::quick_npc(r)) video::text_at(136, y + 2, "NPC", video::kMuted);
+        const int y = 34 + r * 11;
+        if (r == q_row && on) video::fill(12, y, 148, 11, video::kKey);
+        video::text_at(16, y + 2, line, !on ? dim : r == q_row ? video::kGold : video::kMuted);
+        if (play::quick_npc(r)) video::text_at(136, y + 2, "NPC", on ? video::kMuted : dim);
     }
-    const uint8_t mask = play::quick_get(q_row);
+    const uint8_t mask = q_rows > 0 ? play::quick_get(q_row) : 0;
     for (int k = 0; k < quickacts::kCols; ++k) {
-        const int y = 22 + k * 11;
-        const bool sel = k == q_col;
+        const int y = 34 + k * 11;
+        const bool sel = k == q_col && on;
         if (sel) video::fill(164, y, 144, 11, video::kLit);
         // (the switch: a box, filled when ticked)
-        video::frame(168, y + 1, 9, 9, video::kCream);
-        if (mask >> k & 1) video::fill(170, y + 3, 5, 5, video::kGold);
-        video::text_at(182, y + 2, quickacts::kName[k], sel ? video::kCream : video::kMuted);
+        video::frame(168, y + 1, 9, 9, on ? video::kCream : dim);
+        if (mask >> k & 1) video::fill(170, y + 3, 5, 5, on ? video::kGold : dim);
+        video::text_at(182, y + 2, quickacts::kName[k], !on ? dim : sel ? video::kCream : video::kMuted);
     }
-    video::fill(12, 124, 296, 1, video::kEdge);
-    wrap_at(16, 129, 36, quickacts::kDesc[q_col], video::kCream, 4);
+    video::fill(12, 136, 296, 1, video::kEdge);
+    const char* words = q_col < 0 || !on ? "On: each member's own Quick Actions, set below. Off: Quick plays every member as the "
+                                           "original games do."
+                                         : quickacts::kDesc[q_col];
+    wrap_at(16, 140, 36, words, video::kCream, 4);
     char hint[44];
-    snprintf(hint, sizeof hint, "L1 R1: Member  %s: Flip  %s: Back", confirm_name(), back_name());
-    video::text_at((video::kW - static_cast<int>(strlen(hint)) * 8) / 2, 184, hint, video::kMuted);
+    if (q_col < 0) snprintf(hint, sizeof hint, "%s: On / Off   %s: Back", confirm_name(), back_name());
+    else snprintf(hint, sizeof hint, "L1 R1: Member  %s: Flip  %s: Back", confirm_name(), back_name());
+    video::text_at((video::kW - static_cast<int>(strlen(hint)) * 8) / 2, 186, hint, video::kMuted);
 }
 
 // ---- The on-screen keyboard ------------------------------------------------
@@ -1885,29 +1894,51 @@ void cheat_go(int which)
 
 void quick_begin()
 {
+    const bool off = (cfg.comforts_off & kOffQuick) != 0;
     q_rows = play::quick_ready() ? play::quick_begin() : 0;
-    if (q_rows <= 0) {
+    if (q_rows <= 0 && !off) {
         show_notice("Quick Actions", "Quick Actions need a party: load a saved game or make characters first.");
         return;
     }
-    q_row = q_col = 0;
+    q_row = 0;
+    q_col = cfg.comforts_off & kOffQuick ? -1 : 0;        // (off: on its switch)
     quick_open = true;
     menu_open = false;
 }
 
 void quick_press(int b)
 {
+    // (q_col -1: the On / Off line at the top)
+    const bool on = !(cfg.comforts_off & kOffQuick);
     switch (b) {
-    case BUp: q_col = (q_col + quickacts::kCols - 1) % quickacts::kCols; break;
-    case BDown: q_col = (q_col + 1) % quickacts::kCols; break;
+    case BUp: q_col = !on ? -1 : q_col <= -1 ? quickacts::kCols - 1 : q_col - 1; break;
+    case BDown: q_col = !on ? -1 : q_col >= quickacts::kCols - 1 ? -1 : q_col + 1; break;
     case BLeft:
     case BL1:
-    case BL2: q_row = (q_row + q_rows - 1) % q_rows; break;
+    case BL2:
+        if (on) q_row = (q_row + q_rows - 1) % q_rows;
+        break;
     case BRight:
     case BR1:
-    case BR2: q_row = (q_row + 1) % q_rows; break;
+    case BR2:
+        if (on) q_row = (q_row + 1) % q_rows;
+        break;
     case BA:
-        if (!play::quick_toggle(q_row, q_col))
+        if (q_col < 0) {
+            cfg.comforts_off ^= kOffQuick;
+            apply_options();
+            settings_save(conf_dir, cfg);
+            // (switched on: the party's rows are there now; off: they are dimmed, as they stand)
+            if (!(cfg.comforts_off & kOffQuick)) {
+                const int n = play::quick_ready() ? play::quick_begin() : 0;
+                if (n > 0) q_rows = n;
+                else if (q_rows <= 0) {
+                    quick_open = false;
+                    show_notice("Quick Actions", "Quick Actions are on. Their settings need a party: load a saved game or make characters first.");
+                }
+                if (q_row >= q_rows) q_row = 0;
+            }
+        } else if (!play::quick_toggle(q_row, q_col))
             show_notice("Quick Actions", "The change couldn't be kept: the games folder can't be written.");
         break;
     case BB:

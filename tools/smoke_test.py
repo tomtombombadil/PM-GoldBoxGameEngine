@@ -39,7 +39,7 @@ MENU_TOUR = ("menu:Display,a,menu:Picture,right,left,b,"
              "menu:Cheats,a,menu:Max_Hit,right,left,b,"
              "menu:Controls,a,menu:Button_Guide,a,b,menu:D-Pad,right,left,menu:Confirm_Button,a,a,"     # (A and B turned round: now B confirms, A is Back)
              "menu:System,b,menu:Device,b,a,l2,r2,menu:Back,b,")
-MENU_UPDATE = "start,menu:System,a,menu:Check_for_Updates,"   # the Start menu's line
+MENU_UPDATE = "start,menu:Check_for_Updates,"   # the Start menu's line
 
 
 def update_test(exe):
@@ -59,7 +59,10 @@ def update_test(exe):
         pm.mkdir(parents=True)
         (pm / "control.txt").write_text(
             f'directory="{str(t / "roms").lstrip("/")}"\nCFW_NAME=test\nDEVICE_ARCH={arch}\nESUDO=""\nGPTOKEYB=true\n'
-            "get_controls() { :; }\npm_platform_helper() { :; }\npm_finish() { :; }\npm_message() { :; }\n")
+            "get_controls() { :; }\npm_platform_helper() { :; }\npm_message() { :; }\n"
+            # (pm_finish as an ALIAS, as on Knulli: the launch script must still run it - v0.12.0 didn't,
+            # "pm_finish: command not found", and Quit left Tom's RG40XX V hanging)
+            f"alias pm_finish='echo finished >> {t}/finished'\n")
 
         def release(version, binary):
             name = f"goldbox_port-v{version}.zip"
@@ -114,6 +117,8 @@ def update_test(exe):
         env["GOLDBOX_ARGS"] = f"--script wait:100,{MENU_UPDATE}a,wait:100,quit"
         r = subprocess.run(["/bin/bash", str(ports / "Gold Box Game Engine.sh")], env=env, capture_output=True, text=True, timeout=120)
         assert "This is the newest version" in r.stdout, r.stdout
+        assert (t / "finished").is_file(), "the launch script didn't run PortMaster's pm_finish (an alias)"
+        assert "command not found" not in r.stdout + (game / "log.txt").read_text(), "a PortMaster helper wasn't found"
 
 
 def logs_test(exe):
@@ -280,7 +285,7 @@ def main():
         assert out.count("[scan] Preparing the ") == 2, "pictures for the panel's late size"
         out = run(exe, g, conf, late, "640x480")
         assert "[scan]" not in out, "pictures made again at the next start"
-        out = run(exe, g, conf, "wait:100,start,menu:System,a,menu:Rescan,a,wait:100,a,right,quit")
+        out = run(exe, g, conf, "wait:100,start,menu:Rescan,a,wait:100,a,right,quit")
         assert out.count("[scan] Found ") == 2, "Rescan Game Files"
         # (--drive, tools/play_test.py's way in: steps on stdin, the state back after each line)
         r = subprocess.run([exe, "--games", str(g), "--conf", str(conf), "--drive"], input="wait:100\nright,wait:100\nquit\n",

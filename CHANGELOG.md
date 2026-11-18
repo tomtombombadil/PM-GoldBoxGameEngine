@@ -3,6 +3,14 @@
 Every version of Gold Box Game Engine for PortMaster. A release's notes are
 its part of this file.
 
+## [0.12.1] - 2026-11-17
+
+- **Quit hung the device on Knulli** (Tom's RG40XX V, v0.12.0, from his log: "pm_finish: command not found" after "the port ended with code 0"). The port itself had ended; the launch script then failed to run PortMaster's clean-up, and the hotkey helper it had started was left behind, so the firmware's menu never came back. Why: Knulli's PortMaster gives that clean-up as an alias, and the script - read whole before it runs, so an update can replace it - didn't know aliases defined while it ran. Now the helpers are called by name when they are needed, the hotkey helper is ended by hand afterwards in any case, and a firmware with no clean-up at all gets one. The smoke test now gives the clean-up as an alias and fails if it isn't run. Not tried on a device.
+- **Rescan Game Files and Check for Updates are on the main menu** (Tom: "not buried"), in a game and at the game list. System keeps Device Info, Send Logs and Reply Address.
+- **Quick Actions is one screen** (Tom: "needlessly complex"): the main menu's line opens it; its top line switches Quick Actions On / Off, the rest is the party and each member's eight settings. Off: the settings are dimmed (Quick as the originals); with no party yet the screen still opens to switch it.
+
+Checked: the smoke test (its install / update run now with an alias clean-up); a screenshot of the main menu and of the Quick Actions screen in Curse at 640 x 480; tools/play_test.py on Curse for the menu's Journal, Quick Actions and cheats.
+
 ## [0.12.0] - 2026-11-17
 
 Engine 0.209.0.
