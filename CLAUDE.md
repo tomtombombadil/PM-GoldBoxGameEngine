@@ -461,6 +461,13 @@ and maintains it; it is the primary output of the Claude Project
   menu's line - never count `down`s), `shot:<file.bmp>`, `quit`. `--game <n>` starts a game at
   once. With Tom's game files in scratch this plays real games headless;
   look at the `shot:` pictures before saying something works.
+- **A switch is tested only when its EFFECT was seen in a game** (Tom, 2026-11-18: "did you
+  mean that you went into a game, enabled/disabled the toggle and tested to see if the toggle
+  actually affected the game"): a menu line that appears, flips and is saved is "the menu
+  checked", never "the switch tested" - say which of the two was done. `tools/switch_test.py
+  <binary> <games copy> <n> <out> coins` plays a switch on and off through the port's buttons
+  and compares the game's result (Coin Exchange in Curse so far); a new switch gets its case
+  there, or the report says its effect was not tested in the port.
 - Never report "tested" without saying what was run against what. Without
   game files only the port's own screens are tested - say so.
 - The device itself (controller mapping, sound, speed, each firmware) can

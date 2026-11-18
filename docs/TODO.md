@@ -88,6 +88,11 @@ Tick off with the version that did it. Never ask Tom the same thing twice.
       fixed, engine 0.208.4.** Geildarr defeated, Milzorr's thanks. NOT yet: loot taken
       and sold (the walks so far left the treasure - to put right), Geildarr
       himself (north of the dungeon), Loudwater on.
+- [ ] **Switches' effects in a game, through the port** (Tom, 2026-11-18; `tools/switch_test.py`). Done: Coin
+      Exchange (Curse GOG, v0.12.2: on - buyer 0 / counter 1200 platinum; off - buyer 100 / counter 1100).
+      NOT done: Flasks of Oil (needs a fight against something fire treats differently - a troll - with a flask
+      thrown); every other Enhancement, each AD&D 1E Rule, each Game Fix, Original Games, Max Hit Points - in the
+      port only their menu lines were checked; their effects are checked by the CYD's own switch-by-switch tests.
 - [ ] Tom, v0.11.0 on a handheld: Save Slot Info - Encamp - Save and the
       party menu's Load: the highlighted slot's date (is the device's clock
       right?), place and party; on the RGB10 MAX3 the party and (v0.11.1) the save's map in the
