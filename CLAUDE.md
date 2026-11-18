@@ -60,9 +60,11 @@ and maintains it; it is the primary output of the Claude Project
 - **Journal viewer's X** (Tom, 2026-11-14): text entries - no zoom, X =
   next page, round to the top; picture entries - Width (start), Double,
   Whole, and Turned for very long maps (SPEC 6).
-- **Rescan Game Files** is on the game list's first Start menu - "Don't
-  bury it at the bottom of the Settings menu". The game list's version
-  reads "v0.6.2" (with the v).
+- **Rescan Game Files**: Tom, 2026-11-14 - on the game list's first Start
+  menu, "Don't bury it at the bottom of the Settings menu". Since v0.12.0 it
+  is in Start - System, the first line there, as the CYD's tree has it (Tom
+  asked to mimic that tree; asked in TODO whether he wants it back on the
+  first menu). The game list's version reads "v0.6.2" (with the v).
 - **Nothing made for the screen's shape before the shape has settled**
   (Tom's RGB10 MAX3, v0.6.2: pictures remade at every start and not
   shown): a panel's real size can arrive after the first frames - check
