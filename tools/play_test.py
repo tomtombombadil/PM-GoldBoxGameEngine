@@ -25,10 +25,11 @@ OUT = "."
 CFG_EXTRA = ""          # more settings.cfg lines for the runs (explore_test's strong party: max_hp=1)
 
 class Port:
-    def __init__(self, games, game, conf, window=None):
+    def __init__(self, games, game, conf, window=None, keep_conf=False):
         os.makedirs(conf, exist_ok=True)
-        with open(conf + "/settings.cfg", "w") as f:
-            f.write("font=1\nvolume=0\nreply_asked=1\n" + CFG_EXTRA)
+        if not keep_conf:               # (keep_conf: the settings the last run left - a start anew)
+            with open(conf + "/settings.cfg", "w") as f:
+                f.write("font=1\nvolume=0\nreply_asked=1\n" + CFG_EXTRA)
         env = dict(os.environ, SDL_VIDEODRIVER="dummy", SDL_AUDIODRIVER="dummy")
         args = [EXE, "--games", games, "--conf", conf, "--game", str(game), "--drive"] + (["--window", window] if window else [])
         self.p = subprocess.Popen(args, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, env=env, text=True, bufsize=1)
@@ -36,7 +37,7 @@ class Port:
         self.st = {}; self.text = []; self.lit = []
     def do(self, steps="wait:150"):
         self.p.stdin.write(steps + "\n"); self.p.stdin.flush()
-        text, lit = [], []
+        text, lit, menu = [], [], []
         while True:
             line = self.p.stdout.readline()
             if not line: raise RuntimeError("port ended\n" + "".join(self.log[-25:]))
@@ -45,6 +46,8 @@ class Port:
                 head, _, desc = line[8:].partition(" desc=")
                 self.st = dict(kv.split("=", 1) for kv in head.split(" ") if "=" in kv)
                 self.st["desc"] = desc
+            elif line.startswith("[engine]"): self.eng = {k: int(v, 16) for k, v in (kv.split("=") for kv in line[9:].split())}
+            elif line.startswith("M|"): menu.append(line[2:])
             elif line.startswith("T|"): text.append(line[2:42])
             elif line.startswith("L|"): lit.append(line[2:42])
             elif line == "[end]": break
@@ -56,7 +59,7 @@ class Port:
             lit[24] = lit[-1]
         while len(text) < 25:             # (not in a game - the port's own page: no rows; empty ones, so readers needn't care)
             text.append(" " * 40); lit.append("." * 40)
-        self.text, self.lit = text, lit
+        self.text, self.lit, self.menu = text, lit, menu
         return self
     def show(self):
         print(self.st)
@@ -126,8 +129,8 @@ def games_of(p):
 
 
 class Run:
-    def __init__(self, games, n, tag, window=None):
-        self.p = Port(games, n, f"{OUT}/conf-{n}", window)
+    def __init__(self, games, n, tag, window=None, keep_conf=False):
+        self.p = Port(games, n, f"{OUT}/conf-{n}", window, keep_conf)
         self.n, self.tag = n, tag
         self.notes, self.trail = [], []
     def note(self, *a):

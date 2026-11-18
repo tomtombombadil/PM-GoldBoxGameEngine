@@ -2548,6 +2548,24 @@ void drive_answer()
            playing && play::fight_pad() ? 1 : 0, playing ? static_cast<int>(play::input()) : 0, jour::active() ? 1 : 0,
            jlist_open ? 1 : 0, menu_open ? 1 : 0, quick_open ? 1 : 0, notice.open ? 1 : 0, panel::open() ? 1 : 0, panel::docked_on() ? 1 : 0, in_title() ? 1 : 0, canvas_sum(),
            playing ? play::pos_x() : 0, playing ? play::pos_y() : 0, playing ? play::dir() : 0, l1, l2);
+    {
+        // (what the ENGINE has switched on now - asked of the engine, not of the port's settings:
+        // tools/switch_test.py flips a menu line in a game and reads these)
+        unsigned long long fx = 0;
+        for (int k = 0; k < rules::kFixCount; ++k)
+            if (rules::fix(static_cast<rules::Fix>(k))) fx |= 1ull << k;
+        unsigned ad = 0, en = 0;
+        for (int k = 0; k < 16; ++k)
+            if (rules::adnd(static_cast<uint16_t>(1u << k))) ad |= 1u << k;
+        for (int k = 0; k < 8; ++k)
+            if (rules::enh(static_cast<uint8_t>(1u << k))) en |= 1u << k;
+        printf("[engine] fix=%llx adnd=%x enh=%x\n", fx, ad, en);
+    }
+    for (size_t i = 0; menu_open && i < menu_items.size(); ++i) {
+        char label[40];
+        menu_label(menu_items[i], label, sizeof label);
+        printf("M|%c%s\n", static_cast<int>(i) == menu_sel ? '>' : ' ', label);
+    }
     if (playing) drive_text();
     printf("[end]\n");
     fflush(stdout);

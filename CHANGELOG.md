@@ -3,6 +3,16 @@
 Every version of Gold Box Game Engine for PortMaster. A release's notes are
 its part of this file.
 
+## [0.12.3] - 2026-11-18
+
+No change to what the player sees. The switches were tested in games (Tom: a menu line that flips isn't a tested switch).
+
+- For the tests: the port's `--drive` output now says which switches the ENGINE has on (asked of the engine itself) and lists the open menu's lines. `tools/switch_test.py` (coins, wiring) and `tools/switch_cases/` hold the tests.
+- **Seen in a game, on and off, through the buttons (GOG files)**: Coin Exchange (Curse), Game Font, Savegame Info, More Characters, Icon Gallery (PoolRad, Curse, Darkness, Treasures; some in Secret / Champions), Icon Portrait (Curse), Camp Fix (PoolRad), Show Rolls (PoolRad, a fight), Keep Memorizing (Curse), Max Hit Points (Curse, a level-up: +13 twice against +5 / +11 / +9 / +6), Multi-Class Hit Points (Curse: +3 on, +4 off), Raising the Dead (Darkness: Constitution 18 kept on, 17 off), Race Adjustments (Darkness, a dwarf's 80 rolls: Con 16.25 / Cha 14.11 on, 15.12 / 14.91 off).
+- **Every line reaches the game**: in a loaded game of each of the nine games every Game Fix, AD&D 1E Rule, Coin Exchange and Flasks of Oil line was flipped by the buttons and the engine asked - each switched its own engine switch and only that; Original Games switched all off and gave the set back; a switch left off was still off after a restart.
+- **NOT seen in a game through the port**: Auto Join Items, Flasks of Oil, Quick Actions On / Off; the rules Magic Missile, Thrown Weapons, Magic Items, Age with Time, Power Word Kill, Protection from Evil; every Game Fix but Race Adjustments. For those: the line reaches the engine (above), and what the engine then does is checked by the CYD's own toggle tests - not by this port.
+- Found on the way, for the CYD side: in Curse the temple's Raise Dead takes no Constitution with Raising the Dead OFF either (the rule's help says the originals take a point "by spell or at a temple").
+
 ## [0.12.2] - 2026-11-18
 
 Built on the CYD engine 0.210.0 (was 0.209.0).

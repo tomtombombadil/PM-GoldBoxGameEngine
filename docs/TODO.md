@@ -88,11 +88,21 @@ Tick off with the version that did it. Never ask Tom the same thing twice.
       fixed, engine 0.208.4.** Geildarr defeated, Milzorr's thanks. NOT yet: loot taken
       and sold (the walks so far left the treasure - to put right), Geildarr
       himself (north of the dungeon), Loudwater on.
-- [ ] **Switches' effects in a game, through the port** (Tom, 2026-11-18; `tools/switch_test.py`). Done: Coin
-      Exchange (Curse GOG, v0.12.2: on - buyer 0 / counter 1200 platinum; off - buyer 100 / counter 1100).
-      NOT done: Flasks of Oil (needs a fight against something fire treats differently - a troll - with a flask
-      thrown); every other Enhancement, each AD&D 1E Rule, each Game Fix, Original Games, Max Hit Points - in the
-      port only their menu lines were checked; their effects are checked by the CYD's own switch-by-switch tests.
+- [ ] **Switches' effects in a game, through the port** (Tom, 2026-11-18; `tools/switch_test.py`, `tools/switch_cases/`;
+      v0.12.3's CHANGELOG has the table). SEEN on and off: Coin Exchange, Game Font, Savegame Info, More Characters,
+      Icon Gallery, Icon Portrait (Curse only - PoolRad shows its own portrait first; Secret / Darkness / Champions /
+      Treasures showed no change: right for those games, or the test's View? to check), Camp Fix, Show Rolls, Keep
+      Memorizing, Max Hit Points, Multi-Class Hit Points, Raising the Dead (Darkness), Race Adjustments (Darkness).
+      Every Game Play line reaches the engine in all nine games (`wiring`). NOT SEEN yet: Auto Join Items (needs a
+      treasure with a pile the taker holds), Flasks of Oil (a fight with a troll, a flask thrown), Quick Actions On /
+      Off, Magic Missile (PoolRad, a magic-user of level 3+), Thrown Weapons (Show Rolls' to-hit sum), Magic Items
+      (PoolRad's Flame Tongue), Age with Time, Power Word Kill, Protection from Evil, and 45 Game Fixes - each needs a
+      prepared save (the CYD playsim's RECSET / SETXP / MEMSET) and its steps. The tour is unsteady in Knights, Queen
+      and Gateway (their screens change by themselves between runs): those games' Enhancements not shown yet.
+- [ ] **For the CYD side** (found 2026-11-18): Curse's temple Raise Dead (the Healer cheat's too) takes no Constitution
+      with Raising the Dead OFF - the engine's Curse / PoolRad temple path (`rules::apply_cure`) has no cost at all,
+      while the rule's help says the originals take a point "by spell or at a temple". The original's way in Curse /
+      PoolRad: not checked in DOSBox.
 - [ ] Tom, v0.11.0 on a handheld: Save Slot Info - Encamp - Save and the
       party menu's Load: the highlighted slot's date (is the device's clock
       right?), place and party; on the RGB10 MAX3 the party and (v0.11.1) the save's map in the
@@ -305,6 +315,7 @@ Tick off with the version that did it. Never ask Tom the same thing twice.
       land, move the pin and bring `src/panel.*` along.
 
 ## Done
+- [x] v0.12.3 (Tom, 2026-11-18): switches tested in games - see the open item for what was and wasn't seen.
 - [x] v0.12.2 (engine 0.210.0): Coin Exchange and Flasks of Oil as Enhancement switches; the pin moved.
 - [x] v0.12.1 (Tom, 2026-11-17): Quit hung on Knulli (pm_finish an alias the launch script didn't know) - fixed; Rescan Game Files and
       Check for Updates on the main menu; Quick Actions one screen with its On / Off line at the top.
