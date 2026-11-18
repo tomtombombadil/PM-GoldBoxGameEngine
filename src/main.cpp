@@ -9,7 +9,10 @@
 // menu, the on-screen keyboard.
 #include <SDL.h>
 
+#include <cctype>
 #include <cstdio>
+#include <dirent.h>
+#include <strings.h>
 #include <fcntl.h>
 #include <unistd.h>
 #include <cstdlib>
@@ -21,6 +24,7 @@
 #include "game/music_make.h"
 #include "engine/profile.h"
 #include "engine/quickacts.h"
+#include "engine/rules.h"
 #include "game/play.h"
 #include "platform/audio.h"
 #include "platform/file.h"
@@ -476,40 +480,137 @@ void draw_notice()
 }
 
 // ---- The menu --------------------------------------------------------------
-// Start: the menu; its Settings and Cheats are pages of their own. Every
-// line says what it does at the page's foot.
+// The CYD's menus by Tom's tree (2026-11-17; engine 0.209.0, its CLAUDE.md
+// "The menus"), by buttons: Start opens the top page - in a game Display,
+// Audio, Game Play, Journal, Cheats, Quick Actions, Controls, System, Exit
+// Game; at the game list the same less the game-only ones. Game Play:
+// Original Games, Enhancements, AD&D 1E Rules, Game Fixes (each fix and each
+// rule its own switch - names and words from the engine's rules::fix_info /
+// adnd_info, so a new one shows here by itself). Every line says what it
+// does at the page's foot. The port's own: Controls, Quit, and System's
+// Check for Updates / Reply Address.
 enum MenuItem : uint8_t {
-    MResume, MJournal, MQuick, MCheats, MSettings, MControls, MUpdate, MSendLogs, MLeaveGame, MExit,
-    // Settings
-    MDisplay, MSound, MMusic, MVolume, MFont, MPadMoves, MSwap,
-    MFixes, MRolls, MReadTime, MAutoJoin, MSaveInfo, MCampFix, MGallery, MPortrait, MMoreGuys, MDemoTap, MQuickOn, MCheatsOn, MMaxHp,
-    MAsOriginal, MAllOn, MReplyAddr, MRescan,
-    // Cheats
-    MHealer, MMerchant, MSanctuary, MTrainer,
+    MResume,
+    // the pages
+    MDisplayPg, MAudioPg, MPlayPg, MJournal, MCheats, MQuickPg, MControlsPg, MSystemPg, MLeaveGame, MExit,
+    MDisplay,                               // Display
+    MSound, MMusic, MVolume,                // Audio
+    MOriginal, MEnhancePg, MRulesPg, MFixGamesPg,       // Game Play
+    MFont, MRolls, MSaveInfo, MAutoJoin, MKeepMem, MCampFix, MMoreGuys, MPortrait, MGallery,    // Enhancements
+    MRule,                                  // AD&D 1E Rules (arg: rules::adnd_info's row)
+    MFixGame,                               // Game Fixes (arg: games::Game; 0 Every Game)
+    MFix,                                   // a game's fixes (arg: rules::Fix)
+    MHealer, MMerchant, MSanctuary, MTrainer, MMaxHp,   // Cheats
+    MQuickOn, MQuick,                       // Quick Actions
+    MControls, MPadMoves, MSwap,            // Controls
+    MRescan, MDevice, MUpdate, MSendLogs, MReplyAddr,   // System
     MBack
 };
-enum class Page : uint8_t { Main, Settings, Cheats };
-std::vector<MenuItem> menu_items;
-Page                  menu_page = Page::Main;
-int                   menu_top = 0;         // the first line shown
-int                   menu_main_sel = 0;    // where the main page was left
+enum class Page : uint8_t { Top, Display, Audio, Play, Enhance, Rules, FixGames, Fixes, Cheats, Quick, Controls, System };
+struct MItem {
+    MenuItem m;
+    int      arg;
+};
+std::vector<MItem> menu_items;
+Page               menu_page = Page::Top;
+int                menu_top = 0;        // the first line shown
+int                fix_game = 0;        // the Fixes page's game (games::Game; 0: Every Game)
+bool               device_open = false; // Device Info is up
 
-// The engine comfort a Settings line switches (0: not one)
+Page page_parent(Page p)
+{
+    switch (p) {
+    case Page::Enhance:
+    case Page::Rules:
+    case Page::FixGames: return Page::Play;
+    case Page::Fixes: return Page::FixGames;
+    default: return Page::Top;
+    }
+}
+
+// The page a line opens (Top: none)
+Page page_of(MenuItem m)
+{
+    switch (m) {
+    case MDisplayPg: return Page::Display;
+    case MAudioPg: return Page::Audio;
+    case MPlayPg: return Page::Play;
+    case MCheats: return Page::Cheats;
+    case MQuickPg: return Page::Quick;
+    case MControlsPg: return Page::Controls;
+    case MSystemPg: return Page::System;
+    case MEnhancePg: return Page::Enhance;
+    case MRulesPg: return Page::Rules;
+    case MFixGamesPg: return Page::FixGames;
+    case MFixGame: return Page::Fixes;
+    default: return Page::Top;
+    }
+}
+
+const char* page_title(Page p)
+{
+    switch (p) {
+    case Page::Display: return "Display";
+    case Page::Audio: return "Audio";
+    case Page::Play: return "Game Play";
+    case Page::Enhance: return "Enhancements";
+    case Page::Rules: return "AD&D 1E Rules";
+    case Page::FixGames: return "Game Fixes";
+    case Page::Cheats: return "Cheats";
+    case Page::Quick: return "Quick Actions";
+    case Page::Controls: return "Controls";
+    case Page::System: return "System";
+    default: return "Menu";
+    }
+}
+
+// The Game Fixes' games, in the series' order (0: Every Game) - the CYD's
+constexpr games::Game kFixGameList[] = {
+    games::Game::Unknown, games::Game::PoolOfRadiance, games::Game::CurseOfTheAzureBonds,
+    games::Game::SecretOfTheSilverBlades, games::Game::PoolsOfDarkness, games::Game::GatewayToTheSavageFrontier,
+    games::Game::TreasuresOfTheSavageFrontier, games::Game::ChampionsOfKrynn, games::Game::DeathKnightsOfKrynn,
+    games::Game::DarkQueenOfKrynn};
+const char* fix_game_name(int g)
+{
+    switch (static_cast<games::Game>(g)) {
+    case games::Game::PoolOfRadiance: return "PoolRad";
+    case games::Game::CurseOfTheAzureBonds: return "Curse";
+    case games::Game::SecretOfTheSilverBlades: return "Secret";
+    case games::Game::PoolsOfDarkness: return "Darkness";
+    case games::Game::GatewayToTheSavageFrontier: return "Gateway";
+    case games::Game::TreasuresOfTheSavageFrontier: return "Treasures";
+    case games::Game::ChampionsOfKrynn: return "Champions";
+    case games::Game::DeathKnightsOfKrynn: return "Knights";
+    case games::Game::DarkQueenOfKrynn: return "Queen";
+    default: return "Every Game";
+    }
+}
+uint16_t every_game()
+{
+    uint16_t all = 0;
+    for (games::Game g : kFixGameList)
+        if (g != games::Game::Unknown) all = static_cast<uint16_t>(all | 1u << static_cast<int>(g));
+    return all;
+}
+bool fix_on_page(const rules::FixInfo& f, int g)
+{
+    if (g == 0) return f.games == every_game();
+    return f.games != every_game() && (f.games >> g & 1);
+}
+
+// The Enhancement a line switches (0: not one)
 uint16_t comfort_bit(MenuItem m)
 {
     switch (m) {
-    case MFixes: return kOffFixes;
     case MRolls: return kOffRolls;
-    case MReadTime: return kOffReadTime;
     case MAutoJoin: return kOffAutoJoin;
     case MSaveInfo: return kOffSaveInfo;
+    case MKeepMem: return kOffKeepMem;
     case MCampFix: return kOffCampFix;
     case MGallery: return kOffGallery;
     case MPortrait: return kOffPortrait;
     case MMoreGuys: return kOffMoreGuys;
-    case MDemoTap: return kOffDemoTap;
     case MQuickOn: return kOffQuick;
-    case MCheatsOn: return kOffCheats;
     default: return 0;
     }
 }
@@ -517,76 +618,142 @@ uint16_t comfort_bit(MenuItem m)
 void menu_build()
 {
     menu_items.clear();
-    if (menu_page == Page::Settings) {
-        for (MenuItem m : {MDisplay, MSound, MMusic, MVolume, MFont, MPadMoves, MSwap, MFixes, MRolls, MReadTime, MAutoJoin,
-                           MSaveInfo, MCampFix, MGallery, MPortrait, MMoreGuys, MDemoTap, MQuickOn, MCheatsOn, MMaxHp, MAsOriginal, MAllOn,
-                           MReplyAddr})
-            menu_items.push_back(m);
-        menu_items.push_back(MBack);
-    } else if (menu_page == Page::Cheats) {
-        for (MenuItem m : {MHealer, MMerchant, MSanctuary, MTrainer, MMaxHp, MBack}) menu_items.push_back(m);
-    } else {
-        if (playing) menu_items.push_back(MResume);
-        if (playing && play::journal_seen_count() > 0) menu_items.push_back(MJournal);
-        if (playing && !(cfg.comforts_off & kOffQuick)) menu_items.push_back(MQuick);
-        if (playing && !(cfg.comforts_off & kOffCheats)) menu_items.push_back(MCheats);
-        menu_items.push_back(MSettings);
-        if (!playing) menu_items.push_back(MRescan);       // (Tom, 2026-11-14: on the game list's first menu, not buried in Settings)
-        menu_items.push_back(MControls);
-        menu_items.push_back(MUpdate);
-        menu_items.push_back(MSendLogs);
-        if (playing) menu_items.push_back(MLeaveGame);
-        menu_items.push_back(MExit);
+    auto add = [](MenuItem m, int arg = 0) { menu_items.push_back({m, arg}); };
+    switch (menu_page) {
+    case Page::Top:
+        if (playing) add(MResume);
+        add(MDisplayPg);
+        add(MAudioPg);
+        add(MPlayPg);
+        if (playing) add(MJournal);
+        add(MCheats);
+        if (playing) add(MQuickPg);
+        add(MControlsPg);
+        add(MSystemPg);
+        if (playing) add(MLeaveGame);
+        add(MExit);
+        break;
+    case Page::Display: add(MDisplay); break;
+    case Page::Audio:
+        add(MSound);
+        add(MMusic);
+        add(MVolume);
+        break;
+    case Page::Play:
+        add(MOriginal);
+        add(MEnhancePg);
+        add(MRulesPg);
+        add(MFixGamesPg);
+        break;
+    case Page::Enhance:
+        for (MenuItem m : {MFont, MRolls, MSaveInfo, MAutoJoin, MKeepMem, MCampFix, MMoreGuys, MPortrait, MGallery}) add(m);
+        break;
+    case Page::Rules:
+        for (int k = 0; k < rules::kAdndCount; ++k) add(MRule, k);
+        break;
+    case Page::FixGames:
+        // (in a game: Every Game and that game's; at the game list every game's)
+        add(MFixGame, 0);
+        for (games::Game g : kFixGameList) {
+            if (g == games::Game::Unknown) continue;
+            if (playing && g != games_found[game_sel].game) continue;
+            add(MFixGame, static_cast<int>(g));
+        }
+        break;
+    case Page::Fixes:
+        for (int k = 0; k < rules::kFixCount; ++k)
+            if (fix_on_page(rules::fix_info(k), fix_game)) add(MFix, k);
+        break;
+    case Page::Cheats:
+        if (playing)
+            for (MenuItem m : {MHealer, MMerchant, MSanctuary, MTrainer}) add(m);
+        add(MMaxHp);
+        break;
+    case Page::Quick:
+        add(MQuickOn);
+        add(MQuick);
+        break;
+    case Page::Controls:
+        add(MControls);
+        add(MPadMoves);
+        add(MSwap);
+        break;
+    case Page::System:
+        add(MRescan);
+        add(MDevice);
+        add(MUpdate);
+        add(MSendLogs);
+        add(MReplyAddr);
+        break;
     }
+    if (menu_page != Page::Top) add(MBack);
     if (menu_sel >= static_cast<int>(menu_items.size())) menu_sel = 0;
 }
 
-void menu_go(Page p, int sel = 0)
+// To a page; coming back up, the highlight is on the line that led down
+void menu_go(Page p)
 {
-    if (menu_page == Page::Main) menu_main_sel = menu_sel;
+    const Page from = menu_page;
+    const int from_game = fix_game;
     menu_page = p;
-    menu_sel = p == Page::Main ? menu_main_sel : sel;
+    menu_sel = 0;
     menu_top = 0;
     menu_build();
+    if (page_parent(from) == p && from != p)
+        for (size_t i = 0; i < menu_items.size(); ++i)
+            if (page_of(menu_items[i].m) == from && (menu_items[i].m != MFixGame || menu_items[i].arg == from_game))
+                menu_sel = static_cast<int>(i);
 }
 
-void menu_label(MenuItem m, char* out, size_t cap)
+// The switches' state as the engine gets it
+uint16_t adnd_on() { return static_cast<uint16_t>(rules::kAdndAll & ~cfg.rules_off); }
+
+void menu_label(const MItem& it, char* out, size_t cap)
 {
     static const char* const kFont[] = {"Original", "Clear", "Darkness", "Clear Caps"};
+    const MenuItem m = it.m;
     if (const uint16_t bit = comfort_bit(m)) {
-        const char* name = m == MFixes     ? "Game Fixes"
-                         : m == MRolls     ? "Show Rolls"
-                         : m == MReadTime  ? "Readable Messages"
-                         : m == MAutoJoin  ? "Auto Join"
-                         : m == MSaveInfo  ? "Save Slot Info"
+        const char* name = m == MRolls     ? "Show Rolls"
+                         : m == MAutoJoin  ? "Auto Join Items"
+                         : m == MSaveInfo  ? "Savegame Info"
+                         : m == MKeepMem   ? "Keep Memorizing"
                          : m == MCampFix   ? "Camp Fix"
                          : m == MGallery   ? "Icon Gallery"
                          : m == MPortrait  ? "Icon Portrait"
                          : m == MMoreGuys  ? "More Characters"
-                         : m == MDemoTap   ? "Button Stops Demo"
-                         : m == MQuickOn   ? "Quick Actions"
-                                           : "Cheats";
+                                           : "Quick Actions";
         snprintf(out, cap, "%s: %s", name, cfg.comforts_off & bit ? "Off" : "On");
         return;
     }
     switch (m) {
     case MResume: snprintf(out, cap, "Back to Game"); break;
+    case MDisplayPg: snprintf(out, cap, "Display..."); break;
+    case MAudioPg: snprintf(out, cap, "Audio..."); break;
+    case MPlayPg: snprintf(out, cap, "Game Play..."); break;
     case MJournal: snprintf(out, cap, "Journal"); break;
-    case MQuick: snprintf(out, cap, "Quick Actions..."); break;
     case MCheats: snprintf(out, cap, "Cheats..."); break;
-    case MSettings: snprintf(out, cap, "Settings..."); break;
-    case MControls: snprintf(out, cap, "Controls"); break;
-    case MDisplay: snprintf(out, cap, "Display: %s", video::fit_name(static_cast<video::Fit>(cfg.fit))); break;
+    case MQuickPg: snprintf(out, cap, "Quick Actions..."); break;
+    case MControlsPg: snprintf(out, cap, "Controls..."); break;
+    case MSystemPg: snprintf(out, cap, "System..."); break;
+    case MEnhancePg: snprintf(out, cap, "Enhancements..."); break;
+    case MRulesPg: snprintf(out, cap, "AD&D 1E Rules..."); break;
+    case MFixGamesPg: snprintf(out, cap, "Game Fixes..."); break;
+    case MOriginal: snprintf(out, cap, "Original Games: %s", cfg.original ? "On" : "Off"); break;
+    case MRule: snprintf(out, cap, "%s: %s", rules::adnd_info(it.arg).name, adnd_on() & rules::adnd_info(it.arg).bit ? "On" : "Off"); break;
+    case MFixGame: snprintf(out, cap, "%s...", fix_game_name(it.arg)); break;
+    case MFix: snprintf(out, cap, "%s: %s", rules::fix_info(it.arg).name, cfg.fixes_off >> it.arg & 1 ? "Off" : "On"); break;
+    case MQuick: snprintf(out, cap, "Each Member's Actions"); break;
+    case MControls: snprintf(out, cap, "Button Guide"); break;
+    case MDisplay: snprintf(out, cap, "Picture: %s", video::fit_name(static_cast<video::Fit>(cfg.fit))); break;
     case MSound: snprintf(out, cap, "Game Sound: %s", sound_name(sound_shown())); break;
-    case MMusic: snprintf(out, cap, "Music: %s", cfg.music ? "On" : "Off"); break;
+    case MMusic: snprintf(out, cap, "AdLib Music: %s", cfg.music ? "On" : "Off"); break;
     case MVolume: snprintf(out, cap, "Volume: %d%%", cfg.volume); break;
     case MFont: snprintf(out, cap, "Game Font: %s", kFont[cfg.font]); break;
     case MPadMoves: snprintf(out, cap, "D-Pad Walks: %s", cfg.pad_moves ? "On" : "Off"); break;
     case MSwap: snprintf(out, cap, "Confirm Button: %s", confirm_name()); break;
     case MMaxHp: snprintf(out, cap, "Max Hit Points: %s", cfg.max_hp ? "On" : "Off"); break;
-    case MAsOriginal: snprintf(out, cap, "As Original"); break;
-    case MAllOn: snprintf(out, cap, "All On"); break;
     case MRescan: snprintf(out, cap, "Rescan Game Files"); break;
+    case MDevice: snprintf(out, cap, "Device Info"); break;
     case MUpdate: snprintf(out, cap, "%s", update_staged.empty() ? "Check for Updates" : "Restart to Update"); break;
     case MSendLogs: snprintf(out, cap, "Send Logs"); break;
     case MReplyAddr: snprintf(out, cap, "Reply Address: %.14s", cfg.reply_email.empty() ? "Not Set" : cfg.reply_email.c_str()); break;
@@ -601,20 +768,30 @@ void menu_label(MenuItem m, char* out, size_t cap)
     }
 }
 
-// What the highlighted line does (the page's foot: 3 lines of 36)
-const char* menu_help(MenuItem m)
+// What the highlighted line does (the page's foot)
+const char* menu_help(const MItem& it)
 {
-    switch (m) {
+    switch (it.m) {
     case MResume: return "Close this menu.";
+    case MDisplayPg: return "How the picture fills the screen.";
+    case MAudioPg: return "Sound effects, music and volume.";
+    case MPlayPg: return "Original Games, the Enhancements, the AD&D 1E Rules and the Game Fixes.";
     case MJournal: return "The journal entries the game has told you to read so far.";
-    case MQuick: return "What Quick may do for each member of the party in a fight.";
-    case MCheats: return "Healer, Merchant, Sanctuary, Trainer and Max Hit Points.";
-    case MSettings: return "The picture, sound, buttons and the engine's extras.";
-    case MControls: return "What each button does.";
-    case MUpdate: return "Looks for a newer version of the port and installs it (needs Wi-Fi).";
-    case MSendLogs: return "Sends the port's logs to the developer by the internet (needs Wi-Fi).";
+    case MCheats: return playing ? "Healer, Merchant, Sanctuary, Trainer and Max Hit Points." : "Max Hit Points. The other cheats are here while a game is played.";
+    case MQuickPg: return "What Quick may do for each member of the party in a fight.";
+    case MControlsPg: return "What each button does, and the buttons' settings.";
+    case MSystemPg: return "Rescan Game Files, Device Info, Check for Updates, Send Logs.";
     case MLeaveGame: return "Back to the list of games. Save in the game first.";
     case MExit: return "Leaves the port.";
+    case MOriginal:
+        return "On: the games as the originals play them - every Enhancement, AD&D 1E Rule and Game Fix off, the game's "
+               "own font, Max Hit Points off. Any can still be turned on by itself. Off: your own choices come back.";
+    case MEnhancePg: return "The engine's comforts the original games didn't have, each with its switch.";
+    case MRulesPg: return "Rules of the AD&D 1st edition books the originals left out, each with its switch.";
+    case MFixGamesPg: return "Mistakes in the original games' programs put right, each with its switch, by game.";
+    case MFixGame: return it.arg ? "The fixes of this game's own mistakes." : "The fixes that touch every game.";
+    case MRule: return rules::adnd_info(it.arg).help;
+    case MFix: return rules::fix_info(it.arg).help;
     case MDisplay: return "Original 4:3 as the games' monitors showed them, Square Pixels, or Stretch to the whole screen.";
     case MSound:
         return "The games' sound effects: Tandy or PC Speaker, or the Darkness / Gateway / Treasures recordings "
@@ -624,30 +801,80 @@ const char* menu_help(MenuItem m)
     case MFont: return "The game's letters: its own, the engine's Clear (easier to read), Darkness's, or Clear Caps.";
     case MPadMoves: return "On: exploring, the D-pad walks and L1 R1 L2 R2 move the highlights. Off: the D-pad moves them.";
     case MSwap: return "Which of A and B chooses; the other goes back.";
-    case MFixes: return "Corrects game mistakes and uses AD&D 1E rules. Off: as original game.";
+    case MControls: return "What each button does.";
     case MRolls: return "Fights show the dice behind each message: to hit, needed, damage, saves.";
-    case MReadTime: return "The games' timed messages stay at least a second. Off: the games' own timing.";
     case MAutoJoin: return "An item taken from a treasure joins the same thing its taker already carries. Off: Join by hand.";
-    case MSaveInfo: return "Save / Load Which Game shows the highlighted slot's save: when, where, the party. Empty slots grey.";
+    case MSaveInfo: return "Save / Load Which Game shows the highlighted slot's save: when, where, the party, its map. Empty slots grey.";
+    case MKeepMem: return "A rest that is interrupted keeps the spells still to memorize for the next rest. Off: the list is forgotten.";
     case MCampFix: return "Pool of Radiance's camp gets Fix, as the later games have it.";
     case MGallery: return "The icon editor opens on pages of ready-made combat icons. Off: the game's editor.";
     case MPortrait: return "View Character shows the combat icon large where a portrait would go.";
     case MMoreGuys: return "Add Character also lists your saved games' members and the earlier game's characters.";
-    case MDemoTap: return "A button stops the game's demo. In the originals it can't be stopped.";
-    case MQuickOn: return "Per-character Quick Actions and their page in this menu. Off: Quick as the originals.";
-    case MCheatsOn: return "The Cheats page in this menu.";
+    case MQuickOn: return "On: each member's own Quick Actions. Off: Quick as the originals play it.";
+    case MQuick: return "The party's members and what Quick may do for each: Melee, Missile, Spells, Items and more.";
     case MMaxHp: return "Training gives the highest hit points the dice allow. A cheat: off unless you turn it on.";
-    case MAsOriginal: return "Every extra off: the games as they were.";
-    case MAllOn: return "Every extra on (Max Hit Points stays as it is).";
     case MReplyAddr: return "Your email address, sent with Send Logs so the developer can write back. Optional.";
     case MRescan: return "Looks through the games folder again and makes every game's picture, journal and music anew.";
+    case MDevice: return "This port's version, the device, and each game found with its release (Steam or GOG).";
+    case MUpdate: return "Looks for a newer version of the port and installs it (needs Wi-Fi).";
+    case MSendLogs: return "Sends the port's logs to the developer by the internet (needs Wi-Fi).";
     case MHealer: return "The game's temple, wherever you are: cures, all free.";
     case MMerchant: return "All the game's shops' goods in one shop; Id free.";
     case MSanctuary: return "The game's camp: rests are never interrupted.";
     case MTrainer: return "The game's training hall: every class, free; Modify for anyone.";
-    case MBack: return "Back to the menu.";
+    case MBack: return "Back a page.";
     default: return "";
     }
+}
+
+// Device Info (the CYD's, Tom 2026-11-17): this software, the device as the
+// launch script found it (device.txt), each game found and its release
+const char* release_name(const library::GameDir& g)
+{
+    // (Steam / SNEG: the game files in <folder>/GAME/<SHORT>; GOG: its goggame-<id> files)
+    std::string d = g.data_dir;
+    for (char& ch : d) ch = static_cast<char>(toupper(static_cast<unsigned char>(ch)));
+    if (d.find("/GAME/") != std::string::npos) return "Steam";
+    bool gog = false;
+    if (DIR* dir = opendir((pm::games_root() + "/" + g.folder).c_str())) {
+        while (const dirent* e = readdir(dir))
+            if (!strncasecmp(e->d_name, "goggame-", 8)) gog = true;
+        closedir(dir);
+    }
+    return gog ? "GOG" : "unknown release";
+}
+
+void draw_device()
+{
+    box(1, 1, 38, 23);
+    centred(1, "Device Info", video::kGold);
+    int row = 3;
+    char line[40];
+    snprintf(line, sizeof line, "Port v" PM_VERSION "  Engine " CYD_VERSION);
+    video::text(2, row++, line, video::kCream);
+    if (FILE* f = fopen((port_dir() + "/device.txt").c_str(), "r")) {
+        char l[160];
+        while (row < 9 && fgets(l, sizeof l, f)) {
+            l[strcspn(l, "\r\n")] = 0;
+            char* eq = strchr(l, '=');
+            if (!eq || !strcmp(l, "version")) continue;
+            *eq = 0;
+            l[0] = static_cast<char>(toupper(static_cast<unsigned char>(l[0])));
+            snprintf(line, sizeof line, "%.10s: %.24s", l, eq + 1);
+            video::text(2, row++, line, video::kMuted);
+        }
+        fclose(f);
+    }
+    ++row;
+    video::text(2, row++, games_found.empty() ? "No games found." : "Games found:", video::kGold);
+    for (size_t i = 0; i < games_found.size() && row < 22; ++i) {
+        const library::GameDir& g = games_found[i];
+        const char* title = g.game == games::Game::Unknown ? g.folder.c_str() : fix_game_name(static_cast<int>(g.game));
+        snprintf(line, sizeof line, "%-12.12s %s", title, release_name(g));
+        video::text(3, row++, line, video::kCream);
+    }
+    snprintf(line, sizeof line, "%s: Back", back_name());
+    centred(22, line, video::kMuted);
 }
 
 void draw_help()
@@ -703,7 +930,29 @@ void wrap_at(int x, int y, int cols, const char* text, uint32_t fg, int max_line
     }
 }
 
-constexpr int kMenuLines = 12, kMenuPitch = 11;
+constexpr int kMenuPitch = 11;
+int kMenuLines = 12;            // the list lines that fit above the highlighted line's words (draw_menu)
+
+// The lines wrap_at would take for the text
+int wrap_lines(int cols, const char* text)
+{
+    const std::string s = text;
+    size_t i = 0;
+    int lines = 0;
+    while (i < s.size()) {
+        while (i < s.size() && s[i] == ' ') ++i;
+        if (i >= s.size()) break;
+        size_t end = i + static_cast<size_t>(cols);
+        if (end >= s.size()) end = s.size();
+        else {
+            const size_t brk = s.rfind(' ', end);
+            if (brk != std::string::npos && brk > i) end = brk;
+        }
+        i = end;
+        ++lines;
+    }
+    return lines;
+}
 
 void draw_menu()
 {
@@ -711,20 +960,40 @@ void draw_menu()
         draw_help();
         return;
     }
+    if (device_open) {
+        draw_device();
+        return;
+    }
+    // The page: the list above, the highlighted line's words below - as many
+    // lines as they need (the engine's words for a fix or a rule run long),
+    // the list taking the rest
     const int n = static_cast<int>(menu_items.size());
+    const int x0 = 8, w = 304, cols = 36;
+    const char* help = menu_help(menu_items[menu_sel]);
+    int hl = wrap_lines(cols, help);
+    if (hl < 3) hl = 3;
+    if (hl > 13) hl = 13;
+    kMenuLines = (176 - 6 - hl * 9) / kMenuPitch;
+    if (kMenuLines < 4) kMenuLines = 4;
+    if (kMenuLines > n) kMenuLines = n;
     if (menu_sel < menu_top) menu_top = menu_sel;
     if (menu_sel >= menu_top + kMenuLines) menu_top = menu_sel - kMenuLines + 1;
     if (menu_top > n - kMenuLines) menu_top = n > kMenuLines ? n - kMenuLines : 0;
-    const int x0 = 32, w = 256;
     video::fill(x0, 2, w, 196, video::kNavy);
     video::frame(x0, 2, w, 196, video::kGold);
-    const char* title = menu_page == Page::Settings ? "Settings" : menu_page == Page::Cheats ? "Cheats" : "Menu";
+    char title_buf[24];
+    const char* title = page_title(menu_page);
+    if (menu_page == Page::Fixes) {
+        snprintf(title_buf, sizeof title_buf, "Fixes: %s", fix_game_name(fix_game));
+        title = title_buf;
+    }
     video::text_at(x0 + (w - static_cast<int>(strlen(title)) * 8) / 2, 7, title, video::kGold);
+    const int list_h = kMenuLines * kMenuPitch;
     if (n > kMenuLines) {
         // (more above / below: small arrowheads at the right)
         for (int k = 0; k < 4; ++k) {
             if (menu_top > 0) video::fill(x0 + w - 14 - k, 20 + k, 2 * k + 1, 1, video::kCream);
-            if (menu_top + kMenuLines < n) video::fill(x0 + w - 14 - k, 150 - k, 2 * k + 1, 1, video::kCream);
+            if (menu_top + kMenuLines < n) video::fill(x0 + w - 14 - k, 19 + list_h - 2 - k, 2 * k + 1, 1, video::kCream);
         }
     }
     for (int i = menu_top; i < n && i < menu_top + kMenuLines; ++i) {
@@ -735,8 +1004,9 @@ void draw_menu()
         if (sel) video::fill(x0 + 4, y, w - 24, kMenuPitch, video::kLit);
         video::text_at(x0 + 10, y + 2, line, sel ? video::kCream : video::kMuted);
     }
-    video::fill(x0 + 4, 155, w - 8, 1, video::kEdge);
-    wrap_at(x0 + 8, 159, 30, menu_help(menu_items[menu_sel]), video::kCream, 4);
+    const int hy = 196 - hl * 9 - 3;
+    video::fill(x0 + 4, hy - 4, w - 8, 1, video::kEdge);
+    wrap_at(x0 + 8, hy, cols, help, video::kCream, hl);
 }
 
 // ---- Quick Actions ---------------------------------------------------------
@@ -1058,17 +1328,20 @@ void apply_options()
     play::Options o;
     const uint16_t off = cfg.comforts_off;
     o.gallery = !(off & kOffGallery);
-    o.demo_tap = !(off & kOffDemoTap);
+    o.demo_tap = true;                          // (no switch any more - Tom, 2026-11-17, the CYD's menus)
     o.more_guys = !(off & kOffMoreGuys);
     o.portrait = !(off & kOffPortrait);
-    o.item_fixes = !(off & kOffFixes);
+    o.item_fixes = true;                        // (each fix its own switch: fixes_off)
+    o.fixes_off = cfg.fixes_off;
+    o.adnd = adnd_on();
     o.rolls = !(off & kOffRolls);
     o.camp_fix = !(off & kOffCampFix);
-    o.cheats = !(off & kOffCheats);
+    o.cheats = true;                            // (the Cheats page is always there)
     o.quick_acts = !(off & kOffQuick);
-    o.read_time = !(off & kOffReadTime);
+    o.read_time = true;                         // (no switch any more)
     o.auto_join = !(off & kOffAutoJoin);
     o.save_info = !(off & kOffSaveInfo);
+    o.keep_mem = !(off & kOffKeepMem);
     o.max_hp = cfg.max_hp;
     o.font = cfg.font;
     play::set_options(o);
@@ -1506,10 +1779,51 @@ void pictures_follow()
     discover(false);
 }
 
+// Original Games (the CYD's, Tom 2026-11-17): on - every Enhancement, AD&D 1E
+// Rule and Game Fix off, the game's own font, Max Hit Points off, the
+// player's own set kept and given back when it goes off; meanwhile any
+// switch can still be turned on by itself. Picture, sound, buttons: untouched
+void toggle_original()
+{
+    if (!cfg.original) {
+        cfg.saved_comforts_off = cfg.comforts_off;
+        cfg.saved_rules_off = cfg.rules_off;
+        cfg.saved_fixes_off = cfg.fixes_off;
+        cfg.saved_max_hp = cfg.max_hp;
+        cfg.saved_font = cfg.font;
+        cfg.comforts_off = kOffSwitches;
+        cfg.rules_off = rules::kAdndAll;
+        cfg.fixes_off = ~0ull;
+        cfg.max_hp = false;
+        cfg.font = 0;
+        cfg.original = true;
+    } else {
+        cfg.comforts_off = cfg.saved_comforts_off;
+        cfg.rules_off = cfg.saved_rules_off;
+        cfg.fixes_off = cfg.saved_fixes_off;
+        cfg.max_hp = cfg.saved_max_hp;
+        cfg.font = cfg.saved_font;
+        cfg.original = false;
+    }
+}
+
 void menu_change(int step)
 {
-    const MenuItem m = menu_items[menu_sel];
+    const MItem it = menu_items[menu_sel];
+    const MenuItem m = it.m;
     switch (m) {
+    case MRule:
+        cfg.rules_off ^= rules::adnd_info(it.arg).bit;
+        if (playing) apply_options();
+        break;
+    case MFix:
+        cfg.fixes_off ^= 1ull << it.arg;
+        if (playing) apply_options();
+        break;
+    case MOriginal:
+        toggle_original();
+        if (playing) apply_options();
+        break;
     case MDisplay:
         cfg.fit = static_cast<uint8_t>((cfg.fit + (step < 0 ? 2 : 1)) % 3);
         video::set_fit(static_cast<video::Fit>(cfg.fit));
@@ -1604,8 +1918,8 @@ void quick_press(int b)
 
 void menu_press(int b)
 {
-    if (help_open) {
-        if (b == BA || b == BB || b == BStart) help_open = false;
+    if (help_open || device_open) {
+        if (b == BA || b == BB || b == BStart) help_open = device_open = false;
         return;
     }
     const int n = static_cast<int>(menu_items.size());
@@ -1617,34 +1931,36 @@ void menu_press(int b)
     case BLeft: menu_change(-1); break;
     case BRight: menu_change(1); break;
     case BB:
-        if (menu_page != Page::Main) menu_go(Page::Main);
+        if (menu_page != Page::Top) menu_go(page_parent(menu_page));
         else menu_open = false;
         break;
     case BStart: menu_open = false; break;
-    case BA:
-        switch (menu_items[menu_sel]) {
+    case BA: {
+        const MItem it = menu_items[menu_sel];
+        switch (it.m) {
         case MResume: menu_open = false; break;
         case MControls: help_open = true; break;
+        case MDevice: device_open = true; break;
         case MJournal:
+            if (play::journal_seen_count() <= 0) {
+                show_notice("Journal", "The game hasn't told you to read a journal entry yet. Each one it mentions is listed here.");
+                break;
+            }
             jlist_open = true;
             jlist_sel = play::journal_seen_count() - 1;         // (the newest)
             break;
         case MQuick: quick_begin(); break;
-        case MCheats: menu_go(Page::Cheats); break;
-        case MSettings: menu_go(Page::Settings); break;
-        case MBack: menu_go(Page::Main); break;
+        case MFixGame:
+            fix_game = it.arg;
+            menu_go(Page::Fixes);
+            break;
+        case MBack: menu_go(page_parent(menu_page)); break;
         case MHealer: cheat_go(0); break;
         case MMerchant: cheat_go(1); break;
         case MSanctuary: cheat_go(2); break;
         case MTrainer: cheat_go(3); break;
-        case MAsOriginal:
-        case MAllOn:
-            cfg.comforts_off = menu_items[menu_sel] == MAsOriginal ? kOffAll : 0;
-            if (menu_items[menu_sel] == MAsOriginal) cfg.max_hp = false;
-            if (playing) apply_options();
-            settings_save(conf_dir, cfg);
-            break;
         case MRescan:
+            if (playing) leave_game();          // (in a game: leaves it first - the CYD's)
             menu_open = false;
             rescan();
             if (!discover(true)) screen = Screen::Games;
@@ -1654,9 +1970,13 @@ void menu_press(int b)
         case MReplyAddr: prompt_begin(false); break;
         case MLeaveGame: leave_game(); break;
         case MExit: quit = true; break;
-        default: menu_change(0); break;
+        default:
+            if (page_of(it.m) != Page::Top) menu_go(page_of(it.m));
+            else menu_change(0);
+            break;
         }
         break;
+    }
     default: break;
     }
 }
@@ -1704,11 +2024,12 @@ void press(int b)
     }
     if (b == BStart) {
         ptr_mode = false;
-        menu_page = Page::Main;
+        menu_page = Page::Top;
+        menu_sel = 0;
         menu_top = 0;
         menu_build();
         menu_open = true;
-        help_open = false;
+        help_open = device_open = false;
         return;
     }
     if (screen == Screen::Message) {

@@ -43,7 +43,7 @@ and maintains it; it is the primary output of the Claude Project
   or processing screens"). The scan (`discover()` in main.cpp, SPEC 6):
   the program's unpacked copy, the game list's picture (saved file; the
   list only reads it), the journal, the music - at the first run that
-  sees the folder, and anew on Rescan Game Files (the game list's Start menu). **No decoding,
+  sees the folder, and anew on Rescan Game Files (Start - System). **No decoding,
   converting or "Loading" screen at a game's start, on a list page, or
   the first time a feature is used.** Anything new the port or the
   engine makes from game files gets a scan step in the same version -
@@ -155,6 +155,25 @@ and maintains it; it is the primary output of the Claude Project
   needs to be added"): a new `play::Options` field or Game-menu tab in
   the CYD gets a Settings line / menu page in the same version that
   moves the pin, with its words at the page's foot.
+- **The menus mimic the CYD's** (Tom, 2026-11-17: "review them and make similar
+  changes to the PortMaster version menus ... the toggles were reworked, many
+  separated into individual toggles"; v0.12.0, engine 0.209.0 - its CLAUDE.md
+  "The menus"): Start's top page and its pages as the CYD's tree (`Page`,
+  `menu_build` in main.cpp; SPEC 6), plus the port's own Controls page, Quit,
+  and System's Check for Updates / Reply Address. Each AD&D 1E Rule and each
+  Game Fix is its own switch; their names, games and help come from the
+  engine (`rules::adnd_info` / `fix_info`) - a new one needs nothing here.
+  What the port keeps: `rules_off`, `fixes_off`, `original` + the saved set
+  (settings.cfg, `menus=2`). When the CYD's tree changes, change this one in
+  the version that moves the pin. Rescan Game Files went to System with it
+  (it replaces "on the game list's first menu" unless Tom says otherwise).
+- **Play-throughs check the journals and every text** (Tom, 2026-11-17: "This
+  is a functionality test of the whole game, not just the parts you want to
+  test"): keep every text of every leg from the first step of a place
+  (transcript); per map a ledger of the journal entries its scripts mention
+  (the ECL blocks' strings), each ticked only when the engine fired it there
+  ("JOURNAL J n"), and each present in the journal the scan made, GOG and
+  Steam. A place isn't "done" with an entry unticked or unexplained.
 - **Save Slot Info** (Tom, 2026-11-17: "The CYD engine has created changes
   to the save/load menu screens ... review them and update this repo";
   v0.11.0, engine 0.207.x): the engine draws it; the port gives it three

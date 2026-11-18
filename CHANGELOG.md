@@ -3,6 +3,30 @@
 Every version of Gold Box Game Engine for PortMaster. A release's notes are
 its part of this file.
 
+## [0.12.0] - 2026-11-17
+
+Engine 0.209.0.
+
+- **The menus follow the CYD's new tree.** Start opens: Display, Audio, Game Play, Journal, Cheats, Quick Actions, Controls, System, Exit Game, Quit (at the game list: without Journal, Quick Actions and Exit Game; Cheats there has Max Hit Points only). B goes back a page.
+  - **Display**: Picture (Original 4:3 / Square Pixels / Stretch).
+  - **Audio**: Game Sound, AdLib Music, Volume.
+  - **Game Play**: Original Games, Enhancements, AD&D 1E Rules, Game Fixes.
+    - **Original Games** - on: every Enhancement, AD&D 1E Rule and Game Fix off, the game's own font, Max Hit Points off; your own set is kept and comes back when you turn it off. Any switch can still be turned on by itself meanwhile.
+    - **Enhancements**: Game Font, Show Rolls, Savegame Info, Auto Join Items, Keep Memorizing (new), Camp Fix, More Characters, Icon Portrait, Icon Gallery.
+    - **AD&D 1E Rules**: nine switches (Magic Missile, Multi-Class Hit Points, Thrown Weapons, Magic Items, Coin Exchange, Age with Time, Power Word Kill, Protection from Evil, Raising the Dead).
+    - **Game Fixes**: every fix its own switch - Every Game, and a page a game (in a game: Every Game and that game's).
+  - **Quick Actions**: On / Off, and Each Member's Actions.
+  - **Controls** (the port's own): Button Guide, D-Pad Walks, Confirm Button.
+  - **System**: Rescan Game Files, Device Info (new: the port's and the engine's version, the device, each game found and whether it is the Steam or GOG release), Check for Updates, Send Logs, Reply Address.
+- **Is it built into the engine?** Partly. What each rule and fix does, and their names and help words, come from the engine - a new one shows up here by itself. The pages, the switches and where they are kept are the port's, and were rewritten for this.
+- **Gone, as in the CYD** (always on now): the Readable Messages, Button Stops Demo, Cheats and the single Game Fixes switches, As Original / All On (Original Games replaces them).
+- **Rescan Game Files moved** from the game list's first menu into System, where the CYD's tree has it. You had asked for it on the first menu (v0.7.0) - say if you want it back there.
+- **Your settings carry over.** An older settings file whose Game Fixes was Off reads as every fix off.
+- The words under the list take as many lines as they need (the engine's explanations of a fix can be long); the list scrolls in what is left.
+- **Treasures: Llorkh can be finished** (engine 0.208.4, found by the play-through). The fight with the giant skeleton in the keep's dungeon came again at every visit and Geildarr was never met: the original's fights tell the story whether the party ran, and the engine didn't pass that on. Read from the original's program; played in the engine's test program through Geildarr's defeat and journal entries 11 and 10. Not compared in DOSBox.
+
+Checked: the port's smoke test (every page and switch by buttons, Original Games on and off, an old settings file read); screenshots of the pages at 640 x 480 and 1280 x 720 in Curse; tools/play_test.py on Curse (GOG, 640 x 480) for Journal, Quick Actions and the four cheats. Not checked: on a device; the other eight games' menus (the same code, their Game Fixes pages differ).
+
 ## [0.11.2] - 2026-11-17
 
 Engine 0.208.1.

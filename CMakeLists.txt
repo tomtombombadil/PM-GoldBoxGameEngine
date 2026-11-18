@@ -2,6 +2,7 @@
 # submodule) with an SDL2 front end.
 cmake_minimum_required(VERSION 3.16)
 file(STRINGS "${CMAKE_CURRENT_SOURCE_DIR}/VERSION" PM_VERSION LIMIT_COUNT 1)
+file(STRINGS "${CMAKE_CURRENT_SOURCE_DIR}/cyd/VERSION" CYD_VERSION LIMIT_COUNT 1)
 project(goldbox VERSION ${PM_VERSION} LANGUAGES CXX)
 
 if(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/cyd/src/game/play.cpp")
@@ -31,7 +32,7 @@ target_compile_options(gbengine PRIVATE -O2 -Wno-format-truncation -Wno-stringop
 add_executable(goldbox
     src/main.cpp src/video.cpp src/library.cpp src/settings.cpp
     src/platform_sdl.cpp src/audio_sdl.cpp src/task.cpp src/art.cpp src/panel.cpp src/jour.cpp)
-target_compile_definitions(goldbox PRIVATE PM_VERSION="${PM_VERSION}")
+target_compile_definitions(goldbox PRIVATE PM_VERSION="${PM_VERSION}" CYD_VERSION="${CYD_VERSION}")
 target_compile_options(goldbox PRIVATE -Wall -Wextra)
 if(TARGET SDL2::SDL2)
     target_link_libraries(goldbox PRIVATE gbengine SDL2::SDL2 Threads::Threads)

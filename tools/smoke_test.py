@@ -29,11 +29,17 @@ def run(exe, games, conf, script, window=None, extra=()):
 
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
-# Settings' lines (each changed and changed back by the first test)
-SETTINGS = ("Display", "Game_Sound", "Music", "Volume", "Game_Font", "D-Pad_Walks", "Confirm_Button", "Game_Fixes",
-            "Show_Rolls", "Readable", "Auto_Join", "Save_Slot", "Camp_Fix", "Icon_Gallery", "Icon_Portrait", "More_Char", "Button_Stops",
-            "Quick_Actions", "Cheats", "Max_Hit")
-MENU_UPDATE = "start,menu:Check_for_Updates,"   # the Start menu's line
+# Every page of the menu (the CYD's tree, v0.12.0): each switch changed and changed back
+ENHANCE = ("Game_Font", "Show_Rolls", "Savegame", "Auto_Join", "Keep_Mem", "Camp_Fix", "More_Char", "Icon_Portrait", "Icon_Gallery")
+MENU_TOUR = ("menu:Display,a,menu:Picture,right,left,b,"
+             "menu:Audio,a,menu:Game_Sound,right,left,menu:AdLib,right,left,menu:Volume,right,left,b,"
+             "menu:Game_Play,a,menu:Original,a,a,menu:Enh,a," + "".join(f"menu:{m},right,left," for m in ENHANCE) + "menu:Back,a,"
+             "menu:AD&D,a,menu:Magic_Missile,right,left,menu:Thrown,a,a,b,"
+             "menu:Game_Fixes,a,menu:Every_Game,a,a,a,b,menu:PoolRad,a,a,a,b,menu:Queen,a,a,a,l2,r2,b,b,b,"
+             "menu:Cheats,a,menu:Max_Hit,right,left,b,"
+             "menu:Controls,a,menu:Button_Guide,a,b,menu:D-Pad,right,left,menu:Confirm_Button,a,a,"     # (A and B turned round: now B confirms, A is Back)
+             "menu:System,b,menu:Device,b,a,l2,r2,menu:Back,b,")
+MENU_UPDATE = "start,menu:System,a,menu:Check_for_Updates,"   # the Start menu's line
 
 
 def update_test(exe):
@@ -167,8 +173,8 @@ def logs_test(exe):
     # 1. The first time: the address asked for, typed (a bad one refused), sent with the logs; the second time not asked
     with tempfile.TemporaryDirectory() as t:
         t = port(t)
-        out = go(t, "wait:100,start,menu:Send_Logs,a,wait:100,type:tester,y,wait:100,type:@example.com,y,wait:900,a,"
-                    "start,menu:Send_Logs,a,wait:900,quit")
+        out = go(t, "wait:100,start,menu:System,a,menu:Send_Logs,a,wait:100,type:tester,y,wait:100,type:@example.com,y,wait:900,a,"
+                    "start,menu:System,a,menu:Send_Logs,a,wait:900,quit")
         assert len(posts) == 2, posts
         f = posts[0]
         assert f["app"] == "goldbox" and f["reply"] == "tester@example.com" and f["device"] == "TESTBOX (Test Maker Box)"
@@ -184,8 +190,8 @@ def logs_test(exe):
     posts.clear()
     with tempfile.TemporaryDirectory() as t:
         t = port(t)
-        out = go(t, "wait:100,start,menu:Send_Logs,a,wait:100,x,wait:900,a,start,menu:Send_Logs,a,wait:900,a,"
-                    "start,menu:Settings,a,menu:Reply_Address,a,wait:100,type:me@example.org,y,wait:100,quit")
+        out = go(t, "wait:100,start,menu:System,a,menu:Send_Logs,a,wait:100,x,wait:900,a,start,menu:System,a,menu:Send_Logs,a,wait:900,a,"
+                    "start,menu:System,a,menu:Reply_Address,a,wait:100,type:me@example.org,y,wait:100,quit")
         assert len(posts) == 2 and posts[0]["reply"] == "" and posts[1]["reply"] == "", posts
         assert "reply_email=me@example.org" in (t / "conf" / "settings.cfg").read_text()
         assert "The logs were sent to the developer" in out
@@ -200,16 +206,29 @@ def main():
         # 1. No games folder at all; the menu: every item changed once
         shot = t / "a.bmp"
         out = run(exe, t / "nothing", conf,
-                  f"wait:100,a,start,menu:Settings,a,"
-                  + "".join(f"menu:{m},right,left,a," for m in SETTINGS)
-                  + f"menu:As_Original,a,menu:All_On,a,l2,r2,menu:Back,a,"
-                  f"menu:Controls,a,b,b,"
+                  "wait:100,a,start," + MENU_TOUR +
                   f"select,shot:{shot},quit")
         assert "0 game folder(s) found" in out, "expected no games"
         assert shot.stat().st_size > 320 * 200 * 3, "no screenshot"
         assert (conf / "settings.cfg").is_file(), "settings not saved"
         cfg = (conf / "settings.cfg").read_text()
+        assert "no menu line" not in out, "a menu page lacks a line the tour looks for"
         assert "comforts_off=0" in cfg and "max_hp=0" in cfg and "swap_ab=1" in cfg, cfg
+        assert "rules_off=0" in cfg and "\nfixes_off=0" in cfg and "original=0" in cfg and "menus=2" in cfg, cfg
+        (conf / "settings.cfg").unlink()
+        # (Original Games: everything off, the player's set kept; off again: given back)
+        out = run(exe, t / "nothing", conf, "wait:100,start,menu:Game_Play,a,menu:AD&D,a,menu:Thrown,a,b,menu:Original,a,quit")
+        cfg = (conf / "settings.cfg").read_text()
+        assert "original=1" in cfg and "rules_off=511" in cfg and "saved_rules_off=1" in cfg and "fixes_off=18446744073709551615" in cfg, cfg
+        out = run(exe, t / "nothing", conf, "wait:100,start,menu:Game_Play,a,menu:Original,a,quit")
+        cfg = (conf / "settings.cfg").read_text()
+        assert "original=0" in cfg and "\nrules_off=1" in cfg and "\nfixes_off=0" in cfg, cfg
+        # (a settings file from before these menus: its one Game Fixes switch off = every fix off;
+        # the switches that are gone - Cheats 128, Readable Messages 512 - read as on)
+        (conf / "settings.cfg").write_text("comforts_off=%d\n" % (16 + 128 + 512 + 32))
+        run(exe, t / "nothing", conf, "wait:100,start,menu:Audio,a,menu:Volume,right,quit")
+        cfg = (conf / "settings.cfg").read_text()
+        assert "fixes_off=18446744073709551615" in cfg and "comforts_off=32\n" in cfg, cfg
         (conf / "settings.cfg").unlink()
         # 1b. A firmware with A and B reversed (Knulli; the launch script's
         # --ab-reversed): Confirm starts on B, once - the player's change stands
@@ -219,7 +238,7 @@ def main():
         # (the program's B confirms now - the button MARKED A on such a device,
         # so every hint names A: Tom's TrimUI Brick Pro on Knulli, v0.10.8, said
         # "B: Flip  A: Back" for buttons that worked the right way round)
-        out = run(exe, t / "nothing", conf, "wait:100,b,start,menu:Settings,b,menu:Confirm_Button:_A,b,menu:Confirm_Button:_B,quit",
+        out = run(exe, t / "nothing", conf, "wait:100,b,start,menu:Controls,b,menu:Confirm_Button:_A,b,menu:Confirm_Button:_B,quit",
                   extra=["--ab-reversed"])
         assert "no menu line" not in out, "the Confirm Button line names the wrong button on a reversed firmware"
         run(exe, t / "nothing", conf, "wait:100,quit", extra=["--ab-reversed"])
@@ -227,7 +246,7 @@ def main():
         assert "swap_ab=0" in cfg and "ab_set=1" in cfg, cfg
         (conf / "settings.cfg").unlink()
         # (and an ordinary firmware: Confirm on A reads A, turned round reads B)
-        out = run(exe, t / "nothing", conf, "wait:100,a,start,menu:Settings,a,menu:Confirm_Button:_A,a,menu:Confirm_Button:_B,quit")
+        out = run(exe, t / "nothing", conf, "wait:100,a,start,menu:Controls,a,menu:Confirm_Button:_A,a,menu:Confirm_Button:_B,quit")
         assert "no menu line" not in out, "the Confirm Button line names the wrong button"
         (conf / "settings.cfg").unlink()
         # 2. Folders: lower-case names, files a folder down, an unknown one,
@@ -251,8 +270,8 @@ def main():
         out = run(exe, g, conf, "wait:100,quit")
         assert "[scan]" not in out, "a second scan of games already found"
         # (another Display shape: the list's pictures are made again when the menu closes - and only they)
-        out = run(exe, g, conf, "wait:100,start,menu:Settings,a,menu:Display,right,b,b,wait:100,a,"
-                                "start,menu:Settings,a,menu:Display,left,b,b,wait:100,a,quit")
+        out = run(exe, g, conf, "wait:100,start,menu:Display,a,menu:Picture,right,b,b,wait:100,a,"
+                                "start,menu:Display,a,menu:Picture,left,b,b,wait:100,a,quit")
         assert out.count("[scan] Preparing the ") == 4 and "[scan] Found" not in out, "pictures after a Display change"
         # (a panel whose real size arrives after the start - Tom's RGB10 MAX3, v0.6.2: the pictures are made
         # for the shape it settles at, once; the next start finds them ready)
@@ -261,7 +280,7 @@ def main():
         assert out.count("[scan] Preparing the ") == 2, "pictures for the panel's late size"
         out = run(exe, g, conf, late, "640x480")
         assert "[scan]" not in out, "pictures made again at the next start"
-        out = run(exe, g, conf, "wait:100,start,menu:Rescan,a,wait:100,a,right,quit")
+        out = run(exe, g, conf, "wait:100,start,menu:System,a,menu:Rescan,a,wait:100,a,right,quit")
         assert out.count("[scan] Found ") == 2, "Rescan Game Files"
         # (--drive, tools/play_test.py's way in: steps on stdin, the state back after each line)
         r = subprocess.run([exe, "--games", str(g), "--conf", str(conf), "--drive"], input="wait:100\nright,wait:100\nquit\n",

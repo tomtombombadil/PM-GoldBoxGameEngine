@@ -196,7 +196,7 @@ on screen the overlay is 320 again.
   what it does ("Found ...", "Processing the ... journal: page n of m",
   "Making its music...") in smaller letters (12 x 12, smoothed, on the
   backdrop's sharper picture: 52 across on 4:3, 69 on 16:9) and stays
-  until A. **Start - Rescan Game Files** (on the game list's first menu - Tom, 2026-11-14) does every game anew (journal files removed first, music
+  until A. **Start - System - Rescan Game Files** does every game anew (journal files removed first, music
   forced). Never at a game's start or on first use: a game starts with no
   loading screen, and the game list only reads `ART.BIN` (`art::load`).
   The picture is made for the screen's shape: a game found before whose
@@ -215,29 +215,49 @@ on screen the overlay is 320 again.
 - **Game Sound**: Tandy, PC Speaker, then Darkness / Gateway / Treasures
   (that game's recordings lent to the older games, when its folder is in
   games/), Off; those three games always their own (or Off).
-- **Menu** (Start; `menu_*` in main.cpp): Back to Game, Journal, Quick
-  Actions, Cheats, Settings, Controls, Check for Updates, Send Logs, Exit
-  Game, Quit. The game is paused while it is open. Every line's meaning
-  is at the page's foot (the CYD's "?" keys). Up / Down a line, L2 / R2 a
-  page, Left / Right change a value, A choose, B back a page.
-  - **Settings** (a page, scrolling; one set for all games, as the CYD):
-    Display, Game Sound, Music, Volume, Game Font (Original / Clear /
-    Darkness / Clear Caps), D-Pad Walks, Confirm Button; the engine's
-    comforts (`play::Options`, `settings.cfg` `comforts_off` bits) - Game
-    Fixes, Show Rolls, Readable Messages, Auto Join, Save Slot Info, Camp Fix, Icon Gallery, Icon
-    Portrait, More Characters, Button Stops Demo, Quick Actions, Cheats -
-    all on by default; Max Hit Points (off by default); As Original (all
-    off), All On; Reply Address (Send Logs' - below).
-  - **Cheats** (a page; only with a game open and Cheats on): Healer,
-    Merchant, Sanctuary, Trainer (`play::cheat_open` - the game's own
-    screens, driven as any other; only at the exploring menu, else a
-    message says so), Max Hit Points.
-  - **Quick Actions** (a screen; `play::quick_*`): the party down the
-    left (NPCs marked), the chosen member's eight switches down the right
-    (Melee, Missile, Spells, Items, Bandage First, Move, Turn Undead,
-    Guard - the engine's names and words). Up / Down a switch, L1 / R1 or
+- **Menu** (Start; `menu_*` in main.cpp; since v0.12.0 the CYD's tree -
+  Tom, 2026-11-17, engine 0.209.0): the game is paused while it is open.
+  Up / Down a line, L2 / R2 a page, Left / Right change a value, A choose
+  or open a page, B back a page (from the top page: close). Every line's
+  meaning is under the list, in as many lines as it needs (the list
+  scrolls in the rest).
+  - **Top**, in a game: Back to Game, Display, Audio, Game Play, Journal,
+    Cheats, Quick Actions, Controls, System, Exit Game, Quit. At the game
+    list: Display, Audio, Game Play, Cheats (Max Hit Points only),
+    Controls, System, Quit.
+  - **Display**: Picture (the fit, section 5).
+  - **Audio**: Game Sound, AdLib Music, Volume.
+  - **Game Play**: Original Games (a switch: on - every Enhancement, AD&D
+    1E Rule and Game Fix off, the game's own font, Max Hit Points off, the
+    player's set kept in settings.cfg's `saved_*` and given back when it
+    goes off; any switch can be turned on by itself meanwhile),
+    Enhancements, AD&D 1E Rules, Game Fixes.
+  - **Enhancements** (`comforts_off` bits): Game Font, Show Rolls,
+    Savegame Info, Auto Join Items, Keep Memorizing, Camp Fix, More
+    Characters, Icon Portrait, Icon Gallery. (Not here: the CYD's
+    Companion Views and Large Icon - the boards'.)
+  - **AD&D 1E Rules** (`rules_off`, rules::Adnd bits) and **Game Fixes**
+    (`fixes_off`, bit = rules::Fix; pages Every Game and one a game - in a
+    game Every Game and that game's): one switch each, names / games /
+    help from the engine's `rules::adnd_info` / `fix_info`.
+  - **Cheats**: Healer, Merchant, Sanctuary, Trainer (`play::cheat_open` -
+    the game's own screens; only at the exploring menu, else a message says
+    so), Max Hit Points. Always there (no switch).
+  - **Quick Actions**: On / Off; Each Member's Actions - the screen
+    (`play::quick_*`): the party down the left (NPCs marked), the chosen
+    member's eight switches down the right. Up / Down a switch, L1 / R1 or
     Left / Right a member, A flips it (kept at once in `_CYD/QUICK.TXT`
     by the engine), B back.
+  - **Controls** (the port's own): Button Guide, D-Pad Walks, Confirm
+    Button.
+  - **System**: Rescan Game Files (in a game: leaves it first), Device
+    Info (the port's and the engine's version, device.txt's lines, each
+    game found and its release - Steam: files under `<folder>/GAME/`; GOG:
+    a `goggame-*` file; else unknown), Check for Updates, Send Logs, Reply
+    Address.
+  - Always on, no switch (as the CYD): Readable Messages, a button stops
+    the demo, the Cheats page. settings.cfg: `menus=2`; an older file's
+    Game Fixes off = every fix off.
 - **On-screen keyboard** over the top of the game screen (the game's own
   text area stays visible) while `play::input()` asks.
 - **Messages** stay until a button.

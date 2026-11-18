@@ -365,7 +365,7 @@ def phase2(r, games, t0):
     if p.st["menu"] == "1": r.do("b,wait:300")
     if p.st["notice"] != "0": r.do("a,wait:300")
     r.note("  Start menu opens:", "OK" if m == "1" else "FAILED", "| Journal list/notice:", j)
-    r.do("start,wait:300,menu:Quick,a,wait:500"); q = p.st["quick"]; shot(r, "quick")
+    r.do("start,wait:300,menu:Quick,a,wait:300,menu:Each,a,wait:500"); q = p.st["quick"]; shot(r, "quick")
     r.do("a,wait:200,a,wait:200,down,wait:200,right,wait:200,b,wait:400")
     while p.st["menu"] == "1" or p.st["quick"] == "1" or p.st["notice"] != "0": r.do("b,wait:300")
     r.note("  Quick Actions page:", "OK" if q == "1" else "FAILED")

@@ -59,6 +59,8 @@ Tick off with the version that did it. Never ask Tom the same thing twice.
       Moving the CYD's onto the platform layer would let both share it -
       not a bug fix; your OK needed.
 
+- [ ] Tom, v0.12.0: the new menus on a handheld - anything hard to find or read? Rescan Game Files is in System now
+      (the CYD's place); say if it should be back on the game list's first menu too.
 ## Claude
 - [ ] **Treasures play-through** (Tom, 2026-11-17; scratch `/tmp/claude-0/tplay`,
       the finished Gateway party brought over). Started: the party added
@@ -77,8 +79,12 @@ Tick off with the version that did it. Never ask Tom the same thing twice.
       put right at the Healer cheat), journal 24 and 19, Siulajia joined.
       Aids used: hit points 220, the Healer after each fight, the magic-users'
       books filled by the test program (the Gateway party came with first-
-      level spells only - my Gateway training picks). NOT checked: the town's journal entries (1, 3, 5, 10 - my record of the
-      town's texts starts at the dungeon; to walk again). NOT yet: loot taken
+      level spells only - my Gateway training picks). Walked again 2026-11-17 evening with every text kept and
+      the loot taken: **Llorkh's journal entries all fired where the scripts put
+      them - 1, 3, 5 (town), 8, 24, 19, 11, 10 (dungeon)**; the GOG journal
+      the scan made has entries 1 - 83. **A second engine fault: Llorkh could
+      not be finished (the skeleton's fight came again, Geildarr never met) -
+      fixed, engine 0.208.4.** Geildarr defeated, Milzorr's thanks. NOT yet: loot taken
       and sold (the walks so far left the treasure - to put right), Geildarr
       himself (north of the dungeon), Loudwater on.
 - [ ] Tom, v0.11.0 on a handheld: Save Slot Info - Encamp - Save and the
@@ -287,12 +293,14 @@ Tick off with the version that did it. Never ask Tom the same thing twice.
       app updates ports) and a word with them about Send Logs (a port
       that uploads logs) - ask in the testing thread; (5) the PR itself
       from Tom's fork of PortsMaster/PortMaster-New, branch `goldbox`.
-- [ ] Keep the `cyd` pin current (built on CYD 0.208.1). Tom, 2026-11-14:
+- [ ] Keep the `cyd` pin current (built on CYD 0.209.0). Tom, 2026-11-14:
       Companion map / party-info changes are in work in the CYD (small
       boards first; the party-info layout may be rearranged) - when they
       land, move the pin and bring `src/panel.*` along.
 
 ## Done
+- [x] v0.12.0 (Tom, 2026-11-17; engine 0.209.0): the menus as the CYD's tree - Display, Audio, Game Play (Original Games, Enhancements,
+      AD&D 1E Rules, Game Fixes - each rule and fix its own switch), Cheats, Quick Actions, Controls, System (Device Info new).
 - [x] v0.11.2 (engine 0.208.1): Treasures - a spell cast where a script waits for one (the two Siulajias in Llorkh) reaches the script.
 - [x] v0.11.1 (Tom, 2026-11-17; engine 0.208.0): Save Slot Info shows the highlighted save's map, square and heading in the Companion (16:9, 1:1).
       Seen at 1280 x 720: PoolRad, Curse, Secret, Darkness, Knights, Treasures; Curse at 720 x 720. Not seen: Gateway. Stock saves / overland: "No map here."
