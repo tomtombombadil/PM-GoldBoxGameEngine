@@ -99,10 +99,6 @@ Tick off with the version that did it. Never ask Tom the same thing twice.
       (PoolRad's Flame Tongue), Age with Time, Power Word Kill, Protection from Evil, and 45 Game Fixes - each needs a
       prepared save (the CYD playsim's RECSET / SETXP / MEMSET) and its steps. The tour is unsteady in Knights, Queen
       and Gateway (their screens change by themselves between runs): those games' Enhancements not shown yet.
-- [ ] **For the CYD side** (found 2026-11-18): Curse's temple Raise Dead (the Healer cheat's too) takes no Constitution
-      with Raising the Dead OFF - the engine's Curse / PoolRad temple path (`rules::apply_cure`) has no cost at all,
-      while the rule's help says the originals take a point "by spell or at a temple". The original's way in Curse /
-      PoolRad: not checked in DOSBox.
 - [ ] Tom, v0.11.0 on a handheld: Save Slot Info - Encamp - Save and the
       party menu's Load: the highlighted slot's date (is the device's clock
       right?), place and party; on the RGB10 MAX3 the party and (v0.11.1) the save's map in the
@@ -309,12 +305,16 @@ Tick off with the version that did it. Never ask Tom the same thing twice.
       app updates ports) and a word with them about Send Logs (a port
       that uploads logs) - ask in the testing thread; (5) the PR itself
       from Tom's fork of PortsMaster/PortMaster-New, branch `goldbox`.
-- [ ] Keep the `cyd` pin current (built on CYD 0.210.0). Tom, 2026-11-14:
+- [ ] Keep the `cyd` pin current (built on CYD 0.210.9). Tom, 2026-11-14:
       Companion map / party-info changes are in work in the CYD (small
       boards first; the party-info layout may be rearranged) - when they
       land, move the pin and bring `src/panel.*` along.
 
 ## Done
+- [x] v0.12.4 (Tom, 2026-11-18; engine 0.210.9): the engine's spell-memorizing fixes; the pin moved. Curse's temple Raise Dead
+      (found by v0.12.3's switch test) was put right in the engine, 0.210.1, by each original's routine.
+      hand_test `menus`, nine GOG games: 22 - 140 words each taken by buttons, Encamp - Magic - Memorize reached in eight;
+      flagged only the Dark Queen's View / Drop (the test can't read its coin prompt - known); its Memorize not reached.
 - [x] v0.12.3 (Tom, 2026-11-18): switches tested in games - see the open item for what was and wasn't seen.
 - [x] v0.12.2 (engine 0.210.0): Coin Exchange and Flasks of Oil as Enhancement switches; the pin moved.
 - [x] v0.12.1 (Tom, 2026-11-17): Quit hung on Knulli (pm_finish an alias the launch script didn't know) - fixed; Rescan Game Files and

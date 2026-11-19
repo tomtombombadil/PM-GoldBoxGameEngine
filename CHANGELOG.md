@@ -3,6 +3,16 @@
 Every version of Gold Box Game Engine for PortMaster. A release's notes are
 its part of this file.
 
+## [0.12.4] - 2026-11-18
+
+Built on the CYD engine 0.210.9 (was 0.210.0). Nothing changed in the port's own code - the engine's fixes come with it:
+
+- **Spell memorizing** (the engine's, each game set against the original in DOSBox there): the Krynn games' special spells (the god's, the moons' extras) memorized and counted on their own line; the classes' spells learned at a load; the Ring of Wizardry by each game's code; the Keep questions; the to-memorize list shown first (Curse, Secret, Gateway, Champions); spell lists alike in every game - Up / Down a line at a time with the window scrolling, Next / Prev a page.
+- Modify Character as the originals (Krynn knights' 18/xx, the Dark Queen's own bounds); Death Knights' start camp and fight icons; the temple's Raise Dead by each original's routine (the Curse question v0.12.3 found).
+- The title music starts with the title's first screen; music no longer drops out during long loads.
+
+Checked here, GOG files, 640 x 480: the smoke test; Keep Memorizing on / off in Curse again (its steps follow the new to-memorize list); tools/hand_test.py `menus` (every word of Cast / View / Encamp - Magic / Rest / Alter by buttons) on all nine games: nothing flagged but the Dark Queen's View / Drop, which that test can't read (known); the Memorize screen was reached in eight games, not in the Dark Queen. The engine's memorizing fixes themselves were not re-proved here game by game - that was the CYD's DOSBox work.
+
 ## [0.12.3] - 2026-11-18
 
 No change to what the player sees. The switches were tested in games (Tom: a menu line that flips isn't a tested switch).
