@@ -30,7 +30,7 @@ def run(exe, games, conf, script, window=None, extra=()):
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 # Every page of the menu (the CYD's tree, v0.12.0): each switch changed and changed back
-ENHANCE = ("Game_Font", "Show_Rolls", "Savegame", "Auto_Join", "Keep_Mem", "Camp_Fix", "Coin_Exch", "Flasks", "More_Char", "Icon_Portrait", "Icon_Gallery")
+ENHANCE = ("Game_Font", "Show_Rolls", "Savegame", "Auto_Join", "Keep_Mem", "Camp_Fix", "Coin_Exch", "Flasks", "Character_Info", "More_Char", "Icon_Portrait", "Icon_Gallery")
 MENU_TOUR = ("menu:Display,a,menu:Picture,right,left,b,"
              "menu:Audio,a,menu:Game_Sound,right,left,menu:AdLib,right,left,menu:Volume,right,left,b,"
              "menu:Game_Play,a,menu:Original,a,a,menu:Enh,a," + "".join(f"menu:{m},right,left," for m in ENHANCE) + "menu:Back,a,"

@@ -4,7 +4,7 @@ from tour import tour
 from multiprocessing import Pool
 def one(a): return tour(a[0],a[1],a[2])
 gi=int(sys.argv[1])
-cases={"all on":"", "Icon Gallery off":"comforts_off=1\n","More Characters off":"comforts_off=4\n","Icon Portrait off":"comforts_off=8\n","Savegame Info off":"comforts_off=2048\n","Game Font: the game's own":"font=0\n","Camp Fix off":"comforts_off=64\n"}
+cases={"all on":"", "Icon Gallery off":"comforts_off=1\n","More Characters off":"comforts_off=4\n","Icon Portrait off":"comforts_off=8\n","Savegame Info off":"comforts_off=2048\n","Game Font: the game's own":"font=0\n","Camp Fix off":"comforts_off=64\n","Character Info off":"comforts_off=32768\n"}
 with Pool(2) as ex:
     res=dict(zip(cases, ex.map(one, [(gi,v,str(i)) for i,v in enumerate(cases.values())])))
 base=res["all on"]

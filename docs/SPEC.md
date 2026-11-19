@@ -236,7 +236,8 @@ on screen the overlay is 320 again.
     Enhancements, AD&D 1E Rules, Game Fixes.
   - **Enhancements** (`comforts_off` bits): Game Font, Show Rolls,
     Savegame Info, Auto Join Items, Keep Memorizing, Camp Fix, Coin
-    Exchange, Flasks of Oil (engine 0.210.0: `coin_exchange`, `oil_burns`), More
+    Exchange, Flasks of Oil (engine 0.210.0: `coin_exchange`, `oil_burns`), Character Info
+    (0.211.0: `add_info`), More
     Characters, Icon Portrait, Icon Gallery. (Not here: the CYD's
     Companion Views and Large Icon - the boards'.)
   - **AD&D 1E Rules** (`rules_off`, rules::Adnd bits) and **Game Fixes**

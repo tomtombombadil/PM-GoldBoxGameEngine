@@ -3,6 +3,15 @@
 Every version of Gold Box Game Engine for PortMaster. A release's notes are
 its part of this file.
 
+## [0.12.5] - 2026-11-18
+
+Built on the CYD engine 0.211.1 (was 0.210.9).
+
+- **Fights indoors had the wrong battlefield - in every game but Gateway** (Tom: Treasures' first fight, the floor black, a few wall pieces). An engine fault of this session's own making, since engine 0.203.12 (17 November, the Gateway arena work; in the port since v0.10.10): after the indoor field was made, the outdoor field was made over it. Treasures and Darkness showed black floors, Curse fought its dungeon fights in a wood; Gateway's wilderness fights got no field made at all. Fixed in the engine (0.211.1).
+- **Character Info** (the engine's new Enhancement, 0.211.0): while Add Character to Party lists the characters, the screen's other half shows the highlighted one as View Character does. Game Play - Enhancements - Character Info, on by default.
+
+Checked here, GOG files: Treasures' first street fight in Llorkh through the port's buttons at 640 x 480 - black floor before, the street's floor and walls after (screenshots); PoolRad's first fight through the port - its room's floor and wall; in the engine's test program Treasures and Curse before / after (Curse: a wood before, the dungeon room after). Character Info on / off in Curse: the highlighted character's sheet beside the list / the plain list. Darkness: one indoor fight in the engine test, its floor drawn. NOT checked after the fix: Secret, the Krynn games and Gateway (its wilderness fights) - by the same code, not looked at.
+
 ## [0.12.4] - 2026-11-18
 
 Built on the CYD engine 0.210.9 (was 0.210.0). Nothing changed in the port's own code - the engine's fixes come with it:

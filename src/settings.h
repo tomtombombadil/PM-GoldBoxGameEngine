@@ -33,9 +33,9 @@ struct Settings {
 enum : uint16_t {
     kOffGallery = 1, kOffDemoTap = 2, kOffMoreGuys = 4, kOffPortrait = 8, kOffFixes = 16, kOffRolls = 32,
     kOffCampFix = 64, kOffCheats = 128, kOffQuick = 256, kOffReadTime = 512, kOffAutoJoin = 1024, kOffSaveInfo = 2048,
-    kOffKeepMem = 4096, kOffCoins = 8192, kOffOil = 16384,
+    kOffKeepMem = 4096, kOffCoins = 8192, kOffOil = 16384, kOffAddInfo = 32768,
     kOffSwitches = kOffGallery | kOffMoreGuys | kOffPortrait | kOffRolls | kOffCampFix | kOffQuick | kOffAutoJoin |
-                   kOffSaveInfo | kOffKeepMem | kOffCoins | kOffOil
+                   kOffSaveInfo | kOffKeepMem | kOffCoins | kOffOil | kOffAddInfo
 };
 
 bool settings_load(const std::string& dir, Settings& s);

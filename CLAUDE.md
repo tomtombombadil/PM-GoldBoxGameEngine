@@ -461,6 +461,9 @@ and maintains it; it is the primary output of the Claude Project
   menu's line - never count `down`s), `shot:<file.bmp>`, `quit`. `--game <n>` starts a game at
   once. With Tom's game files in scratch this plays real games headless;
   look at the `shot:` pictures before saying something works.
+- **A fight test looks at the battlefield's picture** (2026-11-18: for two days every indoor fight but Gateway's had an
+  outdoor field - this session's own engine change, 0.203.12 - and no test saw it: they all read text). After any engine
+  change near a fight's start, and before a release: a shot of an indoor and an outdoor fight, looked at.
 - **A switch is tested only when its EFFECT was seen in a game** (Tom, 2026-11-18: "did you
   mean that you went into a game, enabled/disabled the toggle and tested to see if the toggle
   actually affected the game"): a menu line that appears, flips and is saved is "the menu

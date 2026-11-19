@@ -99,6 +99,11 @@ Tick off with the version that did it. Never ask Tom the same thing twice.
       (PoolRad's Flame Tongue), Age with Time, Power Word Kill, Protection from Evil, and 45 Game Fixes - each needs a
       prepared save (the CYD playsim's RECSET / SETXP / MEMSET) and its steps. The tour is unsteady in Knights, Queen
       and Gateway (their screens change by themselves between runs): those games' Enhancements not shown yet.
+- [ ] **After v0.12.5: every game's battlefields looked at** - the fix was seen in Treasures, PoolRad (port) and Curse (engine
+      test) only. To do: a fight indoors and one outdoors in each of the nine games through the port, the pictures looked
+      at (the CYD's tools/devkit/fieldsurvey for the engine side); Gateway's wilderness fights above all.
+      **Lesson**: the play-throughs and button tests read TEXT - none of them looked at a fight's picture, so two days of
+      wrong battlefields went unseen. A fight test must look at the field (a shot, or the ground's tiles counted).
 - [ ] Tom, v0.11.0 on a handheld: Save Slot Info - Encamp - Save and the
       party menu's Load: the highlighted slot's date (is the device's clock
       right?), place and party; on the RGB10 MAX3 the party and (v0.11.1) the save's map in the
@@ -305,12 +310,14 @@ Tick off with the version that did it. Never ask Tom the same thing twice.
       app updates ports) and a word with them about Send Logs (a port
       that uploads logs) - ask in the testing thread; (5) the PR itself
       from Tom's fork of PortsMaster/PortMaster-New, branch `goldbox`.
-- [ ] Keep the `cyd` pin current (built on CYD 0.210.9). Tom, 2026-11-14:
+- [ ] Keep the `cyd` pin current (built on CYD 0.211.1). Tom, 2026-11-14:
       Companion map / party-info changes are in work in the CYD (small
       boards first; the party-info layout may be rearranged) - when they
       land, move the pin and bring `src/panel.*` along.
 
 ## Done
+- [x] v0.12.5 (Tom, 2026-11-18: Treasures' fight field black; engine 0.211.1): indoor fights got an outdoor field in every game
+      but Gateway since engine 0.203.12 - this session's own Gateway change. Fixed in the CYD repo. Character Info switch (0.211.0).
 - [x] v0.12.4 (Tom, 2026-11-18; engine 0.210.9): the engine's spell-memorizing fixes; the pin moved. Curse's temple Raise Dead
       (found by v0.12.3's switch test) was put right in the engine, 0.210.1, by each original's routine.
       hand_test `menus`, nine GOG games: 22 - 140 words each taken by buttons, Encamp - Magic - Memorize reached in eight;
