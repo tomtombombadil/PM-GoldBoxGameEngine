@@ -12,7 +12,7 @@ front end made for a handheld's buttons and screen.
 **Status: pre-release, playable.** All nine games start and play from the
 buttons alone. What that rests on:
 
-- **Tested Handhelds:** Anbernic RG40XX H and V, Powkiddy RGB10 MAX3,
+- **Tested Handhelds:** Anbernic RG40XX H and V, Powkiddy RGB10 MAX3 and X55,
   R36S, R36H, & TrimUI Brick Pro
 - **Tested Firmwares:** Rocknix, Knulli, & dArkOS
 - **Tested Game Versions:** Windows versions of the Steam & GOG releases. In theory the original game files from the original floppy disks would work as well, so long as they were placed in the correct folders inside /roms/ports/goldbox/games. This has not been tried yet because I no longer have the original floppies.
