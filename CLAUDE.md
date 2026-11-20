@@ -345,7 +345,13 @@ and maintains it; it is the primary output of the Claude Project
   nowhere). Use copies already scanned by this version (a scan under the
   sanitizer or qemu takes very long). The update across REAL releases was
   checked by hand once (v0.9.4 -> v0.10.1, scratch script).
-- `tools/hand_test.py <binary> <games copy> <n> <out> [fight|menus|both]`
+- **The Companion's party: ready to train = magenta** (Tom, 2026-11-20: "their name in the character list
+  turns magenta ... carry that over to the companion"): the member's name and the ready class + level, the
+  engine's `companion.cpp` (0.211.4) - never yellow again.
+- **A fight menu's test presses Speed** (Tom, 2026-11-20, Gateway: the highlight jumped off Faster, an empty
+  line after Exit): `tools/hand_test.py ... speed` - run it in every game after an engine change near the
+  fight menus; a menu left must show the menu it came from, a word boxed.
+- `tools/hand_test.py <binary> <games copy> <n> <out> [fight|menus|both|speed]`
   (v0.10.3): `fight` walks the map through square by square until a fight
   starts, then on our fighters' turns tries Move (D-pad straight, two
   directions together, L1 / R1 / L2 / R2), Aim, Aim - Manual, Cast, Done's

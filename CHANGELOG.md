@@ -3,6 +3,16 @@
 Every version of Gold Box Game Engine for PortMaster. A release's notes are
 its part of this file.
 
+## [0.12.6] - 2026-11-20
+
+Built on the CYD engine 0.211.4 (was 0.211.1).
+
+- **A fight's Speed menu** (Tom, Gateway's first fight): after Faster the highlight jumped back to Slower, so the next A undid it - now it stays on the word pressed (Aim's Prev likewise, when Target comes and goes). And leaving Speed left an empty menu line until the D-pad was touched, in the games whose fight menu has Speed itself (Darkness, Gateway, Treasures, the Krynn games) - now the fight menu comes back, Speed boxed.
+- **The Companion's party** (Tom): a character who can train has their name in magenta, as the games' own party list, and the class and level that are ready are magenta too (were yellow). The character whose turn it is / who is chosen stays white.
+- **Treasures' overland** (found in this session's play-through, each set against the original in DOSBox): a game saved on the overland came back with a 3D view and a noise floor where the map belongs - and the original could not load such a save at all. Saves now keep the map; an old save mends itself as it loads. Fights on the overland had every square a river bank: now grass, rocks, bushes and trees, as the original. The overland's menu no longer has Area (the original's has none).
+
+Checked here, GOG files, 640 x 480, the port's own buttons: `tools/hand_test.py <...> speed` (new: Speed opened, Faster twice, Slower twice, out by Exit and by B) - the build before fails it in Gateway (the highlight; the wrong menu after Exit), this one passes in PoolRad, Curse, Champions, the Dark Queen, Gateway and Treasures; Secret's test fight ended before the Speed menu was tried, Darkness and Death Knights had not finished when this was written (TODO). Treasures: a save made on the overland by v0.12.5 loaded - the map there, no Area - and an overland fight's picture looked at (grass, trees, rocks). The Companion's magenta was seen in the engine's own Companion picture (Treasures, two members given the experience), not yet on a port screenshot.
+
 ## [0.12.5] - 2026-11-18
 
 Built on the CYD engine 0.211.1 (was 0.210.9).

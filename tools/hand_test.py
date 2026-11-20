@@ -176,6 +176,43 @@ def try_done(r):
             r.do("a,wait:400"); r.note(f"  fight Done - {x}: taken ->", f"[{p.text[24].strip()[:40]}]"); return
     if "Move" not in w: r.do("b,wait:400")
 
+def try_speed(r):
+    """Speed (on the fight menu, or in Done's): Faster twice and Slower twice - the highlight stays on
+    the word pressed while it is there (Tom, 2026-11-20: after Faster it stood on Slower, the next A
+    undid it) - then out by its Exit word and again by B: the menu come back to shows its words, one
+    of them boxed (it was an empty line until the D-pad moved)"""
+    p = r.p
+    via_done = "Speed" not in fmw(p)
+    def open_speed():
+        if via_done:
+            if "Done" not in fmw(p) or not fgoto(p, "Done"): return False
+            r.do("a,wait:400")
+        if "Speed" not in fmw(p) or not fgoto(p, "Speed"): return False
+        r.do("a,wait:400")
+        return "Faster" in fmw(p) or "Slower" in fmw(p)
+    def num():
+        m = re.search(r"\((\d+)\)", " ".join(p.text[x] for x in frows(p)))
+        return int(m.group(1)) if m else None
+    if not open_speed(): return r.note("  fight Speed: no such menu:", fmw(p))
+    r.note("  fight Speed: its menu", fmw(p), "speed", num())
+    for word in ("Faster", "Faster", "Slower", "Slower"):
+        if word not in fmw(p) or not fgoto(p, word): r.note(f"  fight Speed: no {word} now", fmw(p)); continue
+        n0 = num(); r.do("a,wait:400"); n1 = num()
+        if n1 == n0: r.note(f"  !! Speed - {word}: the speed stayed {n0}")
+        if word in fmw(p) and flit(p) != word: r.note(f"  !! Speed - {word}: the highlight went to {flit(p)} (speed {n0} -> {n1})")
+    def back_ok(how):
+        w = fmw(p)
+        want = "Guard" if via_done and "Move" not in w else "Move"
+        if not w or flit(p) is None: r.note(f"  !! Speed left by {how}: the menu line is empty / nothing boxed: {w}"); return False
+        if not via_done and "Move" not in w: r.note(f"  !! Speed left by {how}: not the fight menu it was opened from: {w}"); return False
+        r.note(f"  fight Speed left by {how}: back at", w[:4], "boxed", flit(p))
+        if via_done and "Move" not in w: r.do("b,wait:400")       # (Done's menu: back to the fight's)
+        return True
+    if "Exit" in fmw(p) and fgoto(p, "Exit"): r.do("a,wait:400"); back_ok("Exit")
+    if open_speed(): r.do("b,wait:400"); back_ok("B")
+
+SPEED_ONLY = False
+
 def seek_fight(r, steps_max):
     """Walks the map through, square by square (every side of every square tried once, then the
     nearest square with a side untried), until a fight starts. Overland maps: at random."""
@@ -253,7 +290,7 @@ def hand_fight(r, steps_max=4000):
     if p.st["fighting"] != "1":
         return r.note(f"  no fight met in {steps} steps ({squares} squares)")
     r.note(f"  A FIGHT after {steps} steps: [{p.text[24].strip()[:40]}]")
-    plan = ["straight", "diagonal", "shoulder", "aim", "manual", "cast", "done"]
+    plan = ["speed"] if SPEED_ONLY else ["speed", "straight", "diagonal", "shoulder", "aim", "manual", "cast", "done"]
     turns = 0; cast_tries = 0
     while plan and turns < 14 and to_menu(r):
         turns += 1; w = fmw(p)
@@ -271,6 +308,7 @@ def hand_fight(r, steps_max=4000):
         elif a == "aim": try_aim(r, False)
         elif a == "manual": try_aim(r, True)
         elif a == "cast": try_cast(r); end_turn(r)
+        elif a == "speed": try_speed(r)
         elif a == "done": try_done(r)
     if plan and p.st["fighting"] == "1": r.note("  fight: not tried (turns ran out):", plan)
     elif plan: r.note("  fight: over before these were tried:", plan)
@@ -409,7 +447,10 @@ def main():
     try:
         if pt.start(r):
             if mode in ("menus", "both"): menus(r)
-            if mode in ("fight", "both"): hand_fight(r)
+            if mode == "speed":
+                global SPEED_ONLY
+                SPEED_ONLY = True
+            if mode in ("fight", "both", "speed"): hand_fight(r)
     except Exception as e:
         import traceback
         r.note("  !! THE RUN STOPPED:", repr(e)[:200], traceback.format_exc().strip().splitlines()[-3][:120])

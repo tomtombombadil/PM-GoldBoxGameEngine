@@ -213,7 +213,9 @@ def add(r, name):
     r.do("a,wait:600")
     for i in range(12):
         if count(p) > before: break
-        at = p.find(name)
+        # (the list's line - Character Info, v0.12.3, shows the highlighted one's name at the right too:
+        #  the first match was that heading, never lit, and the list was paged for ever)
+        at = next(((y, t.upper().find(name.upper())) for y, t in enumerate(p.text) if 0 <= t.upper().find(name.upper()) < 19), None) or p.find(name)
         if at and not p.lit_at(*at): r.do("r2,wait:150"); continue
         r.do("a,wait:600")
     ok = count(p) > before

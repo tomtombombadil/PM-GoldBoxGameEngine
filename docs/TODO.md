@@ -99,6 +99,16 @@ Tick off with the version that did it. Never ask Tom the same thing twice.
       (PoolRad's Flame Tongue), Age with Time, Power Word Kill, Protection from Evil, and 45 Game Fixes - each needs a
       prepared save (the CYD playsim's RECSET / SETXP / MEMSET) and its steps. The tour is unsteady in Knights, Queen
       and Gateway (their screens change by themselves between runs): those games' Enhancements not shown yet.
+- [ ] **v0.12.6's Speed test** (`tools/hand_test.py ... speed`): passed in PoolRad, Curse, Champions, Queen,
+      Gateway, Treasures; **Secret** (its test fight was over before Speed was tried), **Darkness** and **Knights**
+      (runs not finished at the release) still to do. Its other "!!" to look at: PoolRad / Secret - B at a
+      treasure's "Take: Money Items Exit" did not come back to the treasure menu (the test's own, or a fault?).
+- [ ] **Tom to try on a device (v0.12.6)**: Gateway's fight Speed (Faster stays lit; Exit / B bring the fight menu
+      back); the Companion's magenta name and class when someone can train; Treasures: load a save made on the
+      overland (the map must be there), a fight on the overland (grass, not river banks).
+- [ ] **Treasures play-through** (the Project's claude/playtest_treasures.md): Llorkh, Loudwater, Secomber, Leilon,
+      Waterdeep's caverns, Waterdeep Village's dragon done; Daggerford next. Open: the Leilon potion; an overland
+      fight's starting distance against the original; ELWYN level-drained (to restore); loot not yet ID'd / sold.
 - [ ] **After v0.12.5: every game's battlefields looked at** - the fix was seen in Treasures, PoolRad (port) and Curse (engine
       test) only. To do: a fight indoors and one outdoors in each of the nine games through the port, the pictures looked
       at (the CYD's tools/devkit/fieldsurvey for the engine side); Gateway's wilderness fights above all.
