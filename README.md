@@ -12,36 +12,26 @@ front end made for a handheld's buttons and screen.
 **Status: pre-release, playable.** All nine games start and play from the
 buttons alone. What that rests on:
 
-- **On handhelds** (the developer's own): Anbernic RG40XX H, PowKiddy
-  RGB10 MAX3 (16:9) and an R36H, all on ROCKNIX. Other devices and
-  firmwares (Knulli, muOS, ArkOS / dArkOS, AmberELEC ...) should work -
-  the port follows PortMaster's rules and asks nothing unusual of a
-  device - but nobody has reported on them yet. **If you try one, please
-  use Start - Send Logs** and say how it went.
-- **By a scripted test** (`tools/play_test.py`, button presses only, the
-  screen read back) on the GOG copies of the games: title, loading a
-  saved game or making characters, the party menu, walking, overland
-  travel, the area map, the Companion, camping and saving, the journal,
-  Quick Actions, the cheats, and whole fights in Pool of Radiance,
-  Champions of Krynn and Death Knights of Krynn. The released ARM program
-  is also run under emulation. The rules of the games themselves are the
-  CYD engine's, tested there.
-- **Not yet covered:** nobody has played a game from start to finish on a
-  handheld; fights were scripted in three of the nine games only.
+- **Tested Handhelds:** Anbernic RG40XX H and V, Powkiddy RGB10 MAX3,
+  R36S, R36H, & TrimUI Brick Pro
+- **Tested Firmwares:** Rocknix, Knulli, & dArkOS
+- **Tested Game Versions:** Windows versions of the Steam & GOG releases. In theory the original game files from the original floppy disks would work as well, so long as they were placed in the correct folders inside /roms/ports/goldbox/games. This has not been tried yet because I no longer have the original floppies.
 
 Known rough edges are in [docs/TODO.md](docs/TODO.md); each version's
 changes in [CHANGELOG.md](CHANGELOG.md).
 
 ## The games
+- Pool of Radiance
+- Curse of the Azure Bonds
+- Secret of the Silver Blades
+- Pools of Darkness
+- Gateway to the Savage Frontier
+- Treasures of the Savage Frontier
+- Champions of Krynn
+- Death Knights of Krynn
+- The Dark Queen of Krynn
 
-Pool of Radiance, Curse of the Azure Bonds, Secret of the Silver Blades,
-Pools of Darkness, Gateway to the Savage Frontier, Treasures of the Savage
-Frontier, Champions of Krynn, Death Knights of Krynn, The Dark Queen of Krynn -
-whichever the engine plays (its
-[game list](https://tomtombombadil.github.io/CYD-GoldBoxGameEngine/) has
-each one's status).
-
-## Nothing from the games is in here
+## B.Y.O.G! (Bring Your Own Games) Nothing from the original games is in this repo
 
 This repository and the port's package contain no game files, pictures, text
 or code from the games - and never will. You need your own copy of each game
@@ -63,6 +53,14 @@ You need PortMaster on the handheld, and Wi-Fi.
 
        roms/ports/goldbox/games/Pool of Radiance/
        roms/ports/goldbox/games/Curse of the Azure Bonds/
+       roms/ports/goldbox/games/Secret of the Silver Blades/
+       roms/ports/goldbox/games/Pools of Darkness/
+       roms/ports/goldbox/games/Gateway to the Savage Frontier/
+       roms/ports/goldbox/games/Treasures of the Savage Frontier/
+       roms/ports/goldbox/games/Champions of Krynn/
+       roms/ports/goldbox/games/Death Knights of Krynn/
+       roms/ports/goldbox/games/The Dark Queen of Krynn/
+   
 
    Copy the **whole** folder: the journal PDF in it (GOG) or its
    `Documentation` and `GBC` folders (Steam) are what the in-game
@@ -74,7 +72,7 @@ You need PortMaster on the handheld, and Wi-Fi.
    games their recorded sound effects (Start - Settings - Game Sound).
    Without it (GOG) the list shows each game's own logo from its folder.
 
-5. Start **Gold Box Game Engine** from Ports. The first time it sees a
+6. Start **Gold Box Game Engine** from Ports. The first time it sees a
    game it makes that game's journal and music from your files - it lists
    what it does and can take a few minutes, once. (Start -
    Rescan Game Files makes them anew.)
