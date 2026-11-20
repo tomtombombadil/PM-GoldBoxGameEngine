@@ -320,12 +320,15 @@ Tick off with the version that did it. Never ask Tom the same thing twice.
       app updates ports) and a word with them about Send Logs (a port
       that uploads logs) - ask in the testing thread; (5) the PR itself
       from Tom's fork of PortsMaster/PortMaster-New, branch `goldbox`.
-- [ ] Keep the `cyd` pin current (built on CYD 0.211.1). Tom, 2026-11-14:
+- [ ] Keep the `cyd` pin current (built on CYD 0.211.4). Tom, 2026-11-14:
       Companion map / party-info changes are in work in the CYD (small
       boards first; the party-info layout may be rearranged) - when they
       land, move the pin and bring `src/panel.*` along.
 
 ## Done
+- [x] v0.12.6 (Tom, 2026-11-20; engine 0.211.4): a fight's Speed menu (the highlight stays on Faster / Slower; Exit and B bring the
+      fight menu back); the Companion's ready-to-train magenta; Treasures' overland (saves keep the map, fights outdoors, no Area) -
+      the last three found by the play-through and set against the original in DOSBox. `tools/hand_test.py ... speed`.
 - [x] v0.12.5 (Tom, 2026-11-18: Treasures' fight field black; engine 0.211.1): indoor fights got an outdoor field in every game
       but Gateway since engine 0.203.12 - this session's own Gateway change. Fixed in the CYD repo. Character Info switch (0.211.0).
 - [x] v0.12.4 (Tom, 2026-11-18; engine 0.210.9): the engine's spell-memorizing fixes; the pin moved. Curse's temple Raise Dead
