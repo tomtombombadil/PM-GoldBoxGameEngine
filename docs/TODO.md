@@ -102,8 +102,8 @@ Tick off with the version that did it. Never ask Tom the same thing twice.
       (PoolRad's Flame Tongue), Age with Time, Power Word Kill, Protection from Evil, and 45 Game Fixes - each needs a
       prepared save (the CYD playsim's RECSET / SETXP / MEMSET) and its steps. The tour is unsteady in Knights, Queen
       and Gateway (their screens change by themselves between runs): those games' Enhancements not shown yet.
-- [ ] **Treasures: an overland fight starts with the foes next to the party; the original's start twelve squares
-      further** (DOSBox, clean, 2026-11-20). Cause not found - the CYD repo's TODO has what was read and ruled out.
+- [x] v0.12.8: Treasures' overland fights start two map squares apart, as the original (engine 0.211.8 - its sight
+      routine sets the range on open ground).
 - [ ] Speed test (`tools/hand_test.py ... speed`) by the port's buttons: passed in PoolRad, Curse, Champions, Knights,
       Queen, Gateway, Treasures. Secret and Darkness: no fight reached by the test's walk - seen in the engine
       instead (Darkness: Speed's picks and Exit by the playsim; both: navcheck's empty-fight-menu rule, 0 failures).
@@ -111,8 +111,7 @@ Tick off with the version that did it. Never ask Tom the same thing twice.
       back); the Companion's magenta name and class when someone can train; Treasures: load a save made on the
       overland (the map must be there), a fight on the overland (grass, not river banks).
 - [ ] **Treasures play-through** (the Project's claude/playtest_treasures.md): Llorkh, Loudwater, Secomber, Leilon,
-      Waterdeep's caverns, Waterdeep Village's dragon done; Daggerford next. Open: the Leilon potion; an overland
-      fight's starting distance against the original; ELWYN level-drained (to restore); loot not yet ID'd / sold.
+      Waterdeep's caverns, Waterdeep Village's dragon done; Daggerford next. Open: the Leilon potion; ELWYN level-drained (to restore); loot not yet ID'd / sold.
 - [ ] **After v0.12.5: every game's battlefields looked at** - the fix was seen in Treasures, PoolRad (port) and Curse (engine
       test) only. To do: a fight indoors and one outdoors in each of the nine games through the port, the pictures looked
       at (the CYD's tools/devkit/fieldsurvey for the engine side); Gateway's wilderness fights above all.
@@ -324,7 +323,7 @@ Tick off with the version that did it. Never ask Tom the same thing twice.
       app updates ports) and a word with them about Send Logs (a port
       that uploads logs) - ask in the testing thread; (5) the PR itself
       from Tom's fork of PortsMaster/PortMaster-New, branch `goldbox`.
-- [ ] Keep the `cyd` pin current (built on CYD 0.211.5). Tom, 2026-11-14:
+- [ ] Keep the `cyd` pin current (built on CYD 0.211.10). Tom, 2026-11-14:
       Companion map / party-info changes are in work in the CYD (small
       boards first; the party-info layout may be rearranged) - when they
       land, move the pin and bring `src/panel.*` along.
