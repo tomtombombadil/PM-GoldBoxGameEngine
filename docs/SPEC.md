@@ -224,13 +224,13 @@ on screen the overlay is 320 again.
   - **Top**, in a game: Back to Game, Display, Audio, Game Play, Journal,
     Cheats, Quick Actions, Controls, System, Rescan Game Files, Check for
     Updates, Exit Game, Quit. At the game list: Display, Audio, Game Play,
-    Cheats (Max Hit Points only), Controls, System, Rescan Game Files,
+    Cheats (Max Hit Points and Disable Race Level Limits only), Controls, System, Rescan Game Files,
     Check for Updates, Quit. (Rescan and Check for Updates on the top page
     are the port's own - Tom, 2026-11-17: "not buried".)
   - **Display**: Picture (the fit, section 5).
   - **Audio**: Game Sound, AdLib Music, Volume.
   - **Game Play**: Original Games (a switch: on - every Enhancement, AD&D
-    1E Rule and Game Fix off, the game's own font, Max Hit Points off, the
+    1E Rule and Game Fix off, the game's own font, the cheat switches off, the
     player's set kept in settings.cfg's `saved_*` and given back when it
     goes off; any switch can be turned on by itself meanwhile),
     Enhancements, AD&D 1E Rules, Game Fixes.
@@ -246,7 +246,7 @@ on screen the overlay is 320 again.
     help from the engine's `rules::adnd_info` / `fix_info`.
   - **Cheats**: Healer, Merchant, Sanctuary, Trainer (`play::cheat_open` -
     the game's own screens; only at the exploring menu, else a message says
-    so), Max Hit Points. Always there (no switch).
+    so), Max Hit Points, Disable Race Level Limits (v0.12.9: no race stops a class's levels). Always there (no switch).
   - **Quick Actions**: one screen (`play::quick_*`; Tom, 2026-11-17 - no
     page in between): the top line Quick Actions On / Off, under it the
     party down the left (NPCs marked) and the chosen member's eight

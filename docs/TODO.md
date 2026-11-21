@@ -3,6 +3,12 @@
 Tick off with the version that did it. Never ask Tom the same thing twice.
 
 ## Tom
+- [ ] The X55's red rclone line at Quit: which firmware and version is on it, and does it show after any other
+      game or port too? (Claude's reading: the firmware's cloud backup at a game's exit, not set up.)
+- [ ] v0.12.9 on a handheld: Start - Cheats - Disable Race Level Limits on, then train Oratisi (the fighter goes
+      past 7) or roll a new elf (the levels no longer follow Strength / Intelligence).
+- [ ] The CYD boards got the same cheat as a Cheats-page key "No Race Limits" (engine 0.211.13) - compiled by CI
+      only, never seen on a board: a look on a CYD when you flash next.
 - [ ] v0.12.8 on a handheld: Darkness - out of Phlan's first map by Traitor's Gate (by the Temple of Tempus)
       and back; Oratisi (the Steam release's second saved game, loaded afresh) trained at the hall - fighter and
       magic-user both rise, the experience stays 500,000, the Companion's name turns from magenta to cyan.
@@ -323,7 +329,7 @@ Tick off with the version that did it. Never ask Tom the same thing twice.
       app updates ports) and a word with them about Send Logs (a port
       that uploads logs) - ask in the testing thread; (5) the PR itself
       from Tom's fork of PortsMaster/PortMaster-New, branch `goldbox`.
-- [ ] Keep the `cyd` pin current (built on CYD 0.211.10). Tom, 2026-11-14:
+- [ ] Keep the `cyd` pin current (built on CYD 0.211.13). Tom, 2026-11-14:
       Companion map / party-info changes are in work in the CYD (small
       boards first; the party-info layout may be rearranged) - when they
       land, move the pin and bring `src/panel.*` along.
@@ -441,9 +447,8 @@ Tick off with the version that did it. Never ask Tom the same thing twice.
 - [x] Multi-class training (Tom, Oratisi): engine 0.211.10 - every ready class but in Curse / Gateway.
 - [x] The Companion's party view redrawn on a line's change (the port's signature).
 - [x] Treasures' overland fight distance (engine 0.211.8); Aim's Next / Prev foes only (Darkness-type).
-- [ ] Curse / Gateway: a Game Fix for the one-class training's lost experience (Tom's standing answer) - a new
-      engine switch, then its line here.
-- [ ] The training by the port's BUTTONS (the hall's screens with two classes, the spell to learn) - only the
-      playsim so far. The Speed test by buttons in Secret / Darkness still open.
+- [x] v0.12.9: Game Fix Training Every Class (Curse, Gateway; engine 0.211.11). Its effect by the port's buttons: not played.
+- [x] v0.12.9: the training by the port's buttons (norace.py, Darkness). [ ] The Speed test by buttons in Secret /
+      Darkness still open - Steam Secret's opening fight plays by itself (the save's party on Quick?): find out.
 - [ ] Treasures' play-through: Daggerford next; Elwyn's lost levels; the loot since Secomber; the Leilon potion.
 

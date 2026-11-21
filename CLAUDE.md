@@ -353,6 +353,12 @@ and maintains it; it is the primary output of the Claude Project
   nothing here as long as the engine's `panel_party_sig(false)` has it.
 - **Phlan's two maps** (Tom, 2026-11-20, Darkness): `tools/edge_test.py <binary> <games copy> <out>` walks to
   Traitor's Gate and across by the port's buttons - run it after an engine change near a step or a map load.
+- **Disable Race Level Limits** (Tom, 2026-11-21: "I want to add a cheat"): Start - Cheats (`MNoRace`,
+  `cfg.no_race_limits`, the engine's `Options::no_race_limits`, CYD 0.211.13), off by default, off under Original
+  Games. `tools/switch_cases/norace.py` shows its effect by buttons. The levels a new non-human gets changing with
+  the rolled Strength / Intelligence are the originals' (DOSBox) - not a fault; don't "fix" it.
+- **Tom's PowKiddy X55** (2026-11-20): on Quit a red "You must configure rclone ..." shows for a moment - the
+  firmware's cloud-save sync, not the port's (nothing of ours names rclone). Firmware / version: asked, not said.
 - **Training** (Tom, 2026-11-20): every ready class of a multi-class trains in all games but Curse and Gateway
   (their programs' own); a training question is answered from the original's routine and DOSBox, in the CYD repo.
 - **A fight menu's test presses Speed** (Tom, 2026-11-20, Gateway: the highlight jumped off Faster, an empty

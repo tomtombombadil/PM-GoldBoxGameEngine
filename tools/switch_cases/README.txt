@@ -14,4 +14,5 @@ showed. They need real game files and are run by hand:
   km.py <cfg>             Keep Memorizing - chosen spells after the camp is left
   rd.py <cfg> <games>     Raising the Dead - Constitution after the Healer's Raise Dead
   race.py <n> <race> <rolls> tag=cfg ...   Race Adjustments - average rolled abilities
+  norace.py <n> tag=cfg ...   Disable Race Level Limits - Darkness (Steam: its second saved game), the Trainer's lines
 <game n> counts from 1. Scratch-grown scripts: read before reuse.

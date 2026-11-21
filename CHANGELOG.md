@@ -3,6 +3,20 @@
 Every version of Gold Box Game Engine for PortMaster. A release's notes are
 its part of this file.
 
+## [0.12.9] - 2026-11-21
+
+Built on the CYD engine 0.211.13 (was 0.211.10).
+
+- **New cheat: Disable Race Level Limits** (Tom: "I want to add a cheat ... which disables the limits on class level because of race"). Start - Cheats, off unless you turn it on; Original Games turns it off and gives your choice back. On: no race stops a class's levels - training goes on as far as the experience reaches, and a new character starts at the levels its experience gives. Each game's own last level of a class stays. **Seen by the port's buttons** (`tools/switch_cases/norace.py`, Darkness, the Steam release's second saved game, the Cheats' Trainer): off - Oratisi (an elf, Strength 18, Intelligence 18, 500,000 experience) trains to fighter 7 / magic-user 11 and no further; on - the fighter goes on to 8 and 9, then stops (10 needs 500,001). Not tried: the other eight games with it on; a new character made with it on.
+- **The changing levels on a reroll are the originals'** (Tom: a new Darkness elf fighter / magic-user / thief showed 6/9/12, 5/9/12, 6/10/12 ...). The original in DOSBox, the same character, nine rolls: fighter 5 / 6 / 7 with Strength under 17 / 17 / 18, magic-user 9 / 10 with Intelligence under 17 / 17. Nothing changed - the new cheat is the way round it.
+- **New Game Fix: Training Every Class** (Curse, Gateway; on by default; on their Game Fixes pages by itself). Their programs train ONE class of a multi-class a visit and cut the experience, so the level waiting in the other class can be lost. On: every ready class trains and the experience another class needs is kept. Off: as the originals. Checked in the engine (its `behave levels` hall check, all nine games, fix on and off) - **the switch's effect was not played through the port's buttons**.
+- **Multi-class training seen by the port's buttons** (open since v0.12.8): Darkness's hall says "will become: a level 6 Fighter and a level 10 Magic-User", then 7 and 11.
+- From the CYD session, with the pin: Darkness / Treasures - a fight called with no monsters sets the script's flags as the original (0.211.12).
+
+Looked at and left: in Secret (and every game but PoolRad) B inside a treasure's "Take: Money Items Exit" asks "There is still treasure left ..." - that menu's Exit word leaves the treasure in those originals, and B is that word.
+
+Not checked on a device. Checked here: smoke test; `norace.py` as above. Still open: the fight Speed test by buttons in Secret and Darkness (no fight reached by a test there yet - Steam Secret's opening fight plays by itself); the Treasures play-through (Daggerford next).
+
 ## [0.12.8] - 2026-11-20
 
 Built on the CYD engine 0.211.10 (was 0.211.5).

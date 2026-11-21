@@ -500,7 +500,7 @@ enum MenuItem : uint8_t {
     MRule,                                  // AD&D 1E Rules (arg: rules::adnd_info's row)
     MFixGame,                               // Game Fixes (arg: games::Game; 0 Every Game)
     MFix,                                   // a game's fixes (arg: rules::Fix)
-    MHealer, MMerchant, MSanctuary, MTrainer, MMaxHp,   // Cheats
+    MHealer, MMerchant, MSanctuary, MTrainer, MMaxHp, MNoRace,   // Cheats
     MQuickOn, MQuick,                       // Quick Actions
     MControls, MPadMoves, MSwap,            // Controls
     MRescan, MDevice, MUpdate, MSendLogs, MReplyAddr,   // System
@@ -674,6 +674,7 @@ void menu_build()
         if (playing)
             for (MenuItem m : {MHealer, MMerchant, MSanctuary, MTrainer}) add(m);
         add(MMaxHp);
+        add(MNoRace);
         break;
     case Page::Controls:
         add(MControls);
@@ -755,6 +756,7 @@ void menu_label(const MItem& it, char* out, size_t cap)
     case MPadMoves: snprintf(out, cap, "D-Pad Walks: %s", cfg.pad_moves ? "On" : "Off"); break;
     case MSwap: snprintf(out, cap, "Confirm Button: %s", confirm_name()); break;
     case MMaxHp: snprintf(out, cap, "Max Hit Points: %s", cfg.max_hp ? "On" : "Off"); break;
+    case MNoRace: snprintf(out, cap, "Disable Race Level Limits: %s", cfg.no_race_limits ? "On" : "Off"); break;
     case MRescan: snprintf(out, cap, "Rescan Game Files"); break;
     case MDevice: snprintf(out, cap, "Device Info"); break;
     case MUpdate: snprintf(out, cap, "%s", update_staged.empty() ? "Check for Updates" : "Restart to Update"); break;
@@ -780,7 +782,7 @@ const char* menu_help(const MItem& it)
     case MAudioPg: return "Sound effects, music and volume.";
     case MPlayPg: return "Original Games, the Enhancements, the AD&D 1E Rules and the Game Fixes.";
     case MJournal: return "The journal entries the game has told you to read so far.";
-    case MCheats: return playing ? "Healer, Merchant, Sanctuary, Trainer and Max Hit Points." : "Max Hit Points. The other cheats are here while a game is played.";
+    case MCheats: return playing ? "Healer, Merchant, Sanctuary, Trainer, Max Hit Points, Race Level Limits." : "Max Hit Points, Race Level Limits. The other cheats are here while a game is played.";
     case MQuickPg: return "What Quick may do for each member of the party in a fight.";
     case MControlsPg: return "What each button does, and the buttons' settings.";
     case MSystemPg: return "Device Info, Send Logs and its reply address.";
@@ -788,7 +790,7 @@ const char* menu_help(const MItem& it)
     case MExit: return "Leaves the port.";
     case MOriginal:
         return "On: the games as the originals play them - every Enhancement, AD&D 1E Rule and Game Fix off, the game's "
-               "own font, Max Hit Points off. Any can still be turned on by itself. Off: your own choices come back.";
+               "own font, the two cheat switches off. Any can still be turned on by itself. Off: your own choices come back.";
     case MEnhancePg: return "The engine's comforts the original games didn't have, each with its switch.";
     case MRulesPg: return "Rules of the AD&D 1st edition books the originals left out, each with its switch.";
     case MFixGamesPg: return "Mistakes in the original games' programs put right, each with its switch, by game.";
@@ -819,6 +821,9 @@ const char* menu_help(const MItem& it)
     case MQuickOn: return "On: each member's own Quick Actions. Off: Quick as the originals play it.";
     case MQuick: return "What Quick may do for each member of the party in a fight; its On / Off switch.";
     case MMaxHp: return "Training gives the highest hit points the dice allow. A cheat: off unless you turn it on.";
+    case MNoRace:
+        return "No race stops a class's levels: an elf fighter trains past 7, a new character starts at the levels its "
+               "experience gives. Each game's own last level stays. A cheat: off unless you turn it on.";
     case MReplyAddr: return "Your email address, sent with Send Logs so the developer can write back. Optional.";
     case MRescan: return "Looks through the games folder again and makes every game's picture, journal and music anew.";
     case MDevice: return "This port's version, the device, and each game found with its release (Steam or GOG).";
@@ -1364,6 +1369,7 @@ void apply_options()
     o.oil_burns = !(off & kOffOil);
     o.add_info = !(off & kOffAddInfo);
     o.max_hp = cfg.max_hp;
+    o.no_race_limits = cfg.no_race_limits;
     o.font = cfg.font;
     play::set_options(o);
 }
@@ -1811,11 +1817,13 @@ void toggle_original()
         cfg.saved_rules_off = cfg.rules_off;
         cfg.saved_fixes_off = cfg.fixes_off;
         cfg.saved_max_hp = cfg.max_hp;
+        cfg.saved_no_race_limits = cfg.no_race_limits;
         cfg.saved_font = cfg.font;
         cfg.comforts_off = kOffSwitches;
         cfg.rules_off = rules::kAdndAll;
         cfg.fixes_off = ~0ull;
         cfg.max_hp = false;
+        cfg.no_race_limits = false;
         cfg.font = 0;
         cfg.original = true;
     } else {
@@ -1823,6 +1831,7 @@ void toggle_original()
         cfg.rules_off = cfg.saved_rules_off;
         cfg.fixes_off = cfg.saved_fixes_off;
         cfg.max_hp = cfg.saved_max_hp;
+        cfg.no_race_limits = cfg.saved_no_race_limits;
         cfg.font = cfg.saved_font;
         cfg.original = false;
     }
@@ -1873,6 +1882,10 @@ void menu_change(int step)
     case MSwap: cfg.swap_ab = !cfg.swap_ab; cfg.ab_set = true; break;
     case MMaxHp:
         cfg.max_hp = !cfg.max_hp;
+        if (playing) apply_options();
+        break;
+    case MNoRace:
+        cfg.no_race_limits = !cfg.no_race_limits;
         if (playing) apply_options();
         break;
     default:

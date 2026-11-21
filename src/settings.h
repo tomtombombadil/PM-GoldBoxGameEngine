@@ -15,6 +15,7 @@ struct Settings {
     bool    pad_moves = true;   // exploring: the D-pad walks (off: it always moves the highlight)
     uint16_t comforts_off = 0;  // the engine's Enhancements switched off (kOff* bits; 0: all on)
     bool    max_hp = false;     // the Max Hit Points cheat
+    bool    no_race_limits = false;   // the Disable Race Level Limits cheat (Tom, 2026-11-21)
     std::string reply_email;    // Send Logs: the player's reply address ("" none) - goes with the logs
     bool    reply_asked = false; // Send Logs asked for it once (the player may have said No Thanks)
     // ---- the menus by Tom's tree (v0.12.0, engine 0.209.0)
@@ -24,6 +25,7 @@ struct Settings {
     uint16_t saved_comforts_off = 0, saved_rules_off = 0;
     uint64_t saved_fixes_off = 0;
     bool    saved_max_hp = false;
+    bool    saved_no_race_limits = false;
     uint8_t saved_font = 0;
 };
 
