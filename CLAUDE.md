@@ -348,6 +348,13 @@ and maintains it; it is the primary output of the Claude Project
 - **The Companion's party: ready to train = magenta** (Tom, 2026-11-20: "their name in the character list
   turns magenta ... carry that over to the companion"): the member's name and the ready class + level, the
   engine's `companion.cpp` (0.211.4) - never yellow again.
+- **The Companion's signature asks both of the engine's marks** (v0.12.8: `panel_party_sig(true)` is the icons'
+  alone - a trained member stayed magenta): `src/panel.cpp` `signature` - a new thing the party view shows needs
+  nothing here as long as the engine's `panel_party_sig(false)` has it.
+- **Phlan's two maps** (Tom, 2026-11-20, Darkness): `tools/edge_test.py <binary> <games copy> <out>` walks to
+  Traitor's Gate and across by the port's buttons - run it after an engine change near a step or a map load.
+- **Training** (Tom, 2026-11-20): every ready class of a multi-class trains in all games but Curse and Gateway
+  (their programs' own); a training question is answered from the original's routine and DOSBox, in the CYD repo.
 - **A fight menu's test presses Speed** (Tom, 2026-11-20, Gateway: the highlight jumped off Faster, an empty
   line after Exit): `tools/hand_test.py ... speed` - run it in every game after an engine change near the
   fight menus; a menu left must show the menu it came from, a word boxed.

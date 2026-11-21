@@ -3,6 +3,19 @@
 Every version of Gold Box Game Engine for PortMaster. A release's notes are
 its part of this file.
 
+## [0.12.8] - 2026-11-20
+
+Built on the CYD engine 0.211.10 (was 0.211.5).
+
+- **Pools of Darkness: Phlan's gates** (Tom: the gate by the Temple of Tempus put the party in the water on the far side of the same map). Phlan is two maps side by side, and the game's script swaps them when a step leaves the map's edge - the engine never told the script, so the party wrapped round. Fixed in the engine (0.211.6, the CYD session's, found the same day in its play-through). Checked here: every opening on the line between the two maps (rows 4, 5, 8, 11, 12), both ways, in the engine's playsim - each comes out at the same row of the other map; and by the port's own buttons (new `tools/edge_test.py`): the walk to Traitor's Gate, a step west = the other map's 15,4, a step back = 0,4. The other edges of the two maps are walls or water; the gates out of the city (Kuto's Gate and the like) are the game's own events, not map edges.
+- **Training a multi-class character** (Tom: Oratisi, Darkness's second saved game - an elf fighter / magic-user / thief 5 / 9 / 12 with 500,000 experience came out 7 / 9 / 12 with 125,000). The engine trained ONE class a visit and cut the experience - Curse's routine, wrongly used for the later games. Read from each game's program: Secret, Champions, Death Knights, Darkness and Treasures train **every class that is ready, a level each**; only Curse and Gateway train one. Now so. Darkness and Treasures also keep the experience where the old code cut it. Set against the original Darkness in DOSBox, the same save: "will become: a level 6 Fighter and a level 10 Magic-User", then 7 and 11, 500,000 experience kept, then "not enough" - the engine now does exactly that, with a spell learned each time. (Tom's figures were the fault's own leftovers: the save starts at 5 / 9 / 12 with 500,000.) **A game saved after the fault keeps what it lost** - load the stock save again for Oratisi.
+- **The Companion's party view was not drawn again when only a line changed** - the port asked the engine for the icons' change mark alone, so a trained character's magenta name (and levels) stayed until something else redrew the view. Now both marks are asked. This was the port's fault, not the engine's.
+- **Treasures: a fight on the overland starts two map squares apart** (was: the foes among the party - "not fixed" in v0.12.7). The cause: where there is no 3D view the originals' sight routine sets the encounter's range to 2 itself, whatever the script gave. Darkness's open-ground fights the same (its routine is the same). Seen in DOSBox before (nearest foe at Range 12) and in the playsim after (the foes off the first screen, nearest at 13).
+- **Darkness / Treasures: a weapon's Aim** goes Next / Prev through the fighter and the foes it can attack, nearest first - never its own side (the original, DOSBox; ours stepped onto the ally beside it).
+- Also from the CYD session's Darkness play-through, with this pin: a fight's end tells the scripts whether it was won (the Worldstone, the Tyrant's Flame and other places lost their texts after a win), DESTROY ITEMS' magic-only bit, a charmed-only party is lost.
+
+Not checked on a device. Checked here: smoke test; `tools/edge_test.py` (Darkness, GOG, the port's buttons); the engine's navcheck and fightfuzz in Darkness and Treasures (0 problems), its host tests, `behave levels` in Curse, Darkness, Treasures. The training was checked in the engine's playsim against DOSBox, not by the port's buttons. Curse's and Gateway's one-class training loses experience as the originals do - a Game Fix for it is on the list.
+
 ## [0.12.7] - 2026-11-20
 
 Built on the CYD engine 0.211.5 (was 0.211.4). The faults the tests of v0.12.6 turned up, fixed.

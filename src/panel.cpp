@@ -183,7 +183,9 @@ uint32_t signature(View v, bool blink_on)
             for (int k = 0; k < 3; ++k)
                 for (int i = 0; i < m->squares(); ++i) s = s * 31 + m->pl(k)[i];
     } else if (v == View::Party) {
-        s ^= play::panel_party_sig(true);
+        // (both: the icons' and the lines' - hit points, levels, the ready colour. Until v0.12.7 only the
+        // icons' was asked, so a member trained kept its magenta name until something else redrew the view)
+        s ^= play::panel_party_sig(true) * 31u ^ play::panel_party_sig(false);
     } else {
         s ^= play::panel_field_sig() ^ (companion::battle_blinks() && blink_on ? 0x55u : 0u);
     }

@@ -3,6 +3,9 @@
 Tick off with the version that did it. Never ask Tom the same thing twice.
 
 ## Tom
+- [ ] v0.12.8 on a handheld: Darkness - out of Phlan's first map by Traitor's Gate (by the Temple of Tempus)
+      and back; Oratisi (the Steam release's second saved game, loaded afresh) trained at the hall - fighter and
+      magic-user both rise, the experience stays 500,000, the Companion's name turns from magenta to cyan.
 - [ ] v0.9.1 on a handheld: Champions' overland map - Start a game from its
       own save, choose Move, walk with the D-Pad, B to end. (Checked here by
       script and under ARM emulation, not on a device.)
@@ -433,3 +436,15 @@ Tick off with the version that did it. Never ask Tom the same thing twice.
 - [x] v0.1.0 (2026-11-14): repo set up; engine as submodule; SDL2 platform
       layer and front end; buttons-only controls incl. Pointer Mode;
       PortMaster package; CI.
+
+## v0.12.8
+- [x] Darkness, Phlan's gates (Tom): engine 0.211.6; `tools/edge_test.py`.
+- [x] Multi-class training (Tom, Oratisi): engine 0.211.10 - every ready class but in Curse / Gateway.
+- [x] The Companion's party view redrawn on a line's change (the port's signature).
+- [x] Treasures' overland fight distance (engine 0.211.8); Aim's Next / Prev foes only (Darkness-type).
+- [ ] Curse / Gateway: a Game Fix for the one-class training's lost experience (Tom's standing answer) - a new
+      engine switch, then its line here.
+- [ ] The training by the port's BUTTONS (the hall's screens with two classes, the spell to learn) - only the
+      playsim so far. The Speed test by buttons in Secret / Darkness still open.
+- [ ] Treasures' play-through: Daggerford next; Elwyn's lost levels; the loot since Secomber; the Leilon potion.
+
