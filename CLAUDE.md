@@ -357,8 +357,13 @@ and maintains it; it is the primary output of the Claude Project
   `cfg.no_race_limits`, the engine's `Options::no_race_limits`, CYD 0.211.13), off by default, off under Original
   Games. `tools/switch_cases/norace.py` shows its effect by buttons. The levels a new non-human gets changing with
   the rolled Strength / Intelligence are the originals' (DOSBox) - not a fault; don't "fix" it.
-- **Tom's PowKiddy X55** (2026-11-20): on Quit a red "You must configure rclone ..." shows for a moment - the
-  firmware's cloud-save sync, not the port's (nothing of ours names rclone). Firmware / version: asked, not said.
+- **Tom's PowKiddy X55** (ROCKNIX, the latest nightly - Tom, 2026-11-21): on Quit a red "You must configure
+  rclone ..." shows for a moment. It is ROCKNIX's own: its `runemu.sh` runs `/usr/bin/cloud_backup` after EVERY
+  game or port when its setting `cloud.backup` is 1 and the device is online (`amionline`); with no
+  `/storage/.config/rclone/rclone.conf` that script prints this line in red and waits 3 s (read in
+  ROCKNIX/distribution, 2026-11-20's tree). Nothing of the port names rclone; nothing to change here. Tom: not
+  seen after other ports - unexplained from the code (the same lines run for all); the network being up only
+  then is Claude's guess.
 - **Training** (Tom, 2026-11-20): every ready class of a multi-class trains in all games but Curse and Gateway
   (their programs' own); a training question is answered from the original's routine and DOSBox, in the CYD repo.
 - **A fight menu's test presses Speed** (Tom, 2026-11-20, Gateway: the highlight jumped off Faster, an empty

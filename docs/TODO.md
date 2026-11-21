@@ -3,8 +3,10 @@
 Tick off with the version that did it. Never ask Tom the same thing twice.
 
 ## Tom
-- [ ] The X55's red rclone line at Quit: which firmware and version is on it, and does it show after any other
-      game or port too? (Claude's reading: the firmware's cloud backup at a game's exit, not set up.)
+- [ ] The X55's red rclone line at Quit (ROCKNIX nightly; Tom: not after other ports): ROCKNIX's cloud backup
+      after a game (CLAUDE.md has where). To settle why only here: quit this port with Wi-Fi off (no line
+      expected), and another port with Wi-Fi on (the line expected). To be rid of it: ROCKNIX's cloud backup
+      setting off, or rclone set up.
 - [ ] v0.12.9 on a handheld: Start - Cheats - Disable Race Level Limits on, then train Oratisi (the fighter goes
       past 7) or roll a new elf (the levels no longer follow Strength / Intelligence).
 - [ ] The CYD boards got the same cheat as a Cheats-page key "No Race Limits" (engine 0.211.13) - compiled by CI
