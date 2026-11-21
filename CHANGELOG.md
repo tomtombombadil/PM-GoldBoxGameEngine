@@ -3,6 +3,16 @@
 Every version of Gold Box Game Engine for PortMaster. A release's notes are
 its part of this file.
 
+## [0.12.7] - 2026-11-20
+
+Built on the CYD engine 0.211.5 (was 0.211.4). The faults the tests of v0.12.6 turned up, fixed.
+
+- **B inside a treasure's "Take: Money Items Exit" left the whole treasure** - and the next B answered "There is still treasure left" with No, so the treasure was gone. B now goes back one menu, to "View Take Pool Share Exit". Seen through the port's buttons in PoolRad after the fix (`hand_test`: "B back: OK"); the same fault had shown in Secret.
+- **Treasures: "9 lucky paper of Leilons"** now reads "9 lucky papers of Leilon", as the original (seen in DOSBox).
+- The engine's menu check (navcheck) had two false alarms - the light-grey box on an empty save slot, and a spell list scrolling under the box. Both were the check's mistakes, not the game's; with them put right all nine games pass it, the new empty-fight-menu rule included.
+
+**Not fixed - the cause not found yet:** in Treasures a fight on the overland starts with the foes next to the party; in the original (same save, clean reading) they start twelve squares further off. The party's own formation matches the original square for square. The notes for the next try are in the CYD repo's TODO.
+
 ## [0.12.6] - 2026-11-20
 
 Built on the CYD engine 0.211.4 (was 0.211.1).

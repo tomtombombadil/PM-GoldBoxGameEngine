@@ -99,10 +99,11 @@ Tick off with the version that did it. Never ask Tom the same thing twice.
       (PoolRad's Flame Tongue), Age with Time, Power Word Kill, Protection from Evil, and 45 Game Fixes - each needs a
       prepared save (the CYD playsim's RECSET / SETXP / MEMSET) and its steps. The tour is unsteady in Knights, Queen
       and Gateway (their screens change by themselves between runs): those games' Enhancements not shown yet.
-- [ ] **v0.12.6's Speed test** (`tools/hand_test.py ... speed`): passed in PoolRad, Curse, Champions, Queen,
-      Gateway, Treasures; **Secret** (its test fight was over before Speed was tried), **Darkness** and **Knights**
-      (runs not finished at the release) still to do. Its other "!!" to look at: PoolRad / Secret - B at a
-      treasure's "Take: Money Items Exit" did not come back to the treasure menu (the test's own, or a fault?).
+- [ ] **Treasures: an overland fight starts with the foes next to the party; the original's start twelve squares
+      further** (DOSBox, clean, 2026-11-20). Cause not found - the CYD repo's TODO has what was read and ruled out.
+- [ ] Speed test (`tools/hand_test.py ... speed`) by the port's buttons: passed in PoolRad, Curse, Champions, Knights,
+      Queen, Gateway, Treasures. Secret and Darkness: no fight reached by the test's walk - seen in the engine
+      instead (Darkness: Speed's picks and Exit by the playsim; both: navcheck's empty-fight-menu rule, 0 failures).
 - [ ] **Tom to try on a device (v0.12.6)**: Gateway's fight Speed (Faster stays lit; Exit / B bring the fight menu
       back); the Companion's magenta name and class when someone can train; Treasures: load a save made on the
       overland (the map must be there), a fight on the overland (grass, not river banks).
@@ -320,12 +321,14 @@ Tick off with the version that did it. Never ask Tom the same thing twice.
       app updates ports) and a word with them about Send Logs (a port
       that uploads logs) - ask in the testing thread; (5) the PR itself
       from Tom's fork of PortsMaster/PortMaster-New, branch `goldbox`.
-- [ ] Keep the `cyd` pin current (built on CYD 0.211.4). Tom, 2026-11-14:
+- [ ] Keep the `cyd` pin current (built on CYD 0.211.5). Tom, 2026-11-14:
       Companion map / party-info changes are in work in the CYD (small
       boards first; the party-info layout may be rearranged) - when they
       land, move the pin and bring `src/panel.*` along.
 
 ## Done
+- [x] v0.12.7 (Tom, 2026-11-20: "fix the faults you found during testing"; engine 0.211.5): B inside a treasure's Take menu left the
+      treasure - fixed, seen by buttons in PoolRad; Treasures' lucky papers' plural; navcheck's two false alarms (all nine games clean).
 - [x] v0.12.6 (Tom, 2026-11-20; engine 0.211.4): a fight's Speed menu (the highlight stays on Faster / Slower; Exit and B bring the
       fight menu back); the Companion's ready-to-train magenta; Treasures' overland (saves keep the map, fights outdoors, no Area) -
       the last three found by the play-through and set against the original in DOSBox. `tools/hand_test.py ... speed`.

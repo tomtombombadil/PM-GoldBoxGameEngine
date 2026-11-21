@@ -331,12 +331,12 @@ def hand_fight(r, steps_max=4000):
         r.do("a,wait:400")
     if "Take" in fmw(p):
         w = fmw(p); pt.shot(r, "htreasure")
-        fgoto(p, "Take"); r.do("a,wait:500"); t1 = p.text[24].strip()
+        fgoto(p, "Take"); r.do("a,wait:500"); t1 = p.text[24].strip(); trail = []
         for i in range(5):
             if "Take" in fmw(p) and "View" in fmw(p): break
-            r.do("b,wait:400")
+            r.do("b,wait:400"); trail.append(p.text[24].strip()[:44])
         back = "Take" in fmw(p)
-        r.note("  treasure menu", w, "| Take ->", f"[{t1[:40]}]", "| B back:", "OK" if back else "!! " + p.text[24].strip()[:40])
+        r.note("  treasure menu", w, "| Take ->", f"[{t1[:40]}]", "| B back:", "OK" if back else "!! " + " -> ".join(trail))
     else:
         r.note("  after the fight: no treasure menu -", f"[{p.text[24].strip()[:40]}]")
     ok = r.settle(60)
