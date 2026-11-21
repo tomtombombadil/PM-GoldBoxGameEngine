@@ -15,4 +15,5 @@ showed. They need real game files and are run by hand:
   rd.py <cfg> <games>     Raising the Dead - Constitution after the Healer's Raise Dead
   race.py <n> <race> <rolls> tag=cfg ...   Race Adjustments - average rolled abilities
   norace.py <n> tag=cfg ...   Disable Race Level Limits - Darkness (Steam: its second saved game), the Trainer's lines
+  racecap.py <slot> ...       the same cheat at / near / past the limit: a prepared save (see its head), cheat off then on
 <game n> counts from 1. Scratch-grown scripts: read before reuse.

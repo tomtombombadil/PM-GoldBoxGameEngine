@@ -3,6 +3,24 @@
 Every version of Gold Box Game Engine for PortMaster. A release's notes are
 its part of this file.
 
+## [0.12.10] - 2026-11-21
+
+Built on the CYD engine 0.211.14 (was 0.211.13).
+
+**The Disable Race Level Limits cheat, tested in use** (Tom: "at, near, or past the level limit ... turn it on, level up and then turn the cheat back off ... across the games"). Two faults found and fixed, both in the engine:
+
+- **Past its limit, with the cheat off again, a character went on training** - in PoolRad, Curse, Secret, Darkness, Gateway and Treasures. Their limits are the originals' "level equals the limit" tests (in the originals nobody is ever past it), so one level over and no limit held. Now a limit holds at or past it; the limits' values are unchanged.
+- **The Dark Queen: the cheat also lifted a knight's order limit** (a knight of the Crown past 18, to 40). Now the cheat only takes the race's part: in the Krynn games the character is read as a human in the race tables.
+
+What was checked, and how:
+- **Every game, in the engine** (its new `racecap` check): every race x class x Strength / Intelligence 16, 17, 18, a character with experience for everything, a level at a time by the training hall's own choice - a level under the limit trains; at the limit it doesn't and isn't shown as ready; with the cheat on it trains, up to the game's own last level and no further; then at EVERY level past the limit with the cheat off again: no training, not ready, level and experience untouched; cheat on again: trains on. Limited combinations / checks: PoolRad 15 / 150, Curse 26 / 488, Secret 36 / 1,023, Darkness 30 / 3,114, Champions 19 / 193, Death Knights 87 / 2,742, the Dark Queen 90 / 8,478, Gateway 16 / 157, Treasures 30 / 3,114 - none wrong after the fixes.
+- **Six games by the port's buttons** (new `tools/switch_cases/racecap.py`; PoolRad, Curse, Secret, Darkness, Gateway, Treasures - GOG): a saved game prepared with the first member an elf fighter with Strength 18 (limit 7) and plenty of experience, at level 6, 7 and 8; the Cheats' Trainer, Train, cheat off then switched on at Start - Cheats in the same game. All six the same: level 6 trains to 7 with the cheat off; level 7: "Not Enough Experience" off, "will become: a level 8 Fighter" on; level 8 (past): "Not Enough Experience" off, "a level 9 Fighter" on - and in PoolRad and Gateway, whose last fighter level is 8, nothing either way.
+- **On, level up, off, save, start anew** (Darkness, the Steam save's Oratisi, by buttons): cheat on - 5/9/12 trained to 9/11/12; cheat off - "Not Enough Experience", still 9/11/12 with 500,000; saved; the port started again with the cheat off - the save loads as 9/11/12, no training; nothing is taken back.
+
+Good to know: the games say "Not Enough Experience" when a race's limit stops the training - their own words, there is no other message. And a single-class character can train only once a visit whatever its experience (the originals cut it to one short of the level after) - so after one training with the cheat on, the next "Not Enough Experience" is that, not the limit.
+
+Not done: the three Krynn games by the port's buttons (my save tool can't set a Krynn character's race; they are covered by the engine check only). Not on a device.
+
 ## [0.12.9] - 2026-11-21
 
 Built on the CYD engine 0.211.13 (was 0.211.10).

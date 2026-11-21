@@ -355,7 +355,9 @@ and maintains it; it is the primary output of the Claude Project
   Traitor's Gate and across by the port's buttons - run it after an engine change near a step or a map load.
 - **Disable Race Level Limits** (Tom, 2026-11-21: "I want to add a cheat"): Start - Cheats (`MNoRace`,
   `cfg.no_race_limits`, the engine's `Options::no_race_limits`, CYD 0.211.13), off by default, off under Original
-  Games. `tools/switch_cases/norace.py` shows its effect by buttons. The levels a new non-human gets changing with
+  Games. `tools/switch_cases/norace.py` shows its effect by buttons; `racecap.py` (v0.12.10) plays a prepared
+  save at / near / past the limit, cheat off then on - run it, and the engine's `behave levels` part `racecap`,
+  after any change near training. A limit holds AT OR PAST it (the cheat off again); the cheat never undoes levels. The levels a new non-human gets changing with
   the rolled Strength / Intelligence are the originals' (DOSBox) - not a fault; don't "fix" it.
 - **Tom's PowKiddy X55** (ROCKNIX, the latest nightly - Tom, 2026-11-21): on Quit a red "You must configure
   rclone ..." shows for a moment. It is ROCKNIX's own: its `runemu.sh` runs `/usr/bin/cloud_backup` after EVERY

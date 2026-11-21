@@ -331,7 +331,7 @@ Tick off with the version that did it. Never ask Tom the same thing twice.
       app updates ports) and a word with them about Send Logs (a port
       that uploads logs) - ask in the testing thread; (5) the PR itself
       from Tom's fork of PortsMaster/PortMaster-New, branch `goldbox`.
-- [ ] Keep the `cyd` pin current (built on CYD 0.211.13). Tom, 2026-11-14:
+- [ ] Keep the `cyd` pin current (built on CYD 0.211.14). Tom, 2026-11-14:
       Companion map / party-info changes are in work in the CYD (small
       boards first; the party-info layout may be rearranged) - when they
       land, move the pin and bring `src/panel.*` along.
@@ -453,4 +453,11 @@ Tick off with the version that did it. Never ask Tom the same thing twice.
 - [x] v0.12.9: the training by the port's buttons (norace.py, Darkness). [ ] The Speed test by buttons in Secret /
       Darkness still open - Steam Secret's opening fight plays by itself (the save's party on Quick?): find out.
 - [ ] Treasures' play-through: Daggerford next; Elwyn's lost levels; the loot since Secomber; the Leilon potion.
+
+## v0.12.10
+- [x] The level-limit cheat tested in use (Tom, 2026-11-21): engine 0.211.14's two fixes; `racecap.py` by buttons in
+      PoolRad, Curse, Secret, Darkness, Gateway, Treasures; the on / train / off / save / reload cycle in Darkness.
+- [ ] The same by buttons in Champions, Knights, Queen - needs a prepared save with a Krynn race (the playsim's RECSET
+      sets record bytes only: an EXTSET for the Krynn fields, or a character made in the game).
+- [ ] Restoration (a drained character past its limit, the cheat off): its own limits still "level == limit" - look.
 
