@@ -331,7 +331,7 @@ Tick off with the version that did it. Never ask Tom the same thing twice.
       app updates ports) and a word with them about Send Logs (a port
       that uploads logs) - ask in the testing thread; (5) the PR itself
       from Tom's fork of PortsMaster/PortMaster-New, branch `goldbox`.
-- [ ] Keep the `cyd` pin current (built on CYD 0.211.14). Tom, 2026-11-14:
+- [ ] Keep the `cyd` pin current (built on CYD 0.214.10). Tom, 2026-11-14:
       Companion map / party-info changes are in work in the CYD (small
       boards first; the party-info layout may be rearranged) - when they
       land, move the pin and bring `src/panel.*` along.
@@ -467,3 +467,12 @@ Tick off with the version that did it. Never ask Tom the same thing twice.
 - [ ] Tom: look at the new scan list on a device (Start - Rescan Game Files), 4:3 and the 16:9 MAX3.
 - [ ] Tom's edited list had "Making its music..." under five games but not under Darkness - taken as: gone everywhere.
       Say if it should stay.
+
+## v0.12.12
+- [x] A shop's goods in the next fight's treasure (engine 0.214.10; found at Ruathym, the original run in DOSBox).
+- [x] The D-pad's Left / Right on PoolRad's wilderness and the Krynn overlands (`play::move_keys`); the Companion's
+      wilderness map and the engine's secret doors.
+- [ ] Tom, on a handheld: PoolRad's wilderness (leave Phlan by boat) - walk all four ways, the Companion's map there;
+      Champions' overland - Move, then Left / Right (west / east) and L1 / R1 (the diagonals).
+- [ ] Not tried by buttons: the Dark Queen's overland; Champions' step itself (the test's square ran into a fight).
+- [ ] Curse / PoolRad shops: do their goods stay on the item list after the shop? (the CYD's TODO has it.)

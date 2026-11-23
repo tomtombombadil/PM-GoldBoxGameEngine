@@ -66,25 +66,7 @@ struct Paint : companion::Painter {
     }
 };
 
-// The wall types that look like the area's ordinary walls (mostly solid
-// sides on this map): a passable side of one is a secret door - as the
-// CYD's map marks them
-uint16_t plain_walls(const geo::Map& m)
-{
-    uint16_t solid[16] = {}, open[16] = {};
-    for (int y = 0; y < m.h; ++y)
-        for (int x = 0; x < m.w; ++x)
-            for (int d = 0; d < 8; d += 2) {
-                const int w = geo::wall(m, x, y, d);
-                if (!w) continue;
-                if (geo::door(m, x, y, d) == 0) ++solid[w];
-                else ++open[w];
-            }
-    uint16_t bits = 0;
-    for (int w = 1; w < 16; ++w)
-        if (solid[w] && solid[w] >= open[w] * 4) bits |= static_cast<uint16_t>(1u << w);
-    return bits;
-}
+constexpr uint32_t kPlace = 0xFFFF8C00;       // (the CYD's style::kPlace)
 
 View first() { return play::fighting() ? View::Battle : View::Map; }
 
@@ -109,7 +91,7 @@ void draw_map(int zx, int zy, int zw, int zh, bool square)
     if (cw < 2) cw = 2;
     if (ch < 2) ch = 2;
     const int mx = square ? zx + 4 : zx + (zw - cw * m->w) / 2, my = zy + (square ? (zh - ch * m->h) / 2 : 4);
-    const uint16_t plain = plain_walls(*m);
+    const uint16_t plain = geo::plain_walls(*m);
     static const uint8_t kS[7] = {0x0E, 0x11, 0x10, 0x0E, 0x01, 0x11, 0x0E};
     for (int pass = 0; pass < 2; ++pass)
         for (int y = 0; y < m->h; ++y)
@@ -125,7 +107,10 @@ void draw_map(int zx, int zy, int zw, int zh, bool square)
                     if (across) put(lx, ly, cw + 1, 1, video::kCream);
                     else put(lx, ly, 1, ch + 1, video::kCream);
                     if (!door) continue;
-                    if (door == 1 && (plain >> w & 1) && cw >= 8) {
+                    if (door == 1 && (plain >> w & 1)) {
+                        // Drawn as the area's wall: a secret door only where the game lets the party through
+                        // (the engine's play::map_secret, 0.214.2 - before it is found; the rest is wall)
+                        if (!play::map_secret(x, y, d) || cw < 8) continue;
                         const int ox = across ? lx + cw / 2 - 2 : lx - 2, oy = across ? ly - 3 : ly + ch / 2 - 3;
                         for (int r = 0; r < 7; ++r)
                             for (int c = 0; c < 5; ++c)
@@ -136,6 +121,15 @@ void draw_map(int zx, int zy, int zw, int zh, bool square)
                     if (across) put(lx + 1, ly - 1, cw - 1, 3, col);
                     else put(lx - 1, ly + 1, 3, ch - 1, col);
                 }
+            }
+    // The places (PoolRad's wilderness, engine 0.213.0: where its scripts have something): an orange square
+    bool places = false;
+    for (int y = 0; y < m->h; ++y)
+        for (int x = 0; x < m->w; ++x)
+            if (play::map_place(x, y)) {
+                const int pw = cw / 2 > 2 ? cw / 2 : 2, ph = ch / 2 > 2 ? ch / 2 : 2;
+                put(mx + x * cw + (cw - pw + 1) / 2, my + y * ch + (ch - ph + 1) / 2, pw, ph, kPlace);
+                places = true;
             }
     // The party: an arrowhead the way it faces
     const int cx = mx + play::pos_x() * cw + cw / 2, cy = my + play::pos_y() * ch + ch / 2;
@@ -148,12 +142,18 @@ void draw_map(int zx, int zy, int zw, int zh, bool square)
     }
     if (square) {
         const int lx = mx + m->w * cw + 10;
-        letters(lx, my, "Locked", video::kWarn);
-        letters(lx, my + 12, "Secret", video::kCyan);
+        if (places) letters(lx, my, "Place", kPlace);
+        else {
+            letters(lx, my, "Locked", video::kWarn);
+            letters(lx, my + 12, "Secret", video::kCyan);
+        }
     } else {
         const int ly = my + m->h * ch + 6;
-        letters(zx + 4, ly, "Locked", video::kWarn);
-        letters(zx + 68, ly, "Secret", video::kCyan);
+        if (places) letters(zx + 4, ly, "Place", kPlace);
+        else {
+            letters(zx + 4, ly, "Locked", video::kWarn);
+            letters(zx + 68, ly, "Secret", video::kCyan);
+        }
     }
 }
 
@@ -178,6 +178,14 @@ uint32_t signature(View v, bool blink_on)
         // (a door opened shows too: the map's own bytes)
         if (m)
             for (int i = 0; i < m->squares(); ++i) s = s * 31 + m->pl(3)[i];
+        // (the secret doors the engine has worked out, an overland's places)
+        if (m)
+            for (int y = 0; y < m->h; ++y)
+                for (int x = 0; x < m->w; ++x) {
+                    uint32_t b = play::map_place(x, y) ? 16u : 0u;
+                    for (int d = 0; d < 8; d += 2) b |= play::map_secret(x, y, d) ? 1u << (d / 2) : 0u;
+                    s = s * 31 + b;
+                }
         // (Save Slot Info: the highlighted slot's map stands here - another slot, another map in the same place)
         if (m && play::saves_shown())
             for (int k = 0; k < 3; ++k)

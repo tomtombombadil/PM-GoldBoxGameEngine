@@ -65,6 +65,12 @@ and maintains it; it is the primary output of the Claude Project
   lacks is said the same way ("  No picture: ...", "  No journal: ...", "  No music: ..."). A new scan step
   follows this; the engine's own music lines are put into it by `scan_music` (main.cpp), the journal's by
   `progress` (jour.cpp).
+- **Overlands where the keys step** (v0.12.12; the engine's `play::move_keys()`): PoolRad's wilderness (Steps4) and
+  Champions' / the Dark Queen's maps (Steps6) - the D-pad's Left / Right are StepLeft / StepRight there (west /
+  east), on Steps6 L1 / R1 the diagonals; `game_dir` / `BL1` in main.cpp. A new overland kind in the engine gets
+  its D-pad here in the version that moves the pin - try all four directions by buttons.
+- **The Companion's map asks the engine** for what isn't in the map's bytes: `play::map_secret` (the S), `play::map_place`
+  (an overland's places, orange; the legend reads "Place" then) - `panel.cpp` `draw_map`, both in its signature.
 - **Journal viewer's X** (Tom, 2026-11-14): text entries - no zoom, X =
   next page, round to the top; picture entries - Width (start), Double,
   Whole, and Turned for very long maps (SPEC 6).

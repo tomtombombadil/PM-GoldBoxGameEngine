@@ -1849,8 +1849,14 @@ void game_dir(int b)
         return;
     }
     if (cfg.pad_moves && play::walking()) {
+        // (an overland where the keys step - PoolRad's wilderness, Champions' and the Dark Queen's maps, the
+        // engine's play::move_keys, 0.214.0: Left / Right step west / east. Until v0.12.12 they were the turn
+        // keys there - nothing on PoolRad's wilderness, north-west / north-east on the Krynn maps: no way
+        // straight east or west)
+        const bool steps = play::move_keys() != play::MoveKeys::Turns;
         play::act(b == BUp ? play::Act::Forward : b == BDown ? play::Act::TurnAround
-                  : b == BLeft ? play::Act::TurnLeft : play::Act::TurnRight, cv);
+                  : b == BLeft ? (steps ? play::Act::StepLeft : play::Act::TurnLeft)
+                  : (steps ? play::Act::StepRight : play::Act::TurnRight), cv);
         return;
     }
     play::nav(b == BUp ? play::Nav::Up : b == BDown ? play::Nav::Down : b == BLeft ? play::Nav::Left : play::Nav::Right, cv);
@@ -2208,12 +2214,15 @@ void press(int b)
     }
     case BX: play::act(play::Act::Area, cv); break;
     case BY: panel::next(); break;
+    // (Champions' / the Dark Queen's overland, walking: north-west / north-east, as in a fight)
     case BL1:
         if (fight) play::fight_dir(7, cv);
+        else if (cfg.pad_moves && play::walking() && play::move_keys() == play::MoveKeys::Steps6) play::act(play::Act::TurnLeft, cv);
         else play::nav(play::Nav::Left, cv);
         break;
     case BR1:
         if (fight) play::fight_dir(1, cv);
+        else if (cfg.pad_moves && play::walking() && play::move_keys() == play::MoveKeys::Steps6) play::act(play::Act::TurnRight, cv);
         else play::nav(play::Nav::Right, cv);
         break;
     // (Tom, 2026-11-14: with L1 / R1 the two highlights - the menu's word

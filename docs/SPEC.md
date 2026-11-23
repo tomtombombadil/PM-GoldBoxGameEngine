@@ -79,7 +79,10 @@ direction keys (`play::fight_dir`, `fight_select`), typed keys
   v0.9.1): the menu is "Move Encamp" - Move, then the D-pad steps (the
   engine's `walking()` is true in Move mode since CYD 0.200.1), B = Exit.
   The Dark Queen's and PoolRad's / Gateway's overland: the D-pad steps at
-  once.
+  once. Where the engine's keys step instead of turning (`play::move_keys`,
+  v0.12.12): PoolRad's wilderness - Up / Down / Left / Right = north /
+  south / west / east; Champions' and the Dark Queen's maps the same, and
+  L1 / R1 = north-west / north-east.
 - **L2 / R2** (Tom, 2026-11-14): no side-steps on the buttons - L2 / R2
   move the list's line while L1 / R1 move the menu's word, so both of a
   screen's highlights are at hand and the D-pad keeps walking. Look is on
@@ -90,7 +93,9 @@ direction keys (`play::fight_dir`, `fight_select`), typed keys
   Tom), the game going on
   under it - the D-pad still walks and the map follows. Y again: the next
   view, then away. Exploring: Map (walls, doors gold, locked red, secret
-  doors S, the party's arrow), Party; in a fight: Battle, Party. Party
+  doors S - the engine's `play::map_secret` - the party's arrow; on
+  PoolRad's wilderness the lines are where a step is refused and the
+  scripts' places are orange squares, the legend "Place"), Party; in a fight: Battle, Party. Party
   and Battle are the engine's own views (`game/companion.*`) through its
   Painter, stretched across by 4 / 3 for 8-pixel letters.
   **Wide panels** (Tom, 2026-11-14: "16:9 devices and similar ... to the

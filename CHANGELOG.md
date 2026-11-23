@@ -3,6 +3,23 @@
 Every version of Gold Box Game Engine for PortMaster. A release's notes are
 its part of this file.
 
+## [0.12.12] - 2026-11-23
+
+Built on the CYD engine 0.214.10 (was 0.211.14).
+
+**Fixed**
+
+- **A shop's goods turned up in the next fight's treasure.** Found in the Treasures play-through (Ruathym): after a visit to a shop, the next fight's treasure listed the shop's whole stock as well - free. The engine left the shop's goods on its item list. The original was run from the same save (DOSBox: the shop, Exit, the guards' fight - two pages of the guards' own items, the same experience). Fixed in the engine (0.214.10); every game from Secret on had it. Curse's and PoolRad's shops work another way and were not checked.
+- **The D-pad's Left / Right on the overland maps where the keys step.** On PoolRad's wilderness they did nothing - no way east or west by the D-pad; on Champions' and the Dark Queen's maps they went north-west / north-east, with no way straight east or west. Now Left / Right step west / east there (the engine's new `play::move_keys`), and on the two Krynn maps L1 / R1 are north-west / north-east. Everywhere else as before.
+
+**From the engine (0.211.15 - 0.214.9)**
+
+- The Companion's map on PoolRad's wilderness: where a step is refused (lines), the places its scripts know (orange squares, "Place"), the party's arrow.
+- Secret doors on the Companion's map are the engine's own now: an S wherever the game lets the party through a wall, worked out before the party finds it - no S on a wall that only looks like one.
+- Darkness: the ending's movie; training past 255 hit points (Game Fix "Hit Points Past 255"); level drains and Restoration by each original's own routine; the Cheats at Champions' / Death Knights' outposts; Champions' random treasure.
+
+Checked: the PC build with the GOG files. PoolRad's wilderness by the port's buttons from a made save (Right: 0,0 -> 1,0 -> 2,0; Down a row; the Companion's map with its places looked at, 1280 x 720). Champions' overland: Right now faces east (was north-east) - the step itself ran into a fight, so the square's change was not seen. The play test on PoolRad (a fight, camp, the cheats). Not on a device; the Dark Queen's map not tried.
+
 ## [0.12.11] - 2026-11-23
 
 Built on the CYD engine 0.211.14 (unchanged).
