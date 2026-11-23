@@ -7,6 +7,7 @@ player's own files.
 
     python3 tools/smoke_test.py build/goldbox
 """
+import re
 import os
 import pathlib
 import shutil
@@ -264,6 +265,10 @@ def main():
         # (the first run finds the two playable ones: the scan's list, until Continue)
         out = run(exe, g, conf, f"wait:100,shot:{shot},a,wait:100,a,wait:200,a,down,a,wait:200,a,down,a,a,up,quit")
         assert out.count("[scan] Found ") == 2 and "[scan] Done." in out, "the first run's scan"
+        # (the scan's layout, v0.12.11: what is made for a game indented two under its "Found" line)
+        assert out.count("[scan]   No journal: its PDF isn't in the game's folder.") == 2, "the scan's journal line"
+        assert not [l for l in out.splitlines() if l.startswith("[scan] ") and not re.match(
+            r"\[scan\] (Searching|Found |Done\.|Preparing |  \S|    \S)", l)], "a scan line out of the layout"
         assert (g / "_CYD" / "curse of the azure bonds" / "PMSCAN.TXT").is_file(), "the scan's mark"
         assert (g / "_CYD" / "curse of the azure bonds" / "ART.BIN").is_file(), "the scan's picture file"
         assert "3 game folder(s) found" in out, "expected 3 folders"

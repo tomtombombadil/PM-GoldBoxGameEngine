@@ -132,17 +132,25 @@ struct NoGameDat : dax::ByteSource {
 };
 
 struct Prog {
-    Say         say;
-    const char* title;
-    const char* what;
+    Say          say;
+    const char*  title;
+    const char*  what;
+    mutable bool started = false;
 };
 
+// The scan's two lines for a journal step (Tom, 2026-11-23): "  Processing
+// the journal:" once, then "    page 12 of 99" under it, counting in place.
 void progress(int done, int total, void* ctx)
 {
     const Prog* p = static_cast<const Prog*>(ctx);
     if (!p->say || (done % 4 && done != total)) return;
     char line[120];
-    snprintf(line, sizeof line, "%s the %s journal: page %d of %d", p->what, p->title, done, total);
+    if (!p->started) {
+        snprintf(line, sizeof line, "  %s the journal:", p->what);
+        p->say(line, false, nullptr);
+        p->started = true;
+    }
+    snprintf(line, sizeof line, "    page %d of %d", done, total);
     p->say(line, true, nullptr);
 }
 

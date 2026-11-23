@@ -1427,15 +1427,78 @@ void draw_scan()
     video::set_backdrop(scan_page.data(), kHeaderH);
 }
 
-void scan_say(const char* line, bool replace, void*)
+// A line onto the scan's list (replace: over the last one), shown at once
+void scan_put(const char* line, bool replace)
 {
-    if (replace && scan_progress && !scan_log.empty()) scan_log.back() = line;
+    if (replace && !scan_log.empty()) scan_log.back() = line;
     else scan_log.push_back(line);
-    scan_progress = replace;
     plat::log("[scan] %s\n", line);
     draw_scan();
     video::present(nullptr);
     SDL_PumpEvents();           // (minutes may pass: the window stays alive)
+}
+
+bool ends_with(const std::string& s, const char* tail)
+{
+    const size_t n = strlen(tail);
+    return s.size() >= n && s.compare(s.size() - n, n, tail) == 0;
+}
+
+// The scan's lines (Tom's layout, 2026-11-23: "Found <game>" at the left, what
+// is made for it indented two, a step's counter under its heading indented
+// four and counting in place). replace: a counter - it takes the place of the
+// counter before it. A journal step's heading ("  Processing the journal:")
+// takes the place of the step before it and its counter ("  Reading ...").
+void scan_say(const char* line, bool replace, void*)
+{
+    const bool counter = replace && scan_progress;
+    if (!replace && scan_progress && scan_log.size() >= 2 && ends_with(line, " the journal:") &&
+        ends_with(scan_log[scan_log.size() - 2], " the journal:")) {
+        scan_log.pop_back();
+        scan_put(line, true);
+    } else {
+        scan_put(line, counter);
+    }
+    scan_progress = replace;
+}
+
+// The engine's music lines put into the scan's layout: "  Rendering the
+// <game> music:" once, then a line a song - "    song 2 of 8..." while it is
+// made, its length added when it is ("... (24 s of music, 1 s to make)").
+bool        music_head = false;
+std::string music_song;
+
+void scan_music(const char* line, bool, void*)
+{
+    char name[48] = "", rest[120] = "";
+    int  n = 0, of = 0;
+    scan_progress = false;
+    if (sscanf(line, "Rendering the %47[^,], song %d of %d", name, &n, &of) == 3) {
+        if (!music_head) {
+            scan_put(("  Rendering the " + std::string(name) + ":").c_str(), false);
+            music_head = true;
+        }
+        char row[64];
+        snprintf(row, sizeof row, "    song %d of %d...", n, of);
+        music_song = row;
+        scan_put(row, false);
+        return;
+    }
+    const char* open = strrchr(line, '(');
+    if (strncmp(line, "Rendered the ", 13) == 0 && open && !music_song.empty()) {
+        scan_put((music_song + " " + open).c_str(), true);
+        music_song.clear();
+        return;
+    }
+    const char* why = strstr(line, "wasn't rendered: ");
+    if (why && !music_song.empty()) {
+        snprintf(rest, sizeof rest, "%s", why + 17);
+        if (char* end = strstr(rest, ". The next")) *end = 0;
+        scan_put((music_song + " not made: " + rest).c_str(), true);
+        music_song.clear();
+        return;
+    }
+    scan_put(("    " + std::string(line)).c_str(), false);
 }
 
 bool scan_marked(const std::string& cache)
@@ -1509,16 +1572,25 @@ bool discover(bool all, bool pictures = true)
         jour::prepare(g, cache, scan_say);
         snprintf(line, sizeof line, "%s", plat::exists((cache + "/JOURNAL.DAT").c_str())
                                               ? "  Its journal is ready."
-                                              : "  No journal: its Adventurer's Journal PDF isn't in the game's folder.");
+                                              : "  No journal: its PDF isn't in the game's folder.");
         scan_say(line, false, nullptr);
         // Its music (the later games), from its own files
         // (engine 0.199: the Dark Queen's and Champions' too - by the game's profile, as the CYD's scan)
         const profile::Profile* prof = profile::first(g.game);
         if (musicfiles::songs(g.data_dir.c_str(), prof) && (all || !musicfiles::ready(g.data_dir.c_str(), cache.c_str(), prof))) {
-            scan_say("  Making its music...", false, nullptr);
+            music_head = false;
+            music_song.clear();
             const int failed =
-                musicfiles::make(g.data_dir.c_str(), cache.c_str(), prof, games::short_title(g.game), all, scan_say, nullptr);
+                musicfiles::make(g.data_dir.c_str(), cache.c_str(), prof, games::short_title(g.game), all, scan_music, nullptr);
             scan_say(failed ? "  Some of its music couldn't be made." : "  Its music is ready.", false, nullptr);
+        } else if (!musicfiles::songs(g.data_dir.c_str(), prof) &&
+                   (g.game == games::Game::PoolsOfDarkness || g.game == games::Game::ChampionsOfKrynn ||
+                    g.game == games::Game::DeathKnightsOfKrynn || g.game == games::Game::DarkQueenOfKrynn ||
+                    g.game == games::Game::GatewayToTheSavageFrontier ||
+                    g.game == games::Game::TreasuresOfTheSavageFrontier)) {
+            // (a copy without the game's AdLib music files - a player's log, v0.12.7: a silent Dark Queen
+            // and no word why)
+            scan_say("  No music: its music files aren't in the folder.", false, nullptr);
         }
         plat::File f = plat::open((cache + "/" + kScanMark).c_str(), "w");
         if (f) {

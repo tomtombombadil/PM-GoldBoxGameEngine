@@ -461,3 +461,9 @@ Tick off with the version that did it. Never ask Tom the same thing twice.
       sets record bytes only: an EXTSET for the Krynn fields, or a character made in the game).
 - [ ] Restoration (a drained character past its limit, the cheat off): its own limits still "level == limit" - look.
 
+- [x] v0.12.11 (Tom, 2026-11-23): the scan's list in his layout (indents, a heading + a counter in place, short lines);
+      "No music: ..." when a copy lacks its music files (a player's v0.12.7 log: a silent Dark Queen, no reason given).
+      Checked on the PC build (Steam set, GOG set, a cut-down copy; 640 x 480 looked at) - not on a device.
+- [ ] Tom: look at the new scan list on a device (Start - Rescan Game Files), 4:3 and the 16:9 MAX3.
+- [ ] Tom's edited list had "Making its music..." under five games but not under Darkness - taken as: gone everywhere.
+      Say if it should stay.

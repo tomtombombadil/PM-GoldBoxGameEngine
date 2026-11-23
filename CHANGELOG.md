@@ -3,6 +3,21 @@
 Every version of Gold Box Game Engine for PortMaster. A release's notes are
 its part of this file.
 
+## [0.12.11] - 2026-11-23
+
+Built on the CYD engine 0.211.14 (unchanged).
+
+**The scan's list, tidied** (Tom's layout: "the indent changes, the shortening of the lines and over all neater appearance"):
+
+- A game's "Found ..." line at the left (gold); everything made for it indented two under it; a step's counter indented four under its heading and counting in place.
+- The journal: "  Processing the journal:" then "    page 12 of 99" - the game's name no longer repeated in every line. (Steam copies read the PDF's text first: "  Reading the journal:" with its own page count, replaced by Processing when that starts.)
+- The music: "  Rendering the Pools of Darkness music:" once, then a line a song - "    song 2 of 8..." while it is made, "(24 s of music, 1 s to make)" added to the same line when it is. "Making its music..." and the separate "Rendered ..." lines are gone.
+- **A game without its music files now says so**: "  No music: its music files aren't in the folder." (Darkness, Champions, Death Knights, the Dark Queen, Gateway, Treasures). Before, the step was passed over without a word - a player's log (v0.12.7) had a silent Dark Queen and no reason given.
+- "No journal" shortened to "  No journal: its PDF isn't in the game's folder." so it fits one row on 640 x 480.
+- The same lines go to log.txt.
+
+Checked: the PC build's scan run on the Steam set (with the Launcher folder), the GOG set, and a cut-down copy (no icon, no PDF, no music files) - the lists read back from the log and the 640 x 480 screen looked at for the GOG set and the cut-down copy. Not on a device.
+
 ## [0.12.10] - 2026-11-21
 
 Built on the CYD engine 0.211.14 (was 0.211.13).

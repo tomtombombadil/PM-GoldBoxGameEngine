@@ -57,6 +57,14 @@ and maintains it; it is the primary output of the Claude Project
   1280 x 720 as well as 640 x 480 (`--window`) before a release. Only
   the game itself is 4:3. No "2 of 9" counter on the game list ("looks
   bad"). The scan's list uses the smaller letters (`video::small_text`).
+- **The scan's list** (Tom, 2026-11-23, v0.12.11 - he edited the screen's text himself): "Found <game>" at the
+  left; what is made for it indented two ("  Its box art is ready."); a step's heading indented two and ending
+  in a colon ("  Processing the journal:", "  Rendering the Gateway music:") with its counter indented four
+  under it, counting in place ("    page 12 of 99"; a line a song, "    song 2 of 8... (24 s of music, 1 s to
+  make)"). No game name repeated inside a game's lines, every line within 51 letters (640 x 480). What a copy
+  lacks is said the same way ("  No picture: ...", "  No journal: ...", "  No music: ..."). A new scan step
+  follows this; the engine's own music lines are put into it by `scan_music` (main.cpp), the journal's by
+  `progress` (jour.cpp).
 - **Journal viewer's X** (Tom, 2026-11-14): text entries - no zoom, X =
   next page, round to the top; picture entries - Width (start), Double,
   Whole, and Turned for very long maps (SPEC 6).

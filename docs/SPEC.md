@@ -193,8 +193,12 @@ on screen the overlay is 320 again.
   **found**: at the
   start, every playable game folder without the mark
   `_CYD/<folder>/PMSCAN.TXT` (`discover()` in main.cpp). The screen lists
-  what it does ("Found ...", "Processing the ... journal: page n of m",
-  "Making its music...") in smaller letters (12 x 12, smoothed, on the
+  what it does in Tom's layout (2026-11-23, v0.12.11: "Found <game>" at the
+  left, what is made for it indented two, a step's heading ending in a colon
+  with its counter indented four under it and counting in place -
+  "  Processing the journal:" / "    page n of m", "  Rendering the <game>
+  music:" / "    song n of m... (s of music, s to make)"; what a copy lacks
+  as "  No picture / No journal / No music: ...") in smaller letters (12 x 12, smoothed, on the
   backdrop's sharper picture: 52 across on 4:3, 69 on 16:9) and stays
   until A. **Start - Rescan Game Files** does every game anew (journal files removed first, music
   forced). Never at a game's start or on first use: a game starts with no
