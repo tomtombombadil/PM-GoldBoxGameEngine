@@ -37,6 +37,11 @@
 #include "panel.h"
 #include "settings.h"
 #include "task.h"
+#include "touchpad.h"
+
+#ifdef __ANDROID__
+#include <jni.h>
+#endif
 #include "video.h"
 
 #ifndef PM_VERSION
@@ -48,6 +53,14 @@
 // the player's own choice in Settings stands afterwards - and the buttons'
 // names on screen are the device's printed letters (confirm_name)
 bool ab_reversed = false;
+
+// The on-screen buttons (touchpad.h): Android's always; a PC's with
+// --touchpad (the mouse acting as a finger), to try them out
+#ifdef __ANDROID__
+bool touch_ui = true;
+#else
+bool touch_ui = false;
+#endif
 
 namespace {
 
@@ -127,6 +140,53 @@ bool   fired_once = false;
 
 SDL_GameController* pad = nullptr;
 bool                trig[2] = {};
+
+// ---- A touch screen (Android; a PC with --touchpad) -------------------------
+// (Tom, 2026-11-23: "compatible with touch and/or a controller (via bluetooth
+// or USB) or an onscreen overlay representing the controller"). Three ways,
+// any mix: a controller; the on-screen buttons (touchpad.h); or touching the
+// port's own screens - a tap or a swipe is the button a player would press
+// there (touch_tap / touch_swipe), so nothing is touch's alone.
+const char* const kTouchPad[3] = {"Auto", "Always", "Never"};
+bool touch_last = true;     // the last thing used was the screen (Auto: the buttons shown)
+
+void touch_pad_apply()
+{
+    if (!touch_ui) return;
+    touchpad::set_shown(cfg.touch_pad == 1 || (cfg.touch_pad == 0 && touch_last));
+}
+
+// A folder as the player's phone and PC name it: "Internal storage/GoldBox"
+// (Android's /storage/emulated/0), "SD card/..." (/storage/XXXX-XXXX)
+std::string shown_path(const std::string& p)
+{
+#ifdef __ANDROID__
+    const char* own = "/storage/emulated/0";
+    if (p.compare(0, strlen(own), own) == 0) return "Internal storage" + p.substr(strlen(own));
+    if (p.compare(0, 9, "/storage/") == 0) {
+        const size_t end = p.find('/', 9);
+        return "SD card" + (end == std::string::npos ? std::string() : p.substr(end));
+    }
+#endif
+    return p;
+}
+
+#ifdef __ANDROID__
+// Start - System - Games Folder: the app's folder screen (Java,
+// GoldBoxActivity.chooseFolder) opens; this program then ends
+void android_choose_folder()
+{
+    JNIEnv* env = static_cast<JNIEnv*>(SDL_AndroidGetJNIEnv());
+    jobject act = static_cast<jobject>(SDL_AndroidGetActivity());
+    if (!env || !act) return;
+    jclass c = env->GetObjectClass(act);
+    jmethodID m = env->GetMethodID(c, "chooseFolder", "()V");
+    if (m) env->CallVoidMethod(act, m);
+    else env->ExceptionClear();
+    env->DeleteLocalRef(c);
+    env->DeleteLocalRef(act);
+}
+#endif
 
 // ---- The palette (as the CYD front end keeps its panel's colours) ----------
 void show_flash(int index, int colour)
@@ -242,12 +302,38 @@ void draw_games()
         int row = 4;
         centred(row, have_root ? "No games found" : "No games folder", video::kWarn);
         row = wrapped(2, row + 2, 36,
+#ifdef __ANDROID__
+                      "This app plays SSI's Gold Box games from your own copies. Copy each game's whole folder "
+                      "(from GOG or Steam) into its games folder:",
+#else
                       "This port plays SSI's Gold Box games from your own copies. Copy each game's whole folder "
                       "(from GOG or Steam) into the port's games folder:",
+#endif
                       video::kCream);
+#ifdef __ANDROID__
+        // (the folder the app was given, as the phone's file manager and a PC
+        // over USB name it - "Internal storage/GoldBox/games/")
+        {
+            std::string at = shown_path(pm::games_root()) + "/";
+            ++row;
+            while (!at.empty()) {
+                size_t cut = at.size();
+                if (cut > 36) {
+                    cut = at.rfind('/', 35);
+                    cut = cut == std::string::npos || cut == 0 ? 36 : cut + 1;
+                }
+                centred(row++, at.substr(0, cut).c_str(), video::kGold);
+                at.erase(0, cut);
+            }
+            row = wrapped(2, row + 1, 36, "for example games/Curse of the Azure Bonds/ - then tap the screen (Look Again).",
+                          video::kCream);
+            wrapped(2, row + 1, 36, "Another folder: Start - System - Games Folder.", video::kMuted);
+        }
+#else
         centred(row + 1, "ports/goldbox/games/", video::kGold);
         wrapped(2, row + 3, 36, "for example games/Curse of the Azure Bonds/ - then start the port again.",
                 video::kCream);
+#endif
         char line[41];
         snprintf(line, sizeof line, "Start: Menu   %s: Look Again", confirm_name());
         centred(23, line, video::kMuted);
@@ -502,8 +588,8 @@ enum MenuItem : uint8_t {
     MFix,                                   // a game's fixes (arg: rules::Fix)
     MHealer, MMerchant, MSanctuary, MTrainer, MMaxHp, MNoRace,   // Cheats
     MQuickOn, MQuick,                       // Quick Actions
-    MControls, MPadMoves, MSwap,            // Controls
-    MRescan, MDevice, MUpdate, MSendLogs, MReplyAddr,   // System
+    MControls, MPadMoves, MSwap, MTouchPad, // Controls (MTouchPad: a touch screen's)
+    MRescan, MDevice, MUpdate, MSendLogs, MReplyAddr, MFolder,   // System (MFolder: Android's)
     MBack
 };
 enum class Page : uint8_t { Top, Display, Audio, Play, Enhance, Rules, FixGames, Fixes, Cheats, Quick, Controls, System };
@@ -635,7 +721,9 @@ void menu_build()
         add(MSystemPg);
         // (the port's own, Tom 2026-11-17: on the main menu, "not buried")
         add(MRescan);
+#ifndef __ANDROID__
         add(MUpdate);
+#endif
         if (playing) add(MLeaveGame);
         add(MExit);
         break;
@@ -680,11 +768,17 @@ void menu_build()
         add(MControls);
         add(MPadMoves);
         add(MSwap);
+        if (touch_ui) add(MTouchPad);
         break;
     case Page::System:
+#ifdef __ANDROID__
+        add(MFolder);
+#endif
         add(MDevice);
+#ifndef __ANDROID__
         add(MSendLogs);
         add(MReplyAddr);
+#endif
         break;
     }
     if (menu_page != Page::Top) add(MBack);
@@ -755,6 +849,8 @@ void menu_label(const MItem& it, char* out, size_t cap)
     case MFont: snprintf(out, cap, "Game Font: %s", kFont[cfg.font]); break;
     case MPadMoves: snprintf(out, cap, "D-Pad Walks: %s", cfg.pad_moves ? "On" : "Off"); break;
     case MSwap: snprintf(out, cap, "Confirm Button: %s", confirm_name()); break;
+    case MTouchPad: snprintf(out, cap, "On-Screen Buttons: %s", kTouchPad[cfg.touch_pad % 3]); break;
+    case MFolder: snprintf(out, cap, "Games Folder..."); break;
     case MMaxHp: snprintf(out, cap, "Max Hit Points: %s", cfg.max_hp ? "On" : "Off"); break;
     case MNoRace: snprintf(out, cap, "Disable Race Level Limits: %s", cfg.no_race_limits ? "On" : "Off"); break;
     case MRescan: snprintf(out, cap, "Rescan Game Files"); break;
@@ -806,6 +902,16 @@ const char* menu_help(const MItem& it)
     case MFont: return "The game's letters: its own, the engine's Clear (easier to read), Darkness's, or Clear Caps.";
     case MPadMoves: return "On: exploring, the D-pad walks and L1 R1 L2 R2 move the highlights. Off: the D-pad moves them.";
     case MSwap: return "Which of A and B chooses; the other goes back.";
+    case MTouchPad:
+        return "Auto: shown when the screen is touched, hidden while a controller or keyboard is used. Without them: "
+               "tap a line to pick it, tap it again to choose; swipe to scroll; two fingers together = Start; the "
+               "phone's Back = B.";
+    case MFolder: {
+        static std::string words;
+        words = "Your games: " + shown_path(pm::games_root()) +
+                "/ - Choose another folder: the game list closes and the folder screen opens.";
+        return words.c_str();
+    }
     case MControls: return "What each button does.";
     case MRolls: return "Fights show the dice behind each message: to hit, needed, damage, saves.";
     case MAutoJoin: return "An item taken from a treasure joins the same thing its taker already carries. Off: Join by hand.";
@@ -1957,6 +2063,10 @@ void menu_change(int step)
         if (playing) apply_options();
         break;
     case MPadMoves: cfg.pad_moves = !cfg.pad_moves; break;
+    case MTouchPad:
+        cfg.touch_pad = static_cast<uint8_t>((cfg.touch_pad + (step < 0 ? 2 : 1)) % 3);
+        touch_pad_apply();
+        break;
     case MSwap: cfg.swap_ab = !cfg.swap_ab; cfg.ab_set = true; break;
     case MMaxHp:
         cfg.max_hp = !cfg.max_hp;
@@ -2100,6 +2210,13 @@ void menu_press(int b)
             if (!discover(true)) screen = Screen::Games;
             break;
         case MUpdate: update_check(); break;
+        case MFolder:
+#ifdef __ANDROID__
+            if (playing) leave_game();
+            android_choose_folder();
+            quit = true;
+#endif
+            break;
         case MSendLogs: send_logs(); break;
         case MReplyAddr: prompt_begin(false); break;
         case MLeaveGame: leave_game(); break;
@@ -2364,6 +2481,209 @@ void pointer_tick(float dt)
     ptr_seen = SDL_GetTicks();
 }
 
+// ---- Touching the port's screens ------------------------------------------
+// A tap at (cx, cy) - canvas pixels, a wide page's margins outside 0..319 -
+// as the button the player would press there: a line of a list is picked,
+// picked again it is chosen (A); outside a page's box is Back. In the game a
+// tap is the game's own (pointer_tap), as on the CYD boards.
+void presses(int b, int n)
+{
+    for (int i = 0; i < n; ++i) press(b);
+}
+
+void touch_tap(int cx, int cy)
+{
+    if (cy < 0 || cy >= video::kH) return;
+    const bool in_page = cx >= 8 && cx < 312 && cy >= 2 && cy < 198;     // (the menus' box)
+    if (notice.open) {
+        if (job != Job::None) return;
+        if (!notice.yes) press(BA);
+        else if (cx < 20 || cx >= 300 || cy < 44 || cy >= 156) press(BB);      // (outside the box: No)
+        else if (cy >= 136) press(cx < video::kW / 2 ? BA : BB);                // (its foot: Yes at the left, No at the right)
+        return;
+    }
+    if (prompt_open) {
+        for (size_t i = 0; i < keys.size(); ++i) {
+            const Key& k = keys[i];
+            if (cx >= k.col * 8 && cx < (k.col + k.w) * 8 && cy >= k.row * 8 - 4 && cy < k.row * 8 + 12) {
+                key_sel = static_cast<int>(i);
+                press(BA);
+                return;
+            }
+        }
+        return;
+    }
+    if (jlist_open) {
+        if (cx < 60 || cx >= 260 || cy < 20 || cy >= 180) {
+            press(BB);
+            return;
+        }
+        const int n = play::journal_seen_count(), rows = 16;
+        int first = jlist_sel - rows / 2;
+        if (first > n - rows) first = n - rows;
+        if (first < 0) first = 0;
+        const int i = first + (cy + 1) / 8 - 5;
+        if (cy + 1 >= 40 && i >= first && i < n && i < first + rows) {
+            if (i == jlist_sel) press(BA);
+            else jlist_sel = i;
+        }
+        return;
+    }
+    if (quick_open) {
+        if (!in_page) {
+            press(BB);
+            return;
+        }
+        if (cy >= 19 && cy < 30) {
+            if (q_col < 0) press(BA);
+            else q_col = -1;
+            return;
+        }
+        if (cfg.comforts_off & kOffQuick) return;           // (off: the rows are dimmed)
+        const int r = (cy - 34) / 11;
+        if (cy < 34 || r < 0) return;
+        if (cx < 162) {
+            if (r < q_rows && r < 9) q_row = r;
+        } else if (r < quickacts::kCols) {
+            if (r == q_col) press(BA);
+            else q_col = r;
+        }
+        return;
+    }
+    if (screen == Screen::Scan) {
+        press(BA);
+        return;
+    }
+    if (menu_open) {
+        if (help_open || device_open || !in_page || cy < 17) {
+            press(BB);          // (a page of words, outside the box, or its title: back)
+            return;
+        }
+        const int n = static_cast<int>(menu_items.size());
+        if (cy >= 19 && cy < 19 + kMenuLines * kMenuPitch) {
+            const int i = menu_top + (cy - 19) / kMenuPitch;
+            if (i < n) {
+                if (i == menu_sel) press(BA);
+                else menu_sel = i;
+            }
+        }
+        return;
+    }
+    if (jour::active()) {
+        press(cx < video::kW / 3 ? BL1 : BA);       // (the left third: a page back; else on, or closed at its end)
+        return;
+    }
+    if (screen == Screen::Message) {
+        press(BA);
+        return;
+    }
+    if (screen == Screen::Games) {
+        const int n = static_cast<int>(games_found.size());
+        if (cy < kHeaderH) press(BStart);                       // (the title bar: the menu)
+        else if (n > 1 && cx < 48) press(BLeft);                // (the arrowheads' sides: the next / last game)
+        else if (n > 1 && cx >= video::kW - 48) press(BRight);
+        else press(BA);
+        return;
+    }
+    if (screen == Screen::Play && cx >= 0 && cx < video::kW) {
+        ptr_on = false;
+        pointer_tap(cx, cy);
+    }
+}
+
+// A swipe by (dx, dy) canvas pixels: lists scroll (the finger up = on down
+// the list), across = Left / Right (a setting's value, the next game, a
+// journal page)
+void touch_swipe(int dx, int dy)
+{
+    const bool across = (dx < 0 ? -dx : dx) > (dy < 0 ? -dy : dy);
+    const int ady = dy < 0 ? -dy : dy;
+    if (notice.open || prompt_open || screen == Screen::Scan) return;
+    if (jlist_open) {
+        if (!across) presses(dy < 0 ? BDown : BUp, ady / 8 > 0 ? ady / 8 : 1);
+        return;
+    }
+    if (quick_open) {
+        if (across) press(dx < 0 ? BR1 : BL1);
+        else presses(dy < 0 ? BDown : BUp, ady / 11 > 0 ? ady / 11 : 1);
+        return;
+    }
+    if (menu_open) {
+        if (help_open || device_open) return;
+        if (across) press(dx > 0 ? BRight : BLeft);
+        else presses(dy < 0 ? BDown : BUp, ady / kMenuPitch > 0 ? ady / kMenuPitch : 1);
+        return;
+    }
+    if (jour::active()) {
+        if (across) press(dx < 0 ? BR1 : BL1);
+        else presses(dy < 0 ? BDown : BUp, ady / 8 > 0 ? ady / 8 : 1);
+        return;
+    }
+    if (screen == Screen::Games && across) press(dx < 0 ? BRight : BLeft);
+}
+
+// The fingers not on the on-screen buttons: one = a tap or a swipe as it
+// lifts; two together, lifted soon = Start
+struct {
+    int          free = 0;          // fingers down, not on the buttons
+    bool         on = false;        // the first one's
+    SDL_FingerID id = 0;
+    float        x = 0, y = 0;      // where it went down (0..1 of the window)
+    Uint32       t = 0;
+    bool         two = false;
+} touch;
+
+void touch_event(const SDL_Event& e)
+{
+    int ow, oh;
+    video::output_size(ow, oh);
+    if (e.type == SDL_FINGERDOWN) {
+        if (!touch_last) {
+            touch_last = true;
+            touch_pad_apply();
+        }
+    }
+    if (touchpad::finger(e, ow, oh)) return;        // (an on-screen button's)
+    if (e.type == SDL_FINGERDOWN) {
+        if (touch.free++ == 0) {
+            touch.on = true;
+            touch.id = e.tfinger.fingerId;
+            touch.x = e.tfinger.x;
+            touch.y = e.tfinger.y;
+            touch.t = SDL_GetTicks();
+            touch.two = false;
+        } else {
+            touch.two = true;
+        }
+        return;
+    }
+    if (e.type != SDL_FINGERUP) return;
+    if (touch.free > 0) --touch.free;
+    if (touch.two) {
+        if (touch.free == 0) {
+            touch.on = false;
+            if (SDL_GetTicks() - touch.t < 700) press(BStart);
+        }
+        return;
+    }
+    if (!touch.on || e.tfinger.fingerId != touch.id) return;
+    touch.on = false;
+    int ww = 1, wh = 1;
+    video::window_size(ww, wh);
+    const int x0 = static_cast<int>(touch.x * ww), y0 = static_cast<int>(touch.y * wh);
+    const int x1 = static_cast<int>(e.tfinger.x * ww), y1 = static_cast<int>(e.tfinger.y * wh);
+    const int shortest = ww < wh ? ww : wh;
+    const int moved = (x1 - x0) * (x1 - x0) + (y1 - y0) * (y1 - y0);
+    int cx0, cy0, cx1, cy1;
+    video::to_canvas(x0, y0, cx0, cy0, false);
+    if (moved < (shortest / 25) * (shortest / 25)) {
+        touch_tap(cx0, cy0);
+        return;
+    }
+    video::to_canvas(x1, y1, cx1, cy1, false);
+    touch_swipe(cx1 - cx0, cy1 - cy0);
+}
+
 // ---- SDL events ------------------------------------------------------------
 int pad_button(Uint8 b)
 {
@@ -2404,6 +2724,9 @@ int key_button(SDL_Keycode k)
     case SDLK_F2: return BX;
     case SDLK_F3: return BY;
     case SDLK_F4: return BSelect;
+#ifdef __ANDROID__
+    case SDLK_AC_BACK: return BB;       // (a phone's Back button / gesture)
+#endif
     default: return -1;
     }
 }
@@ -2437,8 +2760,25 @@ void handle(const SDL_Event& e)
             open_pad();
         }
         break;
+    // A touch screen: the on-screen buttons (touchpad.h) - shown at any touch,
+    // hidden while a controller is in use
+    case SDL_FINGERDOWN:
+    case SDL_FINGERMOTION:
+    case SDL_FINGERUP:
+        if (touch_ui) touch_event(e);
+        break;
+    case SDL_APP_WILLENTERBACKGROUND:
+        // (a phone: the app put away - nothing left held down, the settings kept)
+        touchpad::release_all();
+        memset(held, 0, sizeof held);
+        settings_save(conf_dir, cfg);
+        break;
     case SDL_CONTROLLERBUTTONDOWN:
     case SDL_CONTROLLERBUTTONUP: {
+        if (e.type == SDL_CONTROLLERBUTTONDOWN && touch_last) {
+            touch_last = false;
+            touch_pad_apply();
+        }
         const int b = pad_button(e.cbutton.button);
         if (b >= 0) button(b, e.type == SDL_CONTROLLERBUTTONDOWN);
         break;
@@ -2457,6 +2797,10 @@ void handle(const SDL_Event& e)
     case SDL_KEYUP: {
         const bool down = e.type == SDL_KEYDOWN;
         if (down && e.key.repeat) break;
+        if (down && touch_last && e.key.keysym.sym != SDLK_AC_BACK) {
+            touch_last = false;                 // (a real keyboard)
+            touch_pad_apply();
+        }
         // Typing on a real keyboard while the game asks for text
         if (down && playing && screen == Screen::Play && !menu_open && play::input() != play::Input::None) {
             const SDL_Keycode k = e.key.keysym.sym;
@@ -2478,6 +2822,15 @@ void handle(const SDL_Event& e)
         break;
     }
     case SDL_MOUSEBUTTONDOWN: {
+        // (a touch screen: the finger's own events say it - touch_event; a PC's
+        // --touchpad: the mouse is the finger)
+        if (touch_ui) {
+#ifdef __ANDROID__
+            if (e.button.which == SDL_TOUCH_MOUSEID) break;
+#else
+            break;
+#endif
+        }
         int cx, cy;
         if (e.button.button == SDL_BUTTON_LEFT && video::to_canvas(e.button.x, e.button.y, cx, cy)) {
             ptr_on = e.button.which != SDL_TOUCH_MOUSEID;
@@ -2720,6 +3073,13 @@ void script_tick(Uint32 now)
     } else if (t.compare(0, 4, "tap:") == 0) {
         int x = 0, y = 0;
         if (sscanf(t.c_str() + 4, "%d:%d", &x, &y) == 2) pointer_tap(x, y);
+    } else if (t.compare(0, 6, "touch:") == 0) {
+        // (touch:x:y - a finger's tap on the port's screens, canvas pixels; swipe:dx:dy)
+        int x = 0, y = 0;
+        if (sscanf(t.c_str() + 6, "%d:%d", &x, &y) == 2) touch_tap(x, y);
+    } else if (t.compare(0, 6, "swipe:") == 0) {
+        int x = 0, y = 0;
+        if (sscanf(t.c_str() + 6, "%d:%d", &x, &y) == 2) touch_swipe(x, y);
     } else if (t.compare(0, 5, "type:") == 0) {
         for (const char* p = t.c_str() + 5; *p; ++p) {
             if (prompt_open) prompt_key(*p);
@@ -2808,6 +3168,7 @@ void usage()
            "  --window <WxH>   a window instead of the whole screen\n"
            "  --game <n>       start game n of the list at once (from 1)\n"
            "  --ab-reversed    this firmware gives A and B reversed: Confirm starts on B (once)\n"
+           "  --touchpad       on-screen buttons (as on a phone; the mouse is a finger)\n"
            "  --script <steps> inputs to play back (checks)\n",
            PM_VERSION);
 }
@@ -2828,6 +3189,13 @@ int main(int argc, char** argv)
         else if (a == "--game" && v) auto_game = atoi(argv[++i]);
         else if (a == "--drive") drive = true;
         else if (a == "--ab-reversed") ab_reversed = true;
+        else if (a == "--touchpad") touch_ui = true;
+        else if (a == "--log" && v) {
+            // (Android: no console - the log goes in a file beside the games)
+            const char* path = argv[++i];
+            if (freopen(path, "w", stdout)) setvbuf(stdout, nullptr, _IOLBF, 0);
+            if (!freopen(path, "a", stderr)) {}
+        }
         else if (a == "--script" && v) {
             std::string s = argv[++i];
             size_t p = 0;
@@ -2846,6 +3214,12 @@ int main(int argc, char** argv)
     // (strip a trailing slash: paths are joined with one)
     while (pm::games_root().size() > 1 && pm::games_root().back() == '/') pm::games_root().pop_back();
 
+#ifdef __ANDROID__
+    SDL_SetHint(SDL_HINT_ANDROID_TRAP_BACK_BUTTON, "1");        // (Back is the B button, not "close the app")
+    SDL_SetHint(SDL_HINT_ACCELEROMETER_AS_JOYSTICK, "0");       // (not a controller)
+    SDL_SetHint(SDL_HINT_ORIENTATIONS, "LandscapeLeft LandscapeRight Portrait");
+#endif
+    if (touch_ui) SDL_SetHint(SDL_HINT_MOUSE_TOUCH_EVENTS, "1");     // (a PC's mouse as a finger)
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_GAMECONTROLLER | SDL_INIT_EVENTS) != 0) {
         fprintf(stderr, "SDL: %s\n", SDL_GetError());
         return 1;
@@ -2866,6 +3240,9 @@ int main(int argc, char** argv)
     if (SDL_InitSubSystem(SDL_INIT_AUDIO) == 0) pm::audio_begin();
     else plat::log("[port] no sound: %s\n", SDL_GetError());
     open_pad();
+    touchpad::set_emit(button);
+    touch_last = pad == nullptr;
+    touch_pad_apply();
     rescan();
     plat::log("[port] %d game folder(s) found\n", static_cast<int>(games_found.size()));
     for (const auto& g : games_found)

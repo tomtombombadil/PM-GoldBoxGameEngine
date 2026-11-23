@@ -3,6 +3,9 @@
 Tick off with the version that did it. Never ask Tom the same thing twice.
 
 ## Tom
+- [ ] The Android app (APK-GoldBoxGameEngine) on your phone: the folder screen (default folder, then Choose
+      Folder on one of your own), a game copied in over USB, the scan, then play by touch alone (On-Screen
+      Buttons Auto), then with a Bluetooth controller (the buttons go away; a touch brings them back).
 - [ ] The X55's red rclone line at Quit (ROCKNIX nightly; Tom: not after other ports): ROCKNIX's cloud backup
       after a game (CLAUDE.md has where). To settle why only here: quit this port with Wi-Fi off (no line
       expected), and another port with Wi-Fi on (the line expected). To be rid of it: ROCKNIX's cloud backup

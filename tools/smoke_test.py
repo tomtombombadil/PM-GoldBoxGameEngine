@@ -255,6 +255,18 @@ def main():
         out = run(exe, t / "nothing", conf, "wait:100,a,start,menu:Controls,a,menu:Confirm_Button:_A,a,menu:Confirm_Button:_B,quit")
         assert "no menu line" not in out, "the Confirm Button line names the wrong button"
         (conf / "settings.cfg").unlink()
+        # 1c. A touch screen (--touchpad; Android's always): the title bar opens the
+        # menu, a line tapped is picked, tapped again chosen; Controls' On-Screen
+        # Buttons cycles Auto -> Always; swipes scroll; the game list's sides page
+        pitch, top = 11, 19
+        row = lambda i: top + i * pitch + 3
+        out = run(exe, t / "nothing", conf,
+                  f"wait:100,touch:100:5,touch:100:{row(4)},touch:100:{row(4)},touch:100:{row(3)},touch:100:{row(3)},"
+                  "swipe:0:-40,swipe:0:40,touch:60:10,touch:60:10,touch:60:10,swipe:-80:0,touch:5:100,quit",
+                  window="1280x720", extra=["--touchpad"])
+        cfg = (conf / "settings.cfg").read_text()
+        assert "touch_pad=1" in cfg, cfg
+        (conf / "settings.cfg").unlink()
         # 2. Folders: lower-case names, files a folder down, an unknown one,
         # the engine's own folder
         g = t / "games"

@@ -1,6 +1,7 @@
 #include "video.h"
 
 #include "engine/font.h"
+#include "touchpad.h"
 
 #include <SDL.h>
 
@@ -39,6 +40,13 @@ void layout()
 {
     int ow = kW, oh = kH;
     SDL_GetRendererOutputSize(ren, &ow, &oh);
+    // (on-screen buttons, on a touch screen with no controller: the
+    // picture has the room between them - touchpad.h)
+    int ax = 0, ay = 0;
+    {
+        const int fw = ow, fh = oh;
+        touchpad::area(fw, fh, ax, ay, ow, oh);
+    }
     int w, h;
     if (fit == Fit::Stretch) {
         w = ow;
@@ -77,18 +85,18 @@ void layout()
     ox = (uw - kW) / 2;
     const SDL_Rect was = dst;
     const int was_uw = shape_uw;
-    dst = SDL_Rect{(ow - w) / 2, (oh - h) / 2, w, h};
+    dst = SDL_Rect{ax + (ow - w) / 2, ay + (oh - h) / 2, w, h};
     shape_uw = uw;
     if (was.w != dst.w || was.h != dst.h || was_uw != uw) {
         ++serial;
         SDL_Log("[video] panel %d x %d: picture %d x %d, %d across%s", ow, oh, dst.w, dst.h, uw, wide ? " (a page of the port's)" : "");
     }
     strip = SDL_Rect{0, 0, 0, 0};
-    if (uw == kW && side_on && fit == Fit::Original && ow - w >= 200) {
+    if (uw == kW && side_on && !touchpad::shown() && fit == Fit::Original && ow - w >= 200) {
         dst.x = 0;                              // (the game at the left, the Companion in the rest)
         strip = SDL_Rect{w, 0, ow - w, oh};
     }
-    if (uw == kW && below_on && fit == Fit::Original && oh - h >= kBelowH && ow >= kBelowW) {
+    if (uw == kW && below_on && !touchpad::shown() && fit == Fit::Original && oh - h >= kBelowH && ow >= kBelowW) {
         dst.y = 0;                              // (the game at the top, the Companion under it)
         strip = SDL_Rect{0, h, ow, oh - h};
     }
@@ -170,7 +178,7 @@ int back_w() { return uw * 2; }
 
 bool side_room()
 {
-    if (!ren || fit != Fit::Original || wide) return false;
+    if (!ren || fit != Fit::Original || wide || touchpad::shown()) return false;
     int ow = 0, oh = 0;
     SDL_GetRendererOutputSize(ren, &ow, &oh);
     const int w = ow * 3 / 4 > oh ? oh * 4 / 3 : ow;
@@ -199,7 +207,7 @@ void set_side(const uint32_t* top, const uint32_t* bottom)
 
 bool below_room()
 {
-    if (!ren || fit != Fit::Original || wide) return false;
+    if (!ren || fit != Fit::Original || wide || touchpad::shown()) return false;
     int ow = 0, oh = 0;
     SDL_GetRendererOutputSize(ren, &ow, &oh);
     const int h = ow * 3 / 4 > oh ? oh : ow * 3 / 4;
@@ -458,6 +466,7 @@ void present(const pic::Canvas* game)
             SDL_RenderCopy(ren, tex, &part, &dst);
         }
         draw_side();
+        touchpad::draw(ren);
         SDL_RenderPresent(ren);
         return;
     }
@@ -472,10 +481,23 @@ void present(const pic::Canvas* game)
         SDL_RenderCopy(ren, tex, &part, &dst);
     }
     draw_side();
+    touchpad::draw(ren);
     SDL_RenderPresent(ren);
 }
 
-bool to_canvas(int wx, int wy, int& cx, int& cy)
+void output_size(int& w, int& h)
+{
+    w = h = 1;
+    if (ren) SDL_GetRendererOutputSize(ren, &w, &h);
+}
+
+void window_size(int& w, int& h)
+{
+    w = h = 1;
+    if (win) SDL_GetWindowSize(win, &w, &h);
+}
+
+bool to_canvas(int wx, int wy, int& cx, int& cy, bool clip)
 {
     if (!ren) return false;
     // (window points -> the renderer's pixels: they differ on high-DPI screens)
@@ -483,6 +505,11 @@ bool to_canvas(int wx, int wy, int& cx, int& cy)
     SDL_GetWindowSize(win, &ww, &wh);
     SDL_GetRendererOutputSize(ren, &ow, &oh);
     const int x = wx * ow / (ww ? ww : 1), y = wy * oh / (wh ? wh : 1);
+    if (!clip) {
+        cx = (x - dst.x) * uw / (dst.w ? dst.w : 1) - ox;
+        cy = (y - dst.y) * kH / (dst.h ? dst.h : 1);
+        return true;
+    }
     if (x < dst.x || y < dst.y || x >= dst.x + dst.w || y >= dst.y + dst.h) return false;
     cx = (x - dst.x) * uw / dst.w - ox;
     if (cx < 0 || cx >= kW) return false;

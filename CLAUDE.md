@@ -246,6 +246,21 @@ and maintains it; it is the primary output of the Claude Project
   player's copy as the CYD scan does). Fetch with `project_read`, unpack
   under `/tmp/claude-0/pmgames/` (never under a repo).
 
+## The Android app (Tom, 2026-11-23)
+- **Its own repo: `tomtombombadil/APK-GoldBoxGameEngine`** ("especially considering F-Droid's requirements") -
+  the Gradle project, the Java folder screen, F-Droid's metadata. It has THIS repo as a submodule and builds
+  `src/` and `cyd/` with the NDK; the front end's Android parts stay here (`__ANDROID__`, `src/touchpad.*`).
+  A change here the app needs: push here, then move the APK repo's pin. Its own CLAUDE.md.
+- The app's name is **Gold Box Game Engine**; the APK file `GoldBoxGameEngine-<version>.apk` (Tom). Not for
+  the Play Store: side-loaded and F-Droid.
+- **Touch: "compatible with touch and/or a controller (via bluetooth or USB) or an onscreen overlay
+  representing the controller"** - all three, any mix (SPEC 4 "Touch"). Every touch gesture is a button the
+  player could press instead; a new screen of the port's own gets its taps in `touch_tap` / `touch_swipe` in
+  the same version (and a smoke-test step).
+- **Where the games go must be plain to the player** (Tom: "GoldBox/games doesn't tell me where that folder
+  is") and **the player can point the app at a folder of their own**: names as the phone and a PC show them
+  ("Internal storage/GoldBox/games/", `shown_path`), never a bare relative path or /storage/emulated/0.
+
 ## Bring your own game - hard rules (the CYD project's, unchanged)
 - The repo and the package contain nothing from the games: no DAX / TLB /
   GLB files, no extracted pictures, text, journal entries or code. Tests

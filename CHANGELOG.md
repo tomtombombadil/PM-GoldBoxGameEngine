@@ -3,7 +3,36 @@
 Every version of Gold Box Game Engine for PortMaster. A release's notes are
 its part of this file.
 
-## [0.12.12] - 2026-11-23
+## [0.12.12] - 2026-11-23## [0.12.13] - 2026-11-23
+
+Built on the CYD engine 0.214.10 (unchanged).
+
+**For the Android app** (`tomtombombadil/APK-GoldBoxGameEngine` - Tom, 2026-11-23: the app is its own repo; it
+builds this repo's front end). Nothing changes on a handheld.
+
+- **Touch.** A touch screen works three ways, in any mix: a controller (Bluetooth / USB / a handheld's own),
+  the **on-screen buttons** (the handhelds' D-Pad, A, B, X, Y, L1, R1, L2, R2, Start, Select beside the game in
+  landscape, under it in portrait), or **touching the port's own screens**: a line tapped is picked, tapped
+  again chosen; swipe to scroll; across = Left / Right (a setting, the next game, a journal page); the game
+  list's sides page through the games, its middle starts one, its title bar opens the menu; outside a page's box
+  or its title = Back; two fingers together = Start; the phone's Back = B. In the game a tap is the game's own,
+  as on the CYD boards. Nothing is touch's alone (SPEC 4).
+- **Start - Controls - On-Screen Buttons: Auto / Always / Never** (touch screens only). Auto: shown when the
+  screen is touched, hidden while a controller or keyboard is used.
+- **Start - System - Games Folder** (Android only): shows where the games are ("Internal storage/GoldBox/games/",
+  as the phone and a PC name it) and opens the app's folder screen to choose another.
+- The empty game list on Android names that folder the same way.
+- Android leaves out Check for Updates, Send Logs and Reply Address (the handhelds' scripts).
+- `--touchpad` on a PC: the same buttons and touch, the mouse as the finger.
+
+Checked: the PC build - the smoke test (with a touch run: menu by the title bar, a line picked and chosen,
+On-Screen Buttons cycled and saved, swipes, the game list's sides), screenshots at 2400 x 1080, 1080 x 2400,
+2048 x 1536 and 1280 x 720; the on-screen buttons' fingers (slides along the D-Pad, two buttons at once, a tap on
+the game passed through) in a test harness. The Android app (APK repo 0.1.0) on an Android 11 emulator: the folder
+screen, Play, the empty game list naming "Internal storage/GoldBox/games/", the menu by a tap on the title bar,
+System - Games Folder back to the folder screen. Not on a phone; no game played on Android yet.
+
+
 
 Built on the CYD engine 0.214.10 (was 0.211.14).
 

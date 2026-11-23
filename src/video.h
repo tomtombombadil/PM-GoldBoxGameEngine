@@ -108,8 +108,13 @@ void pointer(int x, int y);
 // Shows a frame: the canvas (nullptr: black) under the overlay
 void present(const pic::Canvas* game);
 
-// A point of the window -> the canvas's pixel (false: outside the picture)
-bool to_canvas(int wx, int wy, int& cx, int& cy);
+// The renderer's size in pixels (the whole panel); the window's in its points
+void output_size(int& w, int& h);
+void window_size(int& w, int& h);
+
+// A point of the window -> the canvas's pixel (clip false: any point, the
+// canvas's scale carried on past its edges - a wide page's margins, a swipe) (false: outside the picture)
+bool to_canvas(int wx, int wy, int& cx, int& cy, bool clip = true);
 // Saves what the panel shows (as scaled) as a BMP
 bool save_bmp(const char* path);
 

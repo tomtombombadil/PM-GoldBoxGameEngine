@@ -41,6 +41,11 @@ holding .DAX files (in it, or one or two folders down) or .TLB / .GLB
 libraries; the game from the folder's name. Saves go where the originals
 put them, inside the game's folder.
 
+
+
+*The Android app* (Tom, 2026-11-23) is this front end built into an APK in its own repo,
+`tomtombombadil/APK-GoldBoxGameEngine` (this repo a submodule there). Its parts here are `#ifdef __ANDROID__`
+(the Games Folder line, Back = B, no update / log scripts) and the touch below.
 ## 4. Controls
 Rule (Tom, 2026-11-14): everything with D-Pad, A, B, X, Y, L1, L2, R1, R2,
 Start, Select - most handhelds have no touch screen, many no sticks. Sticks
@@ -152,6 +157,26 @@ direction keys (`play::fight_dir`, `fight_select`), typed keys
   directly (also the on-screen keyboard's keys); a PC keyboard: arrows,
   Enter, Esc, Tab / F1 = Start, PgUp / PgDn = L1 / R1, Home / End = L2 / R2,
   F2 = X, F3 = Y, F4 = Select, and typing when the game asks for text.
+
+### Touch (Android; a PC with `--touchpad`) - Tom, 2026-11-23
+"Compatible with touch and/or a controller (via bluetooth or USB) or an onscreen overlay representing the
+controller". All three, any mix; nothing is touch's alone (the rule above stands):
+- **A controller**: as everywhere.
+- **The on-screen buttons** (`src/touchpad.*`): the same eleven, D-Pad left and face buttons right of the game
+  in landscape (L1 L2 Select above the D-Pad, R1 R2 Start above the face buttons), all under the game in
+  portrait (L2 L1 Select Start R1 R2 in a row, then D-Pad and face buttons). A thumb slides round the D-Pad;
+  several buttons at once. Start - Controls - **On-Screen Buttons: Auto** (shown at a touch, hidden while a
+  controller or keyboard is used) / **Always** / **Never** (`touch_pad` in settings.cfg). Shown, they take
+  the Companion's room beside / under the game (it slides out on Y).
+- **Touching the port's own screens** (`touch_tap` / `touch_swipe` in main.cpp - each the button a player
+  would press there): a list's line tapped = picked, tapped again = A; outside a page's box or its title = B;
+  a swipe up / down scrolls (the finger up = on down the list), across = Left / Right (a setting's value; the
+  game list's next game; a journal page). The game list: its sides = Left / Right, the middle = A, the title
+  bar = Start. A notice: tapped = A; a Yes / No one: its foot's left = Yes, right = No, outside = No. The
+  journal: the left third a page back, else A. Quick Actions: a member, a switch (again = flip), the top line.
+  Two fingers tapped together = Start. Android's Back = B. In the game a tap is the game's (pointer_tap: the
+  highlight, the on-screen keyboard), as on the CYD boards.
+- Script steps `touch:x:y` / `swipe:dx:dy` (canvas pixels) for the smoke test.
 
 ## 5. The screen
 The game's 320 x 200 canvas, with the port's overlay on top (same size; a
