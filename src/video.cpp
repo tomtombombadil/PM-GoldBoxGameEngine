@@ -193,7 +193,8 @@ void layout()
     {
         int fw = kW, fh = kH;
         SDL_GetRendererOutputSize(ren, &fw, &fh);
-        touchpad::place(fw, fh, SDL_Rect{ux, uy, ow, oh}, dst, strip);
+        // (the port's own pages: their title bar stays clear - main.cpp's kHeaderH, 20 of the 200 rows)
+        touchpad::place(fw, fh, SDL_Rect{ux, uy, ow, oh}, dst, strip, wide ? dst.y + dst.h * 20 / kH : uy);
     }
     // The in-between texture: the next whole multiple at or above the
     // picture's size, so uneven scaling doesn't make uneven pixels

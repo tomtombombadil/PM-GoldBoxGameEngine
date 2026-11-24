@@ -93,7 +93,7 @@ int clampi(int v, int lo, int hi) { return v < lo ? lo : v > hi ? hi : v; }
 // game's menu line, which stays clear ("it might cover the menu line at the
 // bottom"). L1 L2 and MOUSE top left, after the hide / show arrow; R1 R2 and
 // MENU top right. Portrait: all at the foot of the panel.
-void lay_out(int W, int H, const SDL_Rect& use, const SDL_Rect& pic, const SDL_Rect& strip)
+void lay_out(int W, int H, const SDL_Rect& use, const SDL_Rect& pic, const SDL_Rect& strip, int top0)
 {
     lay_w = W;
     lay_h = H;
@@ -105,7 +105,8 @@ void lay_out(int W, int H, const SDL_Rect& use, const SDL_Rect& pic, const SDL_R
     const int sw = c * 3 / 2, sh = c * 7 / 10;         // a shoulder button
     const int tg = c * 3 / 4;                          // the hide / show arrow
     // (the hide / show arrow, top left - Tom: "a button in the upper left to toggle the overlay")
-    place(kToggle, Shape::Rect, use.x + mg, use.y + mg, tg, tg, "");
+    const int y0 = top0 > use.y ? top0 : use.y;          // (the top rows' start)
+    place(kToggle, Shape::Rect, use.x + mg, y0 + mg, tg, tg, "");
     const int menu_top = pic.y + pic.h * 184 / 200;    // (the game's menu line: canvas rows 23-24)
     if (use.w >= use.h) {
         // ---- Landscape
@@ -113,7 +114,7 @@ void lay_out(int W, int H, const SDL_Rect& use, const SDL_Rect& pic, const SDL_R
         const int used_right = strip_right ? strip.x + strip.w : pic.x + pic.w;
         const int left_free = pic.x - use.x, right_free = use.x + use.w - used_right;
         const int need = 3 * c + 2 * mg, fneed = span + 2 * mg;
-        const int rows_bottom = use.y + mg + sh + mg + sh + mg;     // (under the shoulder rows)
+        const int rows_bottom = y0 + mg + sh + mg + sh + mg;        // (under the shoulder rows)
         const int low = use.y + use.h * 62 / 100;
         // The D-Pad: in the free band at the left, else over the game's left side, its foot above the menu line
         int pcx, pcy;
@@ -139,7 +140,7 @@ void lay_out(int W, int H, const SDL_Rect& use, const SDL_Rect& pic, const SDL_R
         face_at(fcx, fcy, c);
         // The shoulders: in the bands when they fit, else over the picture's top corners
         const int lx = left_free >= need ? use.x + (left_free - 2 * sw - mg) / 2 : use.x + mg + tg + mg;
-        const int top = use.y + mg;
+        const int top = y0 + mg;
         place(L2, Shape::Rect, lx < use.x + mg + tg + mg ? use.x + mg + tg + mg : lx, top, sw, sh, "L2");
         place(L1, Shape::Rect, keys[L2].r.x + sw + mg, top, sw, sh, "L1");
         place(Select, Shape::Rect, keys[L2].r.x, top + sh + mg, 2 * sw + mg, sh, "MOUSE");
@@ -274,9 +275,9 @@ void set_diagonals(bool v)
     // (a finger already on the pad: what it holds is worked out at its next move)
 }
 
-void place(int W, int H, const SDL_Rect& use, const SDL_Rect& pic, const SDL_Rect& strip)
+void place(int W, int H, const SDL_Rect& use, const SDL_Rect& pic, const SDL_Rect& strip, int top)
 {
-    lay_out(W, H, use, pic, strip);
+    lay_out(W, H, use, pic, strip, top);
 }
 
 int foot(const SDL_Rect& use)

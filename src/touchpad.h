@@ -36,7 +36,8 @@ void set_diagonals(bool on);
 // its safe margins, `pic` where the game's picture is, `strip` the docked
 // Companion's room (w 0: none). The picture's room is the picture's - the
 // buttons go over it (video.cpp's layout calls this when it is done)
-void place(int W, int H, const SDL_Rect& use, const SDL_Rect& pic, const SDL_Rect& strip);
+// `top`: where the top rows may start (the port's own pages: under their title bar)
+void place(int W, int H, const SDL_Rect& use, const SDL_Rect& pic, const SDL_Rect& strip, int top);
 
 // The height the buttons take at the foot of an upright panel (`use`: its
 // part inside the safe margins) - the room a Companion under the game leaves them

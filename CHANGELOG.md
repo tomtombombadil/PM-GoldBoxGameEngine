@@ -3,7 +3,15 @@
 Every version of Gold Box Game Engine for PortMaster. A release's notes are
 its part of this file.
 
-## [0.12.12] - 2026-11-23## [0.12.18] - 2026-11-23
+## [0.12.12] - 2026-11-23## [0.12.19] - 2026-11-23
+
+Built on the CYD engine 0.215.2 (unchanged).
+
+- Android: on the port's own pages (the game list, the menus over it) the on-screen buttons' top rows and the
+  hide / show arrow start under the title bar - they covered "Gold Box Game Engine" and the version (seen on the
+  Android 11 emulator, 0.12.18). In a game they stay at the top corners.
+
+## [0.12.18] - 2026-11-23
 
 Built on the CYD engine 0.215.2 (unchanged).
 
