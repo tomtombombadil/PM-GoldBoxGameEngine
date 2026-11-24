@@ -183,6 +183,9 @@ controller". All three, any mix; nothing is touch's alone (the rule above stands
   (`rotation` in settings.cfg; `rotation_apply`, the activity's requested orientation). The window is made
   resizable there, else SDL locks the screen to its first shape.
 - Script steps `touch:x:y` / `swipe:dx:dy` (canvas pixels) for the smoke test.
+- **A camera cutout / notch** (Android; Tom's Pixel 10a, 2026-11-23): its safe margins (`video::set_safe`,
+  from the activity's `cutoutInsets()`, asked about once a second by `safe_check`) are left black; the picture,
+  the on-screen buttons and the Companion are laid out in the rest (`usable()` in video.cpp).
 
 ## 5. The screen
 The game's 320 x 200 canvas, with the port's overlay on top (same size; a

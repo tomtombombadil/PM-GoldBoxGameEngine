@@ -210,15 +210,25 @@ void set_shown(bool v)
 
 bool shown() { return on; }
 
-void area(int ow, int oh, int& ax, int& ay, int& aw, int& ah)
+void area(int x0, int y0, int w, int h, int& ax, int& ay, int& aw, int& ah)
 {
     if (!on) {
-        ax = ay = 0;
-        aw = ow;
-        ah = oh;
+        ax = x0;
+        ay = y0;
+        aw = w;
+        ah = h;
         return;
     }
-    layout(ow, oh, ax, ay, aw, ah);
+    layout(w, h, ax, ay, aw, ah);
+    // (laid out from 0, 0: moved into the usable part)
+    ax += x0;
+    ay += y0;
+    for (Key& k : keys) {
+        k.r.x += x0;
+        k.r.y += y0;
+    }
+    pad_cx += x0;
+    pad_cy += y0;
 }
 
 void draw(SDL_Renderer* ren)

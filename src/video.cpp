@@ -35,18 +35,37 @@ int           uw = kW, ox = 0;
 uint32_t      over[kMaxW * kH];     // the overlay (uw across)
 uint32_t      shown[kMaxW * kH];    // the composed frame
 SDL_Rect      dst{0, 0, kW, kH};    // where the picture lands in the window
+// The panel's safe margins (left, top, right, bottom - pixels): a phone's
+// camera cutout or notch (Android; Tom's Pixel 10a, 2026-11-23: "the camera
+// cutout is right in the top center of the game display when in portrait").
+// Nothing is drawn there - the picture, the buttons, the Companion keep out
+int           safe[4] = {};
+
+// The panel's size less the safe margins: where things may go
+void usable(int& x, int& y, int& w, int& h)
+{
+    int ow = kW, oh = kH;
+    if (ren) SDL_GetRendererOutputSize(ren, &ow, &oh);
+    x = safe[0];
+    y = safe[1];
+    w = ow - safe[0] - safe[2];
+    h = oh - safe[1] - safe[3];
+    if (w < ow / 2 || h < oh / 2) {         // (nonsense margins: the whole panel)
+        x = y = 0;
+        w = ow;
+        h = oh;
+    }
+}
 
 void layout()
 {
-    int ow = kW, oh = kH;
-    SDL_GetRendererOutputSize(ren, &ow, &oh);
-    // (on-screen buttons, on a touch screen with no controller: the
-    // picture has the room between them - touchpad.h)
-    int ax = 0, ay = 0;
-    {
-        const int fw = ow, fh = oh;
-        touchpad::area(fw, fh, ax, ay, ow, oh);
-    }
+    // (the room inside the safe margins; on-screen buttons, on a touch
+    // screen with no controller: the picture has the room between them -
+    // touchpad.h)
+    int ux, uy, uwid, uhgt;
+    usable(ux, uy, uwid, uhgt);
+    int ax = ux, ay = uy, ow = uwid, oh = uhgt;
+    touchpad::area(ux, uy, uwid, uhgt, ax, ay, ow, oh);
     int w, h;
     if (fit == Fit::Stretch) {
         w = ow;
@@ -93,12 +112,12 @@ void layout()
     }
     strip = SDL_Rect{0, 0, 0, 0};
     if (uw == kW && side_on && !touchpad::shown() && fit == Fit::Original && ow - w >= 200) {
-        dst.x = 0;                              // (the game at the left, the Companion in the rest)
-        strip = SDL_Rect{w, 0, ow - w, oh};
+        dst.x = ax;                             // (the game at the left, the Companion in the rest)
+        strip = SDL_Rect{ax + w, ay, ow - w, oh};
     }
     if (uw == kW && below_on && !touchpad::shown() && fit == Fit::Original && oh - h >= kBelowH && ow >= kBelowW) {
-        dst.y = 0;                              // (the game at the top, the Companion under it)
-        strip = SDL_Rect{0, h, ow, oh - h};
+        dst.y = ay;                             // (the game at the top, the Companion under it)
+        strip = SDL_Rect{ax, ay + h, ow, oh - h};
     }
     // The in-between texture: the next whole multiple at or above the
     // picture's size, so uneven scaling doesn't make uneven pixels
@@ -179,8 +198,8 @@ int back_w() { return uw * 2; }
 bool side_room()
 {
     if (!ren || fit != Fit::Original || wide || touchpad::shown()) return false;
-    int ow = 0, oh = 0;
-    SDL_GetRendererOutputSize(ren, &ow, &oh);
+    int ux, uy, ow, oh;
+    usable(ux, uy, ow, oh);
     const int w = ow * 3 / 4 > oh ? oh * 4 / 3 : ow;
     return ow - w >= 200;
 }
@@ -208,8 +227,8 @@ void set_side(const uint32_t* top, const uint32_t* bottom)
 bool below_room()
 {
     if (!ren || fit != Fit::Original || wide || touchpad::shown()) return false;
-    int ow = 0, oh = 0;
-    SDL_GetRendererOutputSize(ren, &ow, &oh);
+    int ux, uy, ow, oh;
+    usable(ux, uy, ow, oh);
     const int h = ow * 3 / 4 > oh ? oh : ow * 3 / 4;
     return oh - h >= kBelowH && ow >= kBelowW && !side_room();
 }
@@ -495,6 +514,19 @@ void output_size(int& w, int& h)
 {
     w = h = 1;
     if (ren) SDL_GetRendererOutputSize(ren, &w, &h);
+}
+
+void set_safe(int left, int top, int right, int bottom)
+{
+    const int was[4] = {safe[0], safe[1], safe[2], safe[3]};
+    safe[0] = left > 0 ? left : 0;
+    safe[1] = top > 0 ? top : 0;
+    safe[2] = right > 0 ? right : 0;
+    safe[3] = bottom > 0 ? bottom : 0;
+    if (memcmp(was, safe, sizeof safe) != 0) {
+        SDL_Log("[video] safe margins %d %d %d %d", safe[0], safe[1], safe[2], safe[3]);
+        if (ren) resized();
+    }
 }
 
 void window_size(int& w, int& h)

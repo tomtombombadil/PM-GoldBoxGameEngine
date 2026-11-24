@@ -3,7 +3,17 @@
 Every version of Gold Box Game Engine for PortMaster. A release's notes are
 its part of this file.
 
-## [0.12.12] - 2026-11-23## [0.12.14] - 2026-11-23
+## [0.12.12] - 2026-11-23## [0.12.15] - 2026-11-23
+
+Built on the CYD engine 0.215.1 (unchanged).
+
+**For the Android app**: **a phone's camera cutout / notch is kept clear** (Tom's Pixel 10a: "the camera cutout
+is right in the top center of the game display when in portrait"). The app tells the front end the cutout's safe
+margins (Android's own, checked about once a second - they turn with the phone); the game picture, the
+on-screen buttons and the Companion are laid out inside them, the cutout's strip left black (`video::set_safe`).
+Nothing changes on a handheld or a PC.
+
+## [0.12.14] - 2026-11-23
 
 Built on the CYD engine 0.215.1 (was 0.214.10).
 

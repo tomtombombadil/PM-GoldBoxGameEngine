@@ -25,9 +25,10 @@ void set_emit(Emit e);
 void set_shown(bool on);
 bool shown();
 
-// The room the game picture may use, within the renderer's ow x oh
-// (everything when not shown); the buttons are laid out for that size
-void area(int ow, int oh, int& ax, int& ay, int& aw, int& ah);
+// The room the game picture may use within the panel's usable part (x0, y0,
+// w x h - inside its safe margins): all of it when not shown; the buttons
+// are laid out in it
+void area(int x0, int y0, int w, int h, int& ax, int& ay, int& aw, int& ah);
 
 // Draws the buttons over the frame (renderer output pixels)
 void draw(SDL_Renderer* ren);

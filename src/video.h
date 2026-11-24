@@ -108,6 +108,10 @@ void pointer(int x, int y);
 // Shows a frame: the canvas (nullptr: black) under the overlay
 void present(const pic::Canvas* game);
 
+// The panel's safe margins in pixels (a phone's camera cutout - Android):
+// the picture, the on-screen buttons and the Companion keep out of them
+void set_safe(int left, int top, int right, int bottom);
+
 // The renderer's size in pixels (the whole panel); the window's in its points
 void output_size(int& w, int& h);
 void window_size(int& w, int& h);

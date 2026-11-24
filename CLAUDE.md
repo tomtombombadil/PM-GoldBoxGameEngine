@@ -261,6 +261,8 @@ and maintains it; it is the primary output of the Claude Project
   highlight doesn't move to the tapped menu item as it should" - the engine's, 0.215.1).
 - **Display - Screen Rotation: Auto / Landscape / Portrait** on Android (Tom, 2026-11-23); Auto turns with
   the device.
+- **A phone's camera cutout / notch is kept clear** (Tom, 2026-11-23, Pixel 10a): nothing of ours in its
+  safe margins (`video::set_safe`); any new thing drawn on the panel goes inside `usable()`.
 - **Where the games go must be plain to the player** (Tom: "GoldBox/games doesn't tell me where that folder
   is") and **the player can point the app at a folder of their own**: names as the phone and a PC show them
   ("Internal storage/GoldBox/games/", `shown_path`), never a bare relative path or /storage/emulated/0.

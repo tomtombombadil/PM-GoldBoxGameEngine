@@ -193,6 +193,38 @@ void rotation_apply()
 #endif
 }
 
+// A phone's camera cutout / notch (Tom's Pixel 10a, 2026-11-23): its safe
+// margins from the activity (GoldBoxActivity.cutoutInsets), asked about once
+// a second - they turn with the device and can come late - nothing drawn in
+// them (video::set_safe)
+void safe_check(Uint32 now)
+{
+#ifdef __ANDROID__
+    static Uint32 next = 0;
+    if (static_cast<Sint32>(now - next) < 0) return;
+    next = now + 1000;
+    JNIEnv* env = static_cast<JNIEnv*>(SDL_AndroidGetJNIEnv());
+    jobject act = static_cast<jobject>(SDL_AndroidGetActivity());
+    if (!env || !act) return;
+    jclass c = env->GetObjectClass(act);
+    jmethodID m = env->GetMethodID(c, "cutoutInsets", "()[I");
+    if (m) {
+        jintArray a = static_cast<jintArray>(env->CallObjectMethod(act, m));
+        if (a && env->GetArrayLength(a) == 4) {
+            jint v[4];
+            env->GetIntArrayRegion(a, 0, 4, v);
+            video::set_safe(v[0], v[1], v[2], v[3]);
+        }
+        if (a) env->DeleteLocalRef(a);
+    }
+    if (env->ExceptionCheck()) env->ExceptionClear();
+    env->DeleteLocalRef(c);
+    env->DeleteLocalRef(act);
+#else
+    (void)now;
+#endif
+}
+
 #ifdef __ANDROID__
 // Start - System - Games Folder: the app's folder screen (Java,
 // GoldBoxActivity.chooseFolder) opens; this program then ends
@@ -3312,6 +3344,7 @@ int main(int argc, char** argv)
         const float dt = (now - last) / 1000.0f;
         last = now;
         dpad_tick(now);
+        safe_check(now);
         pointer_tick(dt > 0.1f ? 0.1f : dt);
         if (ptr_on && now - ptr_seen > 6000) ptr_on = false;        // (left alone: out of the way)
         script_tick(now);
