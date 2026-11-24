@@ -32,4 +32,14 @@ void state(State s);
 // Y on a controller: the app's Companion out / away
 void companion();
 
+// The app's menu drawer (stage 2 of the redesign): the front end's menu stays
+// the one that decides (its pages, lines and the buttons that move about it -
+// a controller still drives it); the app shows it in Android's views and its
+// taps come here as ops for `fn` (main.cpp): 0 close, 1 choose line i, 2 change
+// line i by value (-1 / +1), 3 back a page, 4 set line i to value (a level)
+enum MenuOp : int { MenuClose = 0, MenuChoose = 1, MenuChange = 2, MenuBack = 3, MenuSet = 4 };
+void set_menu(void (*fn)(int op, int index, int value));
+// What the menu shows now, as text for the app (sent only when it changed)
+void menu_state(const char* text, size_t len);
+
 } // namespace shell

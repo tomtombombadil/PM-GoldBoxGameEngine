@@ -6,8 +6,11 @@
 
 #include <jni.h>
 
+#include <cstring>
+
 #include <atomic>
 #include <mutex>
+#include <string>
 
 namespace shell {
 namespace {
@@ -22,7 +25,10 @@ std::mutex lay_mu;
 int        lay[9] = {};
 bool       lay_new = false;
 
-enum : Sint32 { kButton = 1, kLayout = 2 };
+enum : Sint32 { kButton = 1, kLayout = 2, kMenu = 3 };
+
+void (*menu_fn)(int, int, int) = nullptr;
+std::string menu_sent;
 
 void push(Sint32 code, intptr_t a, intptr_t b)
 {
@@ -72,6 +78,11 @@ bool take(const SDL_Event& e, void (*press)(int, bool))
     if (e.user.code == kButton) {
         if (press) press(static_cast<int>(reinterpret_cast<intptr_t>(e.user.data1)),
                          reinterpret_cast<intptr_t>(e.user.data2) != 0);
+    } else if (e.user.code == kMenu) {
+        const intptr_t packed = reinterpret_cast<intptr_t>(e.user.data2);
+        if (menu_fn)
+            menu_fn(static_cast<int>(reinterpret_cast<intptr_t>(e.user.data1)), static_cast<int>(packed >> 16),
+                    static_cast<int16_t>(packed & 0xFFFF));
     } else if (e.user.code == kLayout) {
         int v[9];
         {
@@ -95,6 +106,29 @@ void state(State s)
 }
 
 void companion() { call("onShellCompanion", "()V", 0, false); }
+
+void set_menu(void (*fn)(int, int, int)) { menu_fn = fn; }
+
+void menu_state(const char* text, size_t len)
+{
+    if (menu_sent.size() == len && memcmp(menu_sent.data(), text, len) == 0) return;
+    menu_sent.assign(text, len);
+    // (bytes, not a jstring: the engine's words may hold any byte - Java reads them as UTF-8)
+    JNIEnv* env = static_cast<JNIEnv*>(SDL_AndroidGetJNIEnv());
+    jobject act = static_cast<jobject>(SDL_AndroidGetActivity());
+    if (!env || !act) return;
+    jbyteArray b = env->NewByteArray(static_cast<jsize>(len));
+    if (b) {
+        env->SetByteArrayRegion(b, 0, static_cast<jsize>(len), reinterpret_cast<const jbyte*>(text));
+        jclass c = env->GetObjectClass(act);
+        jmethodID m = env->GetMethodID(c, "onShellMenu", "([B)V");
+        if (m) env->CallVoidMethod(act, m, b);
+        env->DeleteLocalRef(c);
+        env->DeleteLocalRef(b);
+    }
+    if (env->ExceptionCheck()) env->ExceptionClear();
+    env->DeleteLocalRef(act);
+}
 
 } // namespace shell
 
@@ -122,6 +156,13 @@ JNIEXPORT void JNICALL Java_io_github_tomtombombadil_goldbox_GoldBoxActivity_nat
     shell::push(shell::kLayout, 0, 0);
 }
 
+// The menu drawer's taps (shell::MenuOp)
+JNIEXPORT void JNICALL Java_io_github_tomtombombadil_goldbox_GoldBoxActivity_nativeMenu(JNIEnv*, jclass, jint op,
+                                                                                       jint index, jint value)
+{
+    shell::push(shell::kMenu, op, (static_cast<intptr_t>(index) << 16) | (static_cast<intptr_t>(value) & 0xFFFF));
+}
+
 } // extern "C"
 
 #else // not Android: nothing
@@ -132,6 +173,8 @@ void begin() {}
 bool take(const SDL_Event&, void (*)(int, bool)) { return false; }
 void state(State) {}
 void companion() {}
+void set_menu(void (*)(int, int, int)) {}
+void menu_state(const char*, size_t) {}
 } // namespace shell
 
 #endif

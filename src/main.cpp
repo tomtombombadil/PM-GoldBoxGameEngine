@@ -780,7 +780,10 @@ void menu_build()
     switch (menu_page) {
     case Page::Top:
         if (playing) add(MResume);
-        add(MDisplayPg);
+        // (the Android app: no Display page - Screen Rotation alone is left of it, so it stands here; Tom 2026-11-17:
+        // no page of one line)
+        if (shell::on()) add(MRotation);
+        else add(MDisplayPg);
         add(MAudioPg);
         add(MPlayPg);
         if (playing) add(MJournal);
@@ -1443,7 +1446,9 @@ void draw_frame()
         video::present(canvas ? &cv : nullptr);
         return;
     }
-    if (menu_open) draw_menu();
+    // (the Android app shows the menu's pages in its own drawer - shell.h; the Button Guide and Device Info
+    // are still drawn here)
+    if (menu_open && (!shell::on() || help_open || device_open)) draw_menu();
     if (quick_open) draw_quick();
     if (jlist_open) draw_jlist();
     if (prompt_open) draw_prompt();
@@ -2431,6 +2436,95 @@ void menu_press(int b)
 }
 
 // A button went down (b: with Confirm / Back already as the player set them)
+// ---- The Android app's menu drawer (shell.h; the redesign's stage 2)
+// Its taps: the same as the buttons would do on the line
+void android_menu(int op, int index, int value)
+{
+    if (!menu_open || help_open || device_open) {
+        if (op == shell::MenuClose && menu_open && !help_open && !device_open) menu_open = false;
+        return;
+    }
+    const int n = static_cast<int>(menu_items.size());
+    const bool line = index >= 0 && index < n;
+    switch (op) {
+    case shell::MenuClose: menu_open = false; break;
+    case shell::MenuBack: menu_press(BB); break;
+    case shell::MenuChoose:
+        if (!line) break;
+        menu_sel = index;
+        menu_press(BA);
+        break;
+    case shell::MenuChange:
+        if (!line) break;
+        menu_sel = index;
+        menu_change(value < 0 ? -1 : 1);
+        break;
+    case shell::MenuSet:
+        if (!line) break;
+        menu_sel = index;
+        if (menu_items[index].m == MVolume) {
+            cfg.volume = static_cast<uint8_t>(value < 0 ? 0 : value > 100 ? 100 : value);
+            if (playing) apply_sound();
+            settings_save(conf_dir, cfg);
+        }
+        break;
+    default: break;
+    }
+}
+
+// What the menu shows, for the drawer (sent when it changes): a head line -
+// open / busy (the menu is up but something of the port's is over it: the
+// drawer steps aside) / closed, the page's title, the highlighted line, a
+// page above (1 / 0) - then a line each: kind (P a page or screen, S a
+// switch, C a choice, L a level 0 - 100, A an action, X none of the drawer's),
+// its name, its value, its words. Tab-separated.
+void android_menu_tick()
+{
+    if (!shell::on()) return;
+    std::string t;
+    auto clean = [](std::string& out, const char* s) {
+        for (; s && *s; ++s) out += (*s == '\t' || *s == '\n' || *s == '\r') ? ' ' : *s;
+    };
+    const bool busy = help_open || device_open || quick_open || jlist_open || prompt_open || notice.open ||
+                      screen == Screen::Scan || screen == Screen::Message;
+    if (!menu_open) {
+        t = "closed";
+    } else {
+        t = busy ? "busy\t" : "open\t";
+        clean(t, menu_page == Page::Fixes ? fix_game_name(fix_game) : page_title(menu_page));
+        t += "\t" + std::to_string(menu_sel) + "\t" + (menu_page != Page::Top ? "1" : "0");
+        for (const MItem& it : menu_items) {
+            char label[160];
+            menu_label(it, label, sizeof label);
+            std::string name = label, value;
+            char kind = 'A';
+            const size_t colon = name.rfind(": ");
+            if (it.m == MBack || it.m == MResume) kind = 'X';
+            else if (it.m == MVolume) {
+                kind = 'L';
+                name = "Volume";
+                value = std::to_string(cfg.volume);
+            } else if (page_of(it.m) != Page::Top || (name.size() > 3 && name.compare(name.size() - 3, 3, "...") == 0)) {
+                kind = 'P';
+                if (name.size() > 3 && name.compare(name.size() - 3, 3, "...") == 0) name.resize(name.size() - 3);
+            } else if (colon != std::string::npos) {
+                value = name.substr(colon + 2);
+                name.resize(colon);
+                kind = value == "On" || value == "Off" ? 'S' : 'C';
+            }
+            t += "\n";
+            t += kind;
+            t += "\t";
+            clean(t, name.c_str());
+            t += "\t";
+            clean(t, value.c_str());
+            t += "\t";
+            clean(t, menu_help(it));
+        }
+    }
+    shell::menu_state(t.data(), t.size());
+}
+
 void press(int b)
 {
     if (b <= BRight && !ptr_mode) ptr_on = false;
@@ -3445,6 +3539,7 @@ int main(int argc, char** argv)
         return 1;
     }
     shell::begin();
+    shell::set_menu(android_menu);
     plat::log("[port] Gold Box Game Engine for PortMaster %s; games in %s\n", PM_VERSION, pm::games_root().c_str());
     settings_load(conf_dir, cfg);
 #ifdef __ANDROID__
@@ -3517,6 +3612,7 @@ int main(int argc, char** argv)
         // (the on-screen D-Pad's corners: diagonals while a fighter moves or aims)
         touchpad::set_diagonals(touch_ui && playing && screen == Screen::Play && !menu_open && keys.empty() &&
                                 play::fight_pad());
+        android_menu_tick();
         // (the Android app: what is on screen - its Companion and pad follow; nothing elsewhere)
         shell::state(!playing ? shell::State::Pages
                      : in_title() ? shell::State::Titles

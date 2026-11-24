@@ -3,6 +3,19 @@
 Every version of Gold Box Game Engine for PortMaster. A release's notes are
 its part of this file.
 
+## [0.15.0] - 2026-11-24
+
+Built on the CYD engine 0.216.1. **Android only - nothing changes on a handheld.**
+
+- **The Android app's menu drawer** (Tom's redesign, stage 2): the app shows the Start menu's pages in its own
+  drawer from the left - Android's letters, switches, a slider for the volume with - / + and mute. The menu itself
+  is the same one: its pages, lines and words come from here (`android_menu_tick`), its taps act as the buttons
+  would (`android_menu`), and a controller still moves about it. Screen Rotation now stands on the menu's top
+  page in the app (its Display page had nothing else left).
+
+Checked: the smoke test on the PC build (nothing of it runs there); the app on the Android emulator (the drawer by
+touch: the top page, Audio - Game Sound, the music switch, the volume muted and back, closed by a tap beside it).
+
 ## [0.14.0] - 2026-11-24
 
 Built on the CYD engine 0.216.1 (as v0.13.2). **Android only - nothing changes on a handheld.**
