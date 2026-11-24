@@ -322,6 +322,8 @@ def main():
         assert not [f for f in keep if not (g / f).exists()], "Clean Up took " + str([f for f in keep if not (g / f).exists()])
         rep = (g / "_CYD" / "CLEANUP.TXT").read_text() if (g / "_CYD" / "CLEANUP.TXT").is_file() else "(no report)"
         assert "Left alone (not known): Pool of Radiance/mine.zip" in rep, rep
+        # (v0.13.1, engine eb8cf7a: the report names each folder it took)
+        assert "Removed the folder Pool of Radiance/DOSBOX" in rep, rep
         # (--drive, tools/play_test.py's way in: steps on stdin, the state back after each line)
         r = subprocess.run([exe, "--games", str(g), "--conf", str(conf), "--drive"], input="wait:100\nright,wait:100\nquit\n",
                            env=dict(os.environ, SDL_VIDEODRIVER="dummy", SDL_AUDIODRIVER="dummy"),

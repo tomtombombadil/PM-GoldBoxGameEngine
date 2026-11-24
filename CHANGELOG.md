@@ -3,6 +3,14 @@
 Every version of Gold Box Game Engine for PortMaster. A release's notes are
 its part of this file.
 
+## [0.13.1] - 2026-11-24
+
+Built on the CYD engine 0.216.0 at its newest commit (eb8cf7a; v0.13.0 was one commit behind).
+
+- **Clean Up Game Files: the report names each folder it removed** ("Removed the folder Pool of Radiance/DOSBOX") - before, CLEANUP.TXT listed the files and only counted the folders. The engine's change; nothing else differs from v0.13.0.
+
+Checked: the smoke test on the PC build (made-up game folders: the six unwanted files and the DOSBox folder go, the game's files, saves, PDFs and an unknown file stay, the report has the folder's line). Not run on real game folders or a device this time.
+
 ## [0.13.0] - 2026-11-24
 
 Built on the CYD engine 0.216.0.
