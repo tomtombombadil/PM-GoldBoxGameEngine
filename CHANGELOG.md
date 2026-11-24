@@ -3,7 +3,18 @@
 Every version of Gold Box Game Engine for PortMaster. A release's notes are
 its part of this file.
 
-## [0.12.12] - 2026-11-23## [0.12.20] - 2026-11-23
+## [0.13.0] - 2026-11-24
+
+Built on the CYD engine 0.216.0.
+
+- **Start - Clean Up Game Files** (beside Rescan Game Files): frees space in the games folder. A whole GOG or
+  Steam install brings DOSBox, the installer's and the Steam launcher's files, the Gold Box Companion program and
+  DOS sound drivers the engine never reads; they go. Every game file the engine reads, every saved game and
+  character, every PDF (the manuals, cluebooks, journals) and any file it doesn't know stay. The Steam
+  collection's Launcher folder keeps only the box art. A report: games/_CYD/CLEANUP.TXT. On the nine Steam games
+  it took out 582 files, 83 MB.
+
+## [0.12.20] - 2026-11-23
 
 Built on the CYD engine 0.215.2 (unchanged).
 

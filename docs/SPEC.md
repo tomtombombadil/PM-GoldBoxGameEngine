@@ -283,10 +283,10 @@ on screen the overlay is 320 again.
   meaning is under the list, in as many lines as it needs (the list
   scrolls in the rest).
   - **Top**, in a game: Back to Game, Display, Audio, Game Play, Journal,
-    Cheats, Quick Actions, Controls, System, Rescan Game Files, Check for
-    Updates, Exit Game, Quit. At the game list: Display, Audio, Game Play,
+    Cheats, Quick Actions, Controls, System, Rescan Game Files, Clean Up Game
+    Files, Check for Updates, Exit Game, Quit. At the game list: Display, Audio, Game Play,
     Cheats (Max Hit Points and Disable Race Level Limits only), Controls, System, Rescan Game Files,
-    Check for Updates, Quit. (Rescan and Check for Updates on the top page
+    Clean Up Game Files, Check for Updates, Quit. (Rescan and Check for Updates on the top page
     are the port's own - Tom, 2026-11-17: "not buried".)
   - **Display**: Picture (the fit, section 5).
   - **Audio**: Game Sound, AdLib Music, Volume.
@@ -317,6 +317,18 @@ on screen the overlay is 320 again.
   - **Controls** (the port's own): Button Guide, D-Pad Walks, Confirm
     Button.
   - **Rescan Game Files** (top page; in a game: leaves it first).
+  - **Clean Up Game Files** (v0.13.0, Tom 2026-11-24; top page, beside
+    Rescan; in a game: leaves it first): the engine's `game/tidy.*` on each
+    game found and the Launcher folder - what the engine never reads goes
+    (DOSBox, installer / Galaxy and Steam launcher files, the Companion's
+    program and pictures, DOS drivers / tools, the Dark Queen's non-AdLib
+    music, the Launcher but its box art); game files, saves, SAVE* folders,
+    icons, the Companion's journal files, every PDF and unknown files stay.
+    Its lines on the scan's page ("Cleaning Up Game Files"), every file in
+    games/_CYD/CLEANUP.TXT (Send Logs takes it). A folder holding hidden
+    ".name" files (the listing skips them) is left. Checked: smoke test
+    (made folders), and the Steam set from the Project: 582 files / 83 MB out,
+    then Rescan's lines the same as the first scan's.
   - **System**: Device
     Info (the port's and the engine's version, device.txt's lines, each
     game found and its release - Steam: files under `<folder>/GAME/`; GOG:

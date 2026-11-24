@@ -26,6 +26,7 @@
 #include "engine/quickacts.h"
 #include "engine/rules.h"
 #include "game/play.h"
+#include "game/tidy.h"
 #include "platform/audio.h"
 #include "platform/file.h"
 #include "platform/platform.h"
@@ -651,7 +652,7 @@ enum MenuItem : uint8_t {
     MHealer, MMerchant, MSanctuary, MTrainer, MMaxHp, MNoRace,   // Cheats
     MQuickOn, MQuick,                       // Quick Actions
     MControls, MPadMoves, MSwap, MTouchPad, MPadSize, MPadAlpha,   // Controls (the last three: a touch screen's)
-    MRescan, MDevice, MUpdate, MSendLogs, MReplyAddr, MFolder,   // System (MFolder: Android's)
+    MRescan, MClean, MDevice, MUpdate, MSendLogs, MReplyAddr, MFolder,   // System (MFolder: Android's)
     MBack
 };
 enum class Page : uint8_t { Top, Display, Audio, Play, Enhance, Rules, FixGames, Fixes, Cheats, Quick, Controls, System };
@@ -783,6 +784,7 @@ void menu_build()
         add(MSystemPg);
         // (the port's own, Tom 2026-11-17: on the main menu, "not buried")
         add(MRescan);
+        add(MClean);
 #ifndef __ANDROID__
         add(MUpdate);
 #endif
@@ -928,6 +930,7 @@ void menu_label(const MItem& it, char* out, size_t cap)
     case MMaxHp: snprintf(out, cap, "Max Hit Points: %s", cfg.max_hp ? "On" : "Off"); break;
     case MNoRace: snprintf(out, cap, "Disable Race Level Limits: %s", cfg.no_race_limits ? "On" : "Off"); break;
     case MRescan: snprintf(out, cap, "Rescan Game Files"); break;
+    case MClean: snprintf(out, cap, "Clean Up Game Files"); break;
     case MDevice: snprintf(out, cap, "Device Info"); break;
     case MUpdate: snprintf(out, cap, "%s", update_staged.empty() ? "Check for Updates" : "Restart to Update"); break;
     case MSendLogs: snprintf(out, cap, "Send Logs"); break;
@@ -1018,6 +1021,9 @@ const char* menu_help(const MItem& it)
                "experience gives. Each game's own last level stays. A cheat: off unless you turn it on.";
     case MReplyAddr: return "Your email address, sent with Send Logs so the developer can write back. Optional.";
     case MRescan: return "Looks through the games folder again and makes every game's picture, journal and music anew.";
+    case MClean:
+        return "Frees space: takes out of each game's folder what the engine never reads (DOSBox, installers, the "
+               "Steam launcher's files). Game files, saves and every PDF stay. A report: games/_CYD/CLEANUP.TXT.";
     case MDevice: return "This port's version, the device, and each game found with its release (Steam or GOG).";
     case MUpdate: return "Looks for a newer version of the port and installs it (needs Wi-Fi).";
     case MSendLogs: return "Sends the port's logs to the developer by the internet (needs Wi-Fi).";
@@ -1577,6 +1583,7 @@ constexpr char kScanMark[] = "PMSCAN.TXT";      // in the game's _CYD folder: fo
 constexpr char kScanTag[] = "scan 5";       // (2: engine 0.198.1 - journals read anew, music 16-bit; 3: 0.199 - Queen's and Champions' music; 4: 0.200.4 - journal sections read anew; 5: 0.200.6 / 0.201.0 - the Steam Treasures journal, GOG Secret entry 45: journals made anew)
 std::vector<std::string> scan_log;
 bool                     scan_done = false, scan_progress = false;
+const char*              scan_title = "Looking for Games";     // (Clean Up Game Files: its own)
 
 // The scan's page: its lines in the smaller letters (12 x 12 on the
 // backdrop's sharper picture), as many across as the panel has room for
@@ -1587,7 +1594,7 @@ void draw_scan()
     const int m = video::margin(), bw = video::back_w(), rows_px = (video::kH - kHeaderH) * 2;
     video::clear(video::kClear);
     video::fill(-m, 0, video::kW + 2 * m, kHeaderH, video::kNavy);
-    video::text_at(-m + 8, 6, "Looking for Games", video::kGold);
+    video::text_at(-m + 8, 6, scan_title, video::kGold);
     video::fill(-m, video::kH - 14, video::kW + 2 * m, 14, video::kBlack);
     char line[41];
     if (scan_done) snprintf(line, sizeof line, "%s: Continue", confirm_name());
@@ -1707,6 +1714,7 @@ void scan_begin(bool& any)
 {
     if (any) return;
     any = true;
+    scan_title = "Looking for Games";
     scan_log.clear();
     scan_done = scan_progress = false;
     screen = Screen::Scan;
@@ -2203,6 +2211,75 @@ void rescan()
     if (game_sel >= static_cast<int>(games_found.size())) game_sel = 0;
 }
 
+// Clean Up Game Files (Tom, 2026-11-24; the engine's game/tidy.h has the
+// rules): each game found loses what the engine never reads - DOSBox, the
+// installers, the Steam launcher's and the Gold Box Companion's own files;
+// its game files, saves and every PDF stay - and the Launcher folder is cut
+// to the box art. Shown on the scan's page (a game a line), every file in
+// games/_CYD/CLEANUP.TXT (sent with Send Logs).
+FILE* clean_log = nullptr;
+
+void clean_up()
+{
+    rescan();
+    scan_log.clear();
+    scan_done = scan_progress = false;
+    scan_title = "Cleaning Up Game Files";
+    screen = Screen::Scan;
+    video::set_wide(true);
+    const std::string top = std::string(games::kRootDir) + "/" + library::kCacheDir;
+    plat::mkdir(top.c_str());
+    clean_log = fopen(pm::host_path((top + "/CLEANUP.TXT").c_str()).c_str(), "w");
+    if (clean_log) fprintf(clean_log, "Gold Box Game Engine v%s - Clean Up Game Files\n\n", PM_VERSION);
+    const tidy::Say detail = [](const char* line, void*) {
+        if (clean_log) fprintf(clean_log, "  %s\n", line);
+    };
+    tidy::Report all;
+    char line[160];
+    for (const library::GameDir& g : games_found) {
+        if (g.game == games::Game::Unknown) continue;           // (a folder not named after a game: left alone)
+        snprintf(line, sizeof line, "Cleaning up %s...", games::title(g.game));
+        scan_put(line, false);
+        if (clean_log) fprintf(clean_log, "%s\n", line);
+        tidy::Report r;
+        tidy::clean_game(g.folder.c_str(), g.data_dir.c_str(), true, r, detail, nullptr);
+        snprintf(line, sizeof line, "  %d file%s removed (%.1f MB)%s", r.files, r.files == 1 ? "" : "s",
+                 r.bytes / 1048576.0, r.failed ? " - some couldn't be" : "");
+        scan_put(line, false);
+        all.files += r.files, all.bytes += r.bytes, all.folders += r.folders, all.left += r.left,
+            all.failed += r.failed;
+    }
+    {
+        tidy::Report r;
+        if (clean_log) fprintf(clean_log, "The Launcher folder\n");
+        tidy::clean_launcher(true, r, detail, nullptr);
+        if (r.files) {
+            snprintf(line, sizeof line, "The Launcher folder: %d files removed (%.1f MB) - its box art kept", r.files,
+                     r.bytes / 1048576.0);
+            scan_put(line, false);
+        }
+        all.files += r.files, all.bytes += r.bytes, all.folders += r.folders, all.failed += r.failed;
+    }
+    snprintf(line, sizeof line, "Done: %d file%s and %d folder%s removed, %.1f MB freed. Game files, saves and "
+             "PDFs are all still there.", all.files, all.files == 1 ? "" : "s", all.folders, all.folders == 1 ? "" : "s",
+             all.bytes / 1048576.0);
+    scan_put(line, false);
+    if (clean_log) fprintf(clean_log, "\n%s\n", line);
+    if (all.left) {
+        snprintf(line, sizeof line, "%d file%s the engine doesn't know left alone (listed in games/_CYD/CLEANUP.TXT).",
+                 all.left, all.left == 1 ? "" : "s");
+        scan_put(line, false);
+    }
+    if (all.failed) scan_put("Some files couldn't be removed (listed in games/_CYD/CLEANUP.TXT).", false);
+    if (clean_log) {
+        fclose(clean_log);
+        clean_log = nullptr;
+    }
+    scan_done = true;
+    draw_scan();
+    video::present(nullptr);
+}
+
 // A cheat's screen, on the game's own (only at the exploring menu)
 void cheat_go(int which)
 {
@@ -2318,6 +2395,11 @@ void menu_press(int b)
             menu_open = false;
             rescan();
             if (!discover(true)) screen = Screen::Games;
+            break;
+        case MClean:
+            if (playing) leave_game();          // (in a game: leaves it first - its files are gone through)
+            menu_open = false;
+            clean_up();
             break;
         case MUpdate: update_check(); break;
         case MFolder:

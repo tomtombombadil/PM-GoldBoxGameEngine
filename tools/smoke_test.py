@@ -305,6 +305,23 @@ def main():
         assert "[scan]" not in out, "pictures made again at the next start"
         out = run(exe, g, conf, "wait:100,start,menu:Rescan,a,wait:100,a,right,quit")
         assert out.count("[scan] Found ") == 2, "Rescan Game Files"
+        # (Clean Up Game Files, v0.13.0: DOSBox's and the installer's files go, the game's, its saves, PDFs,
+        # an unknown file and the folders that aren't games stay)
+        junk = ("Pool of Radiance/dosbox_por.conf", "Pool of Radiance/DOSBOX/DOSBox.exe", "Pool of Radiance/unins000.exe",
+                "Pool of Radiance/gog.ico", "curse of the azure bonds/COPYCURS.EXE", "curse of the azure bonds/INSTALL.BAT")
+        keep = ("Pool of Radiance/Manual.pdf", "Pool of Radiance/goggame-1432640961.ico", "Pool of Radiance/game/GEO1.DAX",
+                "Pool of Radiance/game/START.EXE", "Pool of Radiance/game/SAVGAMA.DAT", "curse of the azure bonds/geo1.dax",
+                "curse of the azure bonds/SAVE/CHRDATA1.SAV", "Pool of Radiance/mine.zip", "Mystery/A.DAX",
+                "Mystery/run.bat", "Empty/readme.txt")
+        for f in junk + keep:
+            (g / f).parent.mkdir(parents=True, exist_ok=True)
+            (g / f).write_bytes(b"x")
+        out = run(exe, g, conf, "wait:100,start,menu:Clean_Up,a,wait:100,a,quit")
+        assert "[scan] Done: 6 files and 1 folder removed" in out, "Clean Up Game Files: " + out[-600:]
+        assert not [f for f in junk if (g / f).exists()], "Clean Up left " + str([f for f in junk if (g / f).exists()])
+        assert not [f for f in keep if not (g / f).exists()], "Clean Up took " + str([f for f in keep if not (g / f).exists()])
+        rep = (g / "_CYD" / "CLEANUP.TXT").read_text() if (g / "_CYD" / "CLEANUP.TXT").is_file() else "(no report)"
+        assert "Left alone (not known): Pool of Radiance/mine.zip" in rep, rep
         # (--drive, tools/play_test.py's way in: steps on stdin, the state back after each line)
         r = subprocess.run([exe, "--games", str(g), "--conf", str(conf), "--drive"], input="wait:100\nright,wait:100\nquit\n",
                            env=dict(os.environ, SDL_VIDEODRIVER="dummy", SDL_AUDIODRIVER="dummy"),

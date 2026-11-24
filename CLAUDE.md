@@ -92,6 +92,10 @@ and maintains it; it is the primary output of the Claude Project
   as an alias is unknown as a bare word; and after pm_finish the hotkey
   helper (gptokeyb) is ended by hand in any case. The smoke test's
   PortMaster stand-in gives pm_finish as an alias.
+- **Clean Up Game Files** (Tom, 2026-11-24: "a function ... to cleanup the files copied to the device ...
+  except I want to leave all the PDFs"): the engine's `game/tidy.*` (its rules in tidy.h), on the Start menu
+  beside Rescan Game Files (v0.13.0). The rules live in the CYD repo - change them there; the port only calls
+  `tidy::clean_game` / `clean_launcher` and shows the lines.
 - **Nothing made for the screen's shape before the shape has settled**
   (Tom's RGB10 MAX3, v0.6.2: pictures remade at every start and not
   shown): a panel's real size can arrive after the first frames - check

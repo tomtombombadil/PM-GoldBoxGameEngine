@@ -15,6 +15,7 @@
 #include <dirent.h>
 #include <strings.h>
 #include <sys/stat.h>
+#include <unistd.h>
 
 namespace pm {
 
@@ -210,6 +211,7 @@ bool rename(const char* from, const char* to)
     if (exists(to) && !remove(to)) return false;
     return ::rename(pm::host_path(from).c_str(), pm::host_path(to).c_str()) == 0;
 }
+bool rmdir(const char* path) { return ::rmdir(pm::host_path(path).c_str()) == 0; }
 bool mkdir(const char* path)
 {
     ::mkdir(pm::host_path(path).c_str(), 0755);

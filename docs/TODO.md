@@ -3,6 +3,8 @@
 Tick off with the version that did it. Never ask Tom the same thing twice.
 
 ## Tom
+- [ ] v0.13.0 **Tom: Clean Up Game Files** (Start menu, beside Rescan): run it on a handheld with GOG and Steam
+      folders, then play a game of each; the report is games/_CYD/CLEANUP.TXT (also sent by Send Logs).
 - [x] Handhelds' Picture: Tom, 2026-11-23 - the Companion choices are Android's; the handhelds' three back (v0.12.20).
 - [ ] v0.12.17 (app 0.1.3) on the Tab S2 and the Pixel: the game larger, the buttons over it; the arrow at the top
       left; Controls - Button Size / Opacity; Display - Picture's two new choices, landscape and portrait.
