@@ -3,7 +3,16 @@
 Every version of Gold Box Game Engine for PortMaster. A release's notes are
 its part of this file.
 
-## [0.12.12] - 2026-11-23## [0.12.19] - 2026-11-23
+## [0.12.12] - 2026-11-23## [0.12.20] - 2026-11-23
+
+Built on the CYD engine 0.215.2 (unchanged).
+
+- **The handhelds' Display - Picture is back to its three choices** - Original 4:3, Square Pixels, Stretch - as
+  before v0.12.17 (Tom: "The new display options are for Android, not handhelds. The Port is working and
+  displaying great"). 4:3 + Companion Right / Below are the Android app's only. A settings file that picked one of
+  them on a handheld reads as Original 4:3.
+
+## [0.12.19] - 2026-11-23
 
 Built on the CYD engine 0.215.2 (unchanged).
 

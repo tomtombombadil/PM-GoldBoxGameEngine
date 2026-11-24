@@ -972,8 +972,7 @@ const char* menu_help(const MItem& it)
         return "4:3 as the games' monitors showed them (the Companion slides out on Y), 4:3 + Companion Right or "
                "Below (it stays there), Square Pixels, or Stretch to the whole screen.";
 #else
-        return "Original 4:3 as the games' monitors showed them (the Companion beside or under it where there is "
-               "room), 4:3 + Companion Right or Below, Square Pixels, or Stretch to the whole screen.";
+        return "Original 4:3 as the games' monitors showed them, Square Pixels, or Stretch to the whole screen.";
 #endif
     case MSound:
         return "The games' sound effects: Tandy or PC Speaker, or the Darkness / Gateway / Treasures recordings "
@@ -2126,13 +2125,19 @@ void menu_change(int step)
         if (playing) apply_options();
         break;
     case MDisplay:
+#ifdef __ANDROID__
     {
-        // (4:3, 4:3 + Companion Right, 4:3 + Companion Below, Square Pixels, Stretch)
+        // (Android: 4:3, 4:3 + Companion Right, 4:3 + Companion Below, Square Pixels, Stretch)
         static const uint8_t kOrder[5] = {0, 3, 4, 1, 2};
         int at = 0;
         while (at < 5 && kOrder[at] != cfg.fit) ++at;
         cfg.fit = kOrder[((at < 5 ? at : 0) + (step < 0 ? 4 : 1)) % 5];
     }
+#else
+        // (the handhelds: Original 4:3, Square Pixels, Stretch - Tom, 2026-11-23: the Companion choices are
+        // Android's, "The Port is working and displaying great")
+        cfg.fit = static_cast<uint8_t>((cfg.fit + (step < 0 ? 2 : 1)) % 3);
+#endif
         video::set_fit(static_cast<video::Fit>(cfg.fit));
         // (the game list's pictures follow the shape: pictures_follow)
         break;

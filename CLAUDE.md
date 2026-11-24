@@ -268,9 +268,13 @@ and maintains it; it is the primary output of the Claude Project
   Button Opacity are the player's** ("give the user options, don't use fixed values").
 - **The Companion is as large as its room allows, keeping its shape** (Tom, 2026-11-23): `below_pair` (upright: map
   and party side by side under the game), the strip beside the game the game's full height.
-- **Display - Picture has 4:3 + Companion Right and 4:3 + Companion Below** (Tom, 2026-11-23); in plain 4:3 on
-  Android the Companion slides out; Android starts on Right ("B by default, but changeable"). The handhelds'
-  Original 4:3 keeps docking by itself (Tom's 2026-11-14 rule) - whether it should change there too: TODO.
+- **Display - Picture has 4:3 + Companion Right and 4:3 + Companion Below ON ANDROID ONLY** (Tom, 2026-11-23); in
+  plain 4:3 on Android the Companion slides out; Android starts on Right ("B by default, but changeable").
+  **The handhelds keep Original 4:3 / Square Pixels / Stretch, unchanged** (Tom, 2026-11-23, after v0.12.17 put
+  the Android choices there too: "The new display options are for Android, not handhelds. The Port is working and
+  displaying great. Why would you change it?!?"). **Android work never changes what a handheld shows or does**:
+  anything new for the app is `__ANDROID__` (or touch-only); a change that would reach the handhelds is asked
+  first.
 - **The on-screen D-Pad has diagonals in a fight** (Tom, 2026-11-23: "there's no real d-pad ... we need to add
   diagonal movement buttons during combat"): its corners, while `play::fight_pad()`. **Start is labelled MENU,
   Select MOUSE** on the on-screen buttons (Tom).

@@ -3,9 +3,7 @@
 Tick off with the version that did it. Never ask Tom the same thing twice.
 
 ## Tom
-- [ ] Handhelds: Display - Picture now has 4:3 + Companion Right / Below (v0.12.17). Their Original 4:3 still docks
-      the Companion by itself where there is room (as decided 2026-11-14); on Android plain 4:3 is the slide-out
-      only. Should the handhelds' Original 4:3 also be slide-out only, now that the two choices exist?
+- [x] Handhelds' Picture: Tom, 2026-11-23 - the Companion choices are Android's; the handhelds' three back (v0.12.20).
 - [ ] v0.12.17 (app 0.1.3) on the Tab S2 and the Pixel: the game larger, the buttons over it; the arrow at the top
       left; Controls - Button Size / Opacity; Display - Picture's two new choices, landscape and portrait.
 - [ ] v0.12.16 (app 0.1.2) on your phone: a fight - move a fighter diagonally with the on-screen D-Pad's corners;
