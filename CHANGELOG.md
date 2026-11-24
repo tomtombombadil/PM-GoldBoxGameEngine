@@ -5,7 +5,7 @@ its part of this file.
 
 ## [0.15.0] - 2026-11-24
 
-Built on the CYD engine 0.216.1. **Android only - nothing changes on a handheld.**
+Built on the CYD engine 0.216.2 (as v0.14.1). **Android only - nothing changes on a handheld.**
 
 - **The Android app's menu drawer** (Tom's redesign, stage 2): the app shows the Start menu's pages in its own
   drawer from the left - Android's letters, switches, a slider for the volume with - / + and mute. The menu itself
@@ -14,7 +14,24 @@ Built on the CYD engine 0.216.1. **Android only - nothing changes on a handheld.
   page in the app (its Display page had nothing else left).
 
 Checked: the smoke test on the PC build (nothing of it runs there); the app on the Android emulator (the drawer by
-touch: the top page, Audio - Game Sound, the music switch, the volume muted and back, closed by a tap beside it).
+touch: the top page, Audio opened and its three lines shown, the volume muted and back, closed by a tap beside
+it). Not tried there: the other pages, a controller in the drawer.
+
+## [0.14.1] - 2026-11-24
+
+Built on the CYD engine 0.216.2. One engine fault, found at the end of the Treasures play-through:
+
+- **Treasures: the party is healed where the game heals it** - at the ending ("ice hunters tend your wounds, and
+  all are healed") and after the demo's fight the original makes the whole party well (wounds, blindness,
+  disease, poison, the dead, the stoned, drained levels) and waits for a button with "Press button or enter to
+  continue". The engine did nothing there: the party stayed hurt and that page of the ending was replaced by the
+  next before it could be read. From the original's program (read, not run in DOSBox - its two last fights would
+  have to be won there).
+
+Checked: in the engine's test program on the play-through's save - after the ending the eight members stand at
+their full hit points, a member drained in the Ice Peak has the two levels back, and the page waits with its
+prompt. **Not seen through the port's buttons** (it comes after two fights the party wins only with the test
+program's help). The smoke test passes.
 
 ## [0.14.0] - 2026-11-24
 
