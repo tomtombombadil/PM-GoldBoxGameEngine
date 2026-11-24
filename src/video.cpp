@@ -40,12 +40,24 @@ SDL_Rect      dst{0, 0, kW, kH};    // where the picture lands in the window
 // cutout is right in the top center of the game display when in portrait").
 // Nothing is drawn there - the picture, the buttons, the Companion keep out
 int           safe[4] = {};
+// The Android app's layout (shell.*, Tom's redesign, 2026-11-24): the app
+// gives the game's room and the Companion's; nothing else decides then
+bool          shell_on = false;
+SDL_Rect      shell_game{0, 0, 0, 0}, shell_comp{0, 0, 0, 0};
+int           shell_view = 0;         // the Companion's pictures: 0 both, 1 the first (map / battle), 2 the party
 
 // The panel's size less the safe margins: where things may go
 void usable(int& x, int& y, int& w, int& h)
 {
     int ow = kW, oh = kH;
     if (ren) SDL_GetRendererOutputSize(ren, &ow, &oh);
+    if (shell_on && shell_game.w > 0 && shell_game.h > 0) {
+        x = shell_game.x;
+        y = shell_game.y;
+        w = shell_game.w;
+        h = shell_game.h;
+        return;
+    }
     x = safe[0];
     y = safe[1];
     w = ow - safe[0] - safe[2];
@@ -138,11 +150,11 @@ void layout()
     }
     // The Companion docked: beside (Right) or under (Below) - by the choice, or
     // (Original, the handhelds) by itself where it fits
-    const bool right = uw == kW && side_on &&
+    const bool right = !shell_on && uw == kW && side_on &&
                        (fit == Fit::Right || (fit == Fit::Original && kAutoDock && ow - w >= 200));
     // (4:3 + Companion Below, a tall panel: the map and the party side by side under the game - below_pair)
-    const bool pair = !right && uw == kW && side_on && fit == Fit::Below;
-    const bool below = !right && !pair && uw == kW && below_on &&
+    const bool pair = !shell_on && !right && uw == kW && side_on && fit == Fit::Below;
+    const bool below = !shell_on && !right && !pair && uw == kW && below_on &&
                        (fit == Fit::Below || (fit == Fit::Original && kAutoDock && oh - h >= kBelowH && ow >= kBelowW));
     if (right && fit == Fit::Right) {
         // (the two pictures of 208 x 200, stacked, 1.2-tall pixels: 0.43 of the game's height across)
@@ -185,6 +197,7 @@ void layout()
         dst.y = uy;                             // (the game at the top, the Companion under it)
         strip = fit == Fit::Below ? SDL_Rect{ux, uy + h, ow, w * kBelowH / kBelowW} : SDL_Rect{ux, uy + h, ow, oh - h};
     }
+    if (shell_on && side_on && uw == kW) strip = shell_comp;      // (the app's room for the Companion)
     if (was.w != dst.w || was.h != dst.h || was.x != dst.x || was.y != dst.y || was_uw != uw) {
         ++serial;
         SDL_Log("[video] panel %d x %d: picture %d x %d at %d, %d, %d across%s", ow, oh, dst.w, dst.h, dst.x, dst.y, uw,
@@ -275,6 +288,7 @@ int back_w() { return uw * 2; }
 bool side_room()
 {
     if (!ren || wide) return false;
+    if (shell_on) return shell_comp.w > 0 && shell_comp.h > 0;
     if (fit == Fit::Right) return true;
     if (fit == Fit::Below) {
         int ux, uy, ow, oh;
@@ -310,7 +324,7 @@ void set_side(const uint32_t* top, const uint32_t* bottom)
 
 bool below_room()
 {
-    if (!ren || wide) return false;
+    if (!ren || wide || shell_on) return false;
     if (fit == Fit::Below) return !side_room();
     if (fit != Fit::Original || !kAutoDock) return false;
     int ux, uy, ow, oh;
@@ -352,6 +366,33 @@ void draw_side()
         return;
     }
     if (!side_on || strip.w <= 0) return;
+    if (shell_on) {
+        // (the app's room: one picture, or both - side by side or stacked, whichever shows them larger;
+        // rows 1.2 tall as the game's)
+        const int n = shell_view == 0 ? 2 : 1;
+        auto fit_in = [](int rw, int rh, int& w, int& h) {
+            w = rw;
+            h = w * kSideH * 6 / (kSideW * 5);
+            if (h > rh) {
+                h = rh;
+                w = h * kSideW * 5 / (kSideH * 6);
+            }
+        };
+        int aw, ah, bw, bh;
+        fit_in(strip.w / n, strip.h, aw, ah);           // (side by side)
+        fit_in(strip.w, strip.h / n, bw, bh);           // (stacked)
+        const bool across = aw >= bw;
+        const int w = across ? aw : bw, h = across ? ah : bh;
+        const int x0 = strip.x + (strip.w - (across ? n * w : w)) / 2;
+        const int y0 = strip.y + (strip.h - (across ? h : n * h)) / 2;
+        for (int k = 0; k < n; ++k) {
+            const int i = n == 2 ? k : shell_view - 1;
+            if (!side[i]) continue;
+            const SDL_Rect to{across ? x0 + k * w : x0, across ? y0 : y0 + k * h, w, h};
+            SDL_RenderCopy(ren, side[i], nullptr, &to);
+        }
+        return;
+    }
     if (fit == Fit::Below) {
         // (under the game: the two side by side, as large as the room lets them be)
         int w = strip.w / 2, h = w * kSideH * 6 / (kSideW * 5);
@@ -628,6 +669,20 @@ void output_size(int& w, int& h)
 {
     w = h = 1;
     if (ren) SDL_GetRendererOutputSize(ren, &w, &h);
+}
+
+void set_shell(const SDL_Rect& game, const SDL_Rect& comp, int view)
+{
+    const bool same = shell_on && memcmp(&game, &shell_game, sizeof game) == 0 &&
+                      memcmp(&comp, &shell_comp, sizeof comp) == 0 && view == shell_view;
+    if (same) return;
+    shell_on = game.w > 0 && game.h > 0;
+    shell_game = game;
+    shell_comp = comp;
+    shell_view = view < 0 || view > 2 ? 0 : view;
+    SDL_Log("[video] the app's layout: game %d,%d %dx%d, Companion %d,%d %dx%d (view %d)", game.x, game.y, game.w,
+            game.h, comp.x, comp.y, comp.w, comp.h, shell_view);
+    if (ren) layout();
 }
 
 void set_safe(int left, int top, int right, int bottom)

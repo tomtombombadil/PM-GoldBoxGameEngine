@@ -171,6 +171,13 @@ controller". All three, any mix; nothing is touch's alone (the rule above stands
   drawn shape (the D-Pad's corners are the game's outside a fight). **The arrow at the top left** hides /
   shows them (`pad_hidden`). Start - Controls - **On-Screen Buttons: Auto / Always / Never** (`touch_pad`),
   **Button Size** Small / Medium / Large / Huge (`pad_size`), **Button Opacity** 20 - 100% (`pad_alpha`).
+- **The Android app's own controls** (Tom, 2026-11-24, the redesign; v0.14.0, `src/shell.*`, Android only):
+  once the app has sent a layout, the app draws the pad (8 ways - the corners only in a fight -, OK, Back), the
+  edge handles and the panels in Android's views; the front end draws the game in the app's rectangle and the
+  Companion's pictures in its other (one - the map / battlefield or the party - or both). The overlay above is
+  then never shown, and Display - Picture and Controls' button lines leave the menu. The app's pad sends the
+  front end's buttons (A / B never swapped); Y on a controller asks the app for its Companion. The front end
+  tells the app what is on screen: its own pages, a game's titles, play, a fighter's move / aim.
 - **Touching the port's own screens** (`touch_tap` / `touch_swipe` in main.cpp - each the buttons a player
   would press there): a list's line tapped = picked and chosen at once (A) - one tap (Tom, 2026-11-23: "be
   more Android-friendly"); outside a page's box or its title = B;

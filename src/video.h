@@ -8,6 +8,8 @@
 
 #include "engine/picture.h"
 
+struct SDL_Rect;
+
 namespace video {
 
 constexpr int kW = pic::kScreenW, kH = pic::kScreenH;
@@ -116,6 +118,13 @@ void present(const pic::Canvas* game);
 // The panel's safe margins in pixels (a phone's camera cutout - Android):
 // the picture, the on-screen buttons and the Companion keep out of them
 void set_safe(int left, int top, int right, int bottom);
+
+// The Android app lays the screen out (shell.*, Tom's redesign 2026-11-24):
+// the game's room and the Companion's (renderer pixels; comp w 0: none),
+// view - the Companion's pictures: 0 both, 1 the map / battlefield, 2 the
+// party. Once given, these decide where everything goes (the safe margins,
+// Display - Picture's Right / Below, the on-screen buttons no longer do)
+void set_shell(const SDL_Rect& game, const SDL_Rect& comp, int view);
 
 // The renderer's size in pixels (the whole panel); the window's in its points
 void output_size(int& w, int& h);

@@ -43,6 +43,7 @@
 #ifdef __ANDROID__
 #include <jni.h>
 #endif
+#include "shell.h"
 #include "video.h"
 
 #ifndef PM_VERSION
@@ -154,6 +155,11 @@ bool touch_last = true;     // the last thing used was the screen (Auto: the but
 void touch_pad_apply()
 {
     if (!touch_ui) return;
+    if (shell::on()) {
+        // (the Android app's own pad round the game: no overlay - shell.h)
+        touchpad::set_shown(false);
+        return;
+    }
     touchpad::set_shown(cfg.touch_pad == 1 || (cfg.touch_pad == 0 && touch_last));
 }
 
@@ -792,7 +798,7 @@ void menu_build()
         add(MExit);
         break;
     case Page::Display:
-        add(MDisplay);
+        if (!shell::on()) add(MDisplay);     // (the Android app lays the screen out itself)
 #ifdef __ANDROID__
         add(MRotation);
 #endif
@@ -837,7 +843,7 @@ void menu_build()
         add(MControls);
         add(MPadMoves);
         add(MSwap);
-        if (touch_ui) {
+        if (touch_ui && !shell::on()) {       // (the Android app's own pad: none of these)
             add(MTouchPad);
             add(MPadSize);
             add(MPadAlpha);
@@ -2522,7 +2528,10 @@ void press(int b)
         break;
     }
     case BX: play::act(play::Act::Area, cv); break;
-    case BY: panel::next(); break;
+    case BY:
+        if (shell::on()) shell::companion();        // (the Android app's Companion: out / away)
+        else panel::next();
+        break;
     // (Champions' / the Dark Queen's overland, walking: north-west / north-east, as in a fight)
     case BL1:
         if (fight) play::fight_dir(7, cv);
@@ -2937,8 +2946,20 @@ void open_pad()
         }
 }
 
+// A button of the Android app's pad (shell.h): as the controller's, A / B
+// never swapped (the pad's OK is OK whatever Settings - Confirm Button says)
+void shell_press(int b, bool down)
+{
+    if (b < 0 || b >= BCount) return;
+    button(mapped(b), down);
+}
+
 void handle(const SDL_Event& e)
 {
+    if (shell::take(e, shell_press)) {
+        touch_pad_apply();
+        return;
+    }
     switch (e.type) {
     case SDL_QUIT: quit = true; break;
     case SDL_WINDOWEVENT:
@@ -3282,6 +3303,12 @@ void script_tick(Uint32 now)
         // (journal:J:12 - that entry opened, as if the game had just mentioned it)
         journal_queue.push_back(JRef{t[8], atoi(t.c_str() + 10)});
         journal_next();
+    } else if (t.compare(0, 7, "layout:") == 0) {
+        // (layout:gx:gy:gw:gh:cx:cy:cw:ch:view - the Android app's layout (shell.h), to look at off the phone)
+        int v[9] = {};
+        if (sscanf(t.c_str() + 7, "%d:%d:%d:%d:%d:%d:%d:%d:%d", &v[0], &v[1], &v[2], &v[3], &v[4], &v[5], &v[6], &v[7],
+                   &v[8]) == 9)
+            video::set_shell(SDL_Rect{v[0], v[1], v[2], v[3]}, SDL_Rect{v[4], v[5], v[6], v[7]}, v[8]);
     } else if (t.compare(0, 7, "resize:") == 0) {
         int w = 0, h = 0;
         if (sscanf(t.c_str() + 7, "%dx%d", &w, &h) == 2) video::set_window(w, h);
@@ -3417,6 +3444,7 @@ int main(int argc, char** argv)
         fprintf(stderr, "SDL: %s\n", SDL_GetError());
         return 1;
     }
+    shell::begin();
     plat::log("[port] Gold Box Game Engine for PortMaster %s; games in %s\n", PM_VERSION, pm::games_root().c_str());
     settings_load(conf_dir, cfg);
 #ifdef __ANDROID__
@@ -3489,6 +3517,11 @@ int main(int argc, char** argv)
         // (the on-screen D-Pad's corners: diagonals while a fighter moves or aims)
         touchpad::set_diagonals(touch_ui && playing && screen == Screen::Play && !menu_open && keys.empty() &&
                                 play::fight_pad());
+        // (the Android app: what is on screen - its Companion and pad follow; nothing elsewhere)
+        shell::state(!playing ? shell::State::Pages
+                     : in_title() ? shell::State::Titles
+                     : (screen == Screen::Play && !menu_open && keys.empty() && play::fight_pad()) ? shell::State::Fight
+                                                                                                 : shell::State::Play);
         pointer_tick(dt > 0.1f ? 0.1f : dt);
         if (ptr_on && now - ptr_seen > 6000) ptr_on = false;        // (left alone: out of the way)
         script_tick(now);

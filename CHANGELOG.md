@@ -3,6 +3,17 @@
 Every version of Gold Box Game Engine for PortMaster. A release's notes are
 its part of this file.
 
+## [0.14.0] - 2026-11-24
+
+Built on the CYD engine 0.216.0 (eb8cf7a). **Android only - nothing changes on a handheld.**
+
+- **The Android app's own controls round the game** (Tom's redesign, stage 1): the app now draws the pad, the
+  edge handles and the Companion's room in Android's own views; the front end draws the game and the Companion's
+  pictures where the app says (`src/shell.*`). The old see-through overlay, Display - Picture and the Controls
+  page's button lines are gone from the app's menu once the app has laid the screen out.
+
+Checked: the smoke test on the PC build (the shell does nothing there); the app on the Android emulator.
+
 ## [0.13.1] - 2026-11-24
 
 Built on the CYD engine 0.216.0 at its newest commit (eb8cf7a; v0.13.0 was one commit behind).
