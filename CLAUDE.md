@@ -255,6 +255,8 @@ and maintains it; it is the primary output of the Claude Project
   the Gradle project, the Java folder screen, F-Droid's metadata. It has THIS repo as a submodule and builds
   `src/` and `cyd/` with the NDK; the front end's Android parts stay here (`__ANDROID__`, `src/touchpad.*`).
   A change here the app needs: push here, then move the APK repo's pin. Its own CLAUDE.md.
+  **The APK repo's pin and releases are that repo's own session's** (Tom, 2026-11-24: "I'll address that in the
+  APK repo chat") - from this session never move its `pm` pin or release the app, and don't ask.
 - The app's name is **Gold Box Game Engine**; the APK file `GoldBoxGameEngine-<version>.apk` (Tom). Not for
   the Play Store: side-loaded and F-Droid.
 - **Touch: "compatible with touch and/or a controller (via bluetooth or USB) or an onscreen overlay
