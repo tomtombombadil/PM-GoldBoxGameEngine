@@ -5,14 +5,35 @@ its part of this file.
 
 ## [0.14.0] - 2026-11-24
 
-Built on the CYD engine 0.216.0 (eb8cf7a). **Android only - nothing changes on a handheld.**
+Built on the CYD engine 0.216.1 (as v0.13.2). **Android only - nothing changes on a handheld.**
 
 - **The Android app's own controls round the game** (Tom's redesign, stage 1): the app now draws the pad, the
   edge handles and the Companion's room in Android's own views; the front end draws the game and the Companion's
   pictures where the app says (`src/shell.*`). The old see-through overlay, Display - Picture and the Controls
   page's button lines are gone from the app's menu once the app has laid the screen out.
 
-Checked: the smoke test on the PC build (the shell does nothing there); the app on the Android emulator.
+Checked: the smoke test on the PC build (the shell does nothing there); the front end's half of each layout with
+Curse at 2280 x 1080 and 1080 x 2280 (the test step `layout:`). Not yet on a phone.
+
+## [0.13.2] - 2026-11-24
+
+Built on the CYD engine 0.216.1. Two engine faults found by the Treasures play-through, each set against the
+original game (its program read, then the original run in DOSBox on the engine's own save):
+
+- **Treasures: training stops at the game's last levels** - cleric 10; fighter, paladin, ranger, magic-user and
+  thief 11. The engine had no such stop: a fighter with the experience trained on to 12 and beyond. In the
+  original a fighter of 11th level with 1,200,000 experience is not trained in Mirabar's hall; the engine now
+  refuses the same. (The journal's tables print a 12th level for fighters and thieves; the program stops at 11,
+  and the program is followed.) Characters already trained past it keep their levels.
+- **Darkness and Treasures: a Cloak of Protection gives nothing over magic armour** - as a Ring of Protection in
+  every game. The engine counted it. The original listed two of my clerics at AC -7 and -8 where the engine
+  showed -8 and -9. Saves are put right as they are loaded (those two games work the figures out at Load, as
+  Treasures' own Load does).
+
+Checked: the engine's test program and the original side by side from the same save (the eight members' AC
+agree; the fighter stays 11); through the port's buttons on the PC build: that save loaded from the party menu
+lists the same eight AC. Not done by buttons: the training hall. Darkness's cloak: by its program's code only,
+not seen in DOSBox. Not on a device.
 
 ## [0.13.1] - 2026-11-24
 
