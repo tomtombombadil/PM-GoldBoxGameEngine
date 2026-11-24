@@ -3,6 +3,8 @@
 Tick off with the version that did it. Never ask Tom the same thing twice.
 
 ## Tom
+- [ ] v0.12.16 (app 0.1.2) on your phone: a fight - move a fighter diagonally with the on-screen D-Pad's corners;
+      after the fight (Curse's Fire Knives) the 3D view is back at once. The buttons read MENU and MOUSE.
 - [ ] v0.12.14 (app 0.1.1) on your phone: tap Modify Character in the party menu - the highlight goes there;
       the Start menu chooses on one tap; turn the phone (Auto) and try Display - Screen Rotation.
 - [ ] The Android app (APK-GoldBoxGameEngine) on your phone: the folder screen (default folder, then Choose

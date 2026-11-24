@@ -27,7 +27,14 @@ int  pressed[kCount];               // fingers on each button
 // The D-Pad: one square, the direction from where the finger is in it
 int  pad_cx = 0, pad_cy = 0, cell = 1;
 
-// Fingers on the buttons: which, and on what (-1: the D-Pad's middle)
+// The D-Pad's corners are diagonals while a fight's fighter moves or aims
+// (set_diagonals; Tom, 2026-11-23: "there's no real d-pad ... we need to add
+// diagonal movement buttons during combat") - two directions held at once,
+// as two buttons of a controller's pad
+bool diagonals = false;
+
+// Fingers on the buttons: which, and on what - a D-Pad finger holds a mask of
+// directions (1 << Up ...; 0 its middle), any other finger one button
 constexpr int kFingers = 10;
 SDL_FingerID fid[kFingers];
 int          fon[kFingers];
@@ -93,12 +100,12 @@ void layout(int ow, int oh, int& ax, int& ay, int& aw, int& ah)
         dpad_at(p / 2, cy, c);
         place(L2, Shape::Rect, p * 8 / 100, top, p * 38 / 100, bh, "L2");
         place(L1, Shape::Rect, p * 54 / 100, top, p * 38 / 100, bh, "L1");
-        place(Select, Shape::Rect, p * 22 / 100, top + bh * 3 / 2, p * 56 / 100, bh * 8 / 10, "SELECT");
+        place(Select, Shape::Rect, p * 22 / 100, top + bh * 3 / 2, p * 56 / 100, bh * 8 / 10, "MOUSE");
         const int rx = ow - p;
         face_at(rx + p / 2, cy, c);
         place(R1, Shape::Rect, rx + p * 8 / 100, top, p * 38 / 100, bh, "R1");
         place(R2, Shape::Rect, rx + p * 54 / 100, top, p * 38 / 100, bh, "R2");
-        place(Start, Shape::Rect, rx + p * 22 / 100, top + bh * 3 / 2, p * 56 / 100, bh * 8 / 10, "START");
+        place(Start, Shape::Rect, rx + p * 22 / 100, top + bh * 3 / 2, p * 56 / 100, bh * 8 / 10, "MENU");
         return;
     }
     // Portrait: the picture at the top, the buttons under it
@@ -114,7 +121,7 @@ void layout(int ow, int oh, int& ax, int& ay, int& aw, int& ah)
     const int bw = (ow - gap * 7) / 6;
     const int row = ah + p * 4 / 100;
     const int order[6] = {L2, L1, Select, Start, R1, R2};
-    const char* names[6] = {"L2", "L1", "SELECT", "START", "R1", "R2"};
+    const char* names[6] = {"L2", "L1", "MOUSE", "MENU", "R1", "R2"};
     for (int i = 0; i < 6; ++i) place(order[i], Shape::Rect, gap + i * (bw + gap), row, bw, bh, names[i]);
     int c = ow * 14 / 100;
     if (c * 34 > (p - bh) * 10 * 8 / 10) c = (p - bh) * 8 / 34;
@@ -128,16 +135,27 @@ bool inside(const SDL_Rect& r, int x, int y, int grow)
     return x >= r.x - grow && y >= r.y - grow && x < r.x + r.w + grow && y < r.y + r.h + grow;
 }
 
-// The D-Pad's direction at (x, y): Up..Right, -1 in its middle, -2 off it
+// The D-Pad's directions at (x, y) as a mask (1 << Up ...): one, or two in a
+// corner while the diagonals are on; 0 in its middle, -2 off it
 int dpad_dir(int x, int y, bool held)
 {
     const int dx = x - pad_cx, dy = y - pad_cy;
     const int reach = cell * 3 / 2 + (held ? cell : cell / 4);
     if (dx < -reach || dx > reach || dy < -reach || dy > reach) return -2;
     const int adx = dx < 0 ? -dx : dx, ady = dy < 0 ? -dy : dy;
-    if (adx < cell / 4 && ady < cell / 4) return -1;
-    if (adx > ady) return dx < 0 ? Left : Right;
-    return dy < 0 ? Up : Down;
+    if (adx < cell / 4 && ady < cell / 4) return 0;
+    const int h = 1 << (dx < 0 ? Left : Right), v = 1 << (dy < 0 ? Up : Down);
+    // (a corner: both ways - the smaller at least half the larger)
+    if (diagonals && adx > cell / 3 && ady > cell / 3 && adx * 2 >= ady && ady * 2 >= adx) return h | v;
+    return adx > ady ? h : v;
+}
+
+void press_mask(int was, int now)
+{
+    for (int b = Up; b <= Right; ++b) {
+        if ((was >> b & 1) && !(now >> b & 1)) press(b, false);
+        if (!(was >> b & 1) && (now >> b & 1)) press(b, true);
+    }
 }
 
 int hit(int x, int y)
@@ -210,6 +228,13 @@ void set_shown(bool v)
 
 bool shown() { return on; }
 
+void set_diagonals(bool v)
+{
+    if (v == diagonals) return;
+    diagonals = v;
+    // (a finger already on the pad: what it holds is worked out at its next move)
+}
+
 void area(int x0, int y0, int w, int h, int& ax, int& ay, int& aw, int& ah)
 {
     if (!on) {
@@ -272,6 +297,23 @@ void draw(SDL_Renderer* ren)
     const SDL_Rect mid{pad_cx - cell / 2, pad_cy - cell / 2, cell, cell};
     SDL_SetRenderDrawColor(ren, 0x10, 0x18, 0x38, 140);
     SDL_RenderFillRect(ren, &mid);
+    if (diagonals) {
+        // The corners: a diagonal's arrowhead each, lit while both its ways are held
+        const int sz = cell / 3;
+        for (int k = 0; k < 4; ++k) {
+            const int sx = k & 1 ? 1 : -1, sy = k & 2 ? 1 : -1;
+            const bool lit = pressed[sx < 0 ? Left : Right] > 0 && pressed[sy < 0 ? Up : Down] > 0;
+            // (the corner's point, out from the middle; the arrowhead's edges back along both arms)
+            const int px0 = pad_cx + sx * (cell * 3 / 2 - cell / 6), py0 = pad_cy + sy * (cell * 3 / 2 - cell / 6);
+            const SDL_Rect sq{pad_cx + sx * cell - cell / 2 + cell / 8, pad_cy + sy * cell - cell / 2 + cell / 8,
+                              cell * 3 / 4, cell * 3 / 4};
+            SDL_SetRenderDrawColor(ren, 0xF0, 0xE6, 0xC8, lit ? 90 : 40);
+            SDL_RenderFillRect(ren, &sq);
+            SDL_SetRenderDrawColor(ren, 0xE8, 0xB8, 0x40, lit ? 255 : 190);
+            for (int i = 0; i <= sz; ++i)
+                SDL_RenderDrawLine(ren, px0, py0 - sy * i, px0 - sx * (sz - i), py0 - sy * i);
+        }
+    }
     SDL_SetRenderDrawBlendMode(ren, SDL_BLENDMODE_NONE);
 }
 
@@ -293,7 +335,7 @@ bool finger(const SDL_Event& e, int ow, int oh)
             fid[slot] = e.tfinger.fingerId;
             fpad[slot] = true;
             fon[slot] = d;
-            press(d, true);
+            press_mask(0, d);
             return true;
         }
         const int b = hit(x, y);
@@ -310,16 +352,16 @@ bool finger(const SDL_Event& e, int ow, int oh)
         if (fpad[slot]) {
             // (a thumb rolling round the D-Pad: the direction follows it)
             int d = dpad_dir(x, y, true);
-            if (d == -2) d = -1;
+            if (d == -2) d = 0;
             if (d != fon[slot]) {
-                press(fon[slot], false);
+                press_mask(fon[slot], d);
                 fon[slot] = d;
-                press(d, true);
             }
         }
         return true;
     }
-    press(fon[slot], false);
+    if (fpad[slot]) press_mask(fon[slot], 0);
+    else press(fon[slot], false);
     fused[slot] = false;
     return true;
 }
@@ -328,7 +370,8 @@ void release_all()
 {
     for (int i = 0; i < kFingers; ++i)
         if (fused[i]) {
-            press(fon[i], false);
+            if (fpad[i]) press_mask(fon[i], 0);
+            else press(fon[i], false);
             fused[i] = false;
         }
     for (int b = 0; b < kCount; ++b)

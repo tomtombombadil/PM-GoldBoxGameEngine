@@ -3,7 +3,28 @@
 Every version of Gold Box Game Engine for PortMaster. A release's notes are
 its part of this file.
 
-## [0.12.12] - 2026-11-23## [0.12.15] - 2026-11-23
+## [0.12.12] - 2026-11-23## [0.12.16] - 2026-11-23
+
+Built on the CYD engine 0.215.2 (was 0.215.1).
+
+**Fixed (in the engine, 0.215.2)**
+
+- **The 3D view comes back after a fight** (Tom, Curse's Fire Knives: their picture stayed after the fight until
+  a step redrew the view). The engine forgot the picture shown before a fight only in PoolRad; now in every game.
+  On every device - handhelds too.
+
+**For the Android app** (Tom, 2026-11-23):
+
+- **Diagonals on the on-screen D-Pad in a fight**: while a fighter moves or aims, the D-Pad's corners are the four
+  diagonals - two directions at once, as two buttons on a controller's pad ("there's no real d-pad ... we need
+  to add diagonal movement buttons during combat"). A thumb can slide round all eight.
+- The on-screen **Start is labelled MENU, Select MOUSE** (Pointer Mode: an arrow the D-Pad moves, A taps where
+  it points - in a game only).
+
+Checked: the PC build's smoke test; the D-Pad's diagonals in a test harness (a corner holds both ways, a slide
+lets one go, the drawing). The engine's change by code only - not played here (no game files in this session).
+
+## [0.12.15] - 2026-11-23
 
 Built on the CYD engine 0.215.1 (unchanged).
 

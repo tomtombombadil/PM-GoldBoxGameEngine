@@ -177,6 +177,9 @@ controller". All three, any mix; nothing is touch's alone (the rule above stands
   journal: the left third a page back, else A. Quick Actions: a member; a switch (flipped); the top line.
   Two fingers tapped together = Start. Android's Back = B. In the game a tap is the game's (pointer_tap: the
   highlight, the on-screen keyboard), as on the CYD boards.
+- **The on-screen D-Pad's diagonals** (Tom, 2026-11-23): while `play::fight_pad()` (a fighter moving or aiming)
+  its four corners are diagonals - both directions held, as a controller's two buttons; arrowheads in the
+  corners show it. Elsewhere a corner is the nearer arm. Start is labelled MENU, Select MOUSE (Tom).
 - In the game a tap moves the game's highlight to what it picks before acting (engine 0.215.1), as the
   buttons would.
 - **Display - Screen Rotation** (Android): Auto (the device's, its rotation lock too) / Landscape / Portrait

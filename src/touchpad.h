@@ -25,6 +25,10 @@ void set_emit(Emit e);
 void set_shown(bool on);
 bool shown();
 
+// The D-Pad's corners are diagonals (two directions at once): on while a
+// fight's fighter moves or aims (main.cpp sets it each frame)
+void set_diagonals(bool on);
+
 // The room the game picture may use within the panel's usable part (x0, y0,
 // w x h - inside its safe margins): all of it when not shown; the buttons
 // are laid out in it

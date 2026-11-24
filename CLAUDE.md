@@ -261,6 +261,9 @@ and maintains it; it is the primary output of the Claude Project
   highlight doesn't move to the tapped menu item as it should" - the engine's, 0.215.1).
 - **Display - Screen Rotation: Auto / Landscape / Portrait** on Android (Tom, 2026-11-23); Auto turns with
   the device.
+- **The on-screen D-Pad has diagonals in a fight** (Tom, 2026-11-23: "there's no real d-pad ... we need to add
+  diagonal movement buttons during combat"): its corners, while `play::fight_pad()`. **Start is labelled MENU,
+  Select MOUSE** on the on-screen buttons (Tom).
 - **A phone's camera cutout / notch is kept clear** (Tom, 2026-11-23, Pixel 10a): nothing of ours in its
   safe margins (`video::set_safe`); any new thing drawn on the panel goes inside `usable()`.
 - **Where the games go must be plain to the player** (Tom: "GoldBox/games doesn't tell me where that folder

@@ -3345,6 +3345,9 @@ int main(int argc, char** argv)
         last = now;
         dpad_tick(now);
         safe_check(now);
+        // (the on-screen D-Pad's corners: diagonals while a fighter moves or aims)
+        touchpad::set_diagonals(touch_ui && playing && screen == Screen::Play && !menu_open && keys.empty() &&
+                                play::fight_pad());
         pointer_tick(dt > 0.1f ? 0.1f : dt);
         if (ptr_on && now - ptr_seen > 6000) ptr_on = false;        // (left alone: out of the way)
         script_tick(now);
