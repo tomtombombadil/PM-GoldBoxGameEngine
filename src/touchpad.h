@@ -38,6 +38,10 @@ void set_diagonals(bool on);
 // buttons go over it (video.cpp's layout calls this when it is done)
 void place(int W, int H, const SDL_Rect& use, const SDL_Rect& pic, const SDL_Rect& strip);
 
+// The height the buttons take at the foot of an upright panel (`use`: its
+// part inside the safe margins) - the room a Companion under the game leaves them
+int foot(const SDL_Rect& use);
+
 // Controls - Button Size (percent of the standard) and Button Opacity (percent)
 void set_style(int size_pct, int opacity_pct);
 

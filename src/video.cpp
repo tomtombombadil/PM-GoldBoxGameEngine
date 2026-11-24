@@ -66,6 +66,35 @@ constexpr bool kAutoDock = false;
 constexpr bool kAutoDock = true;
 #endif
 
+// 4:3 + Companion Below on a tall panel (a phone held upright - Tom, 2026-11-23:
+// "make them as large as will fit in the area available to them, keeping the
+// same aspect ratio"): the map and the party side by side under the game - the
+// two pictures beside the game's, larger there than the square panels' strip of
+// one 600 x 150 - when they come out larger. `pw` x `ph`: one picture's size
+bool below_pair(int ux, int uy, int ow, int oh, int* pw = nullptr, int* ph = nullptr, int* room = nullptr)
+{
+    (void)ux;
+    int w = ow, h = ow * 3 / 4;
+    if (h > oh) {
+        h = oh;
+        w = oh * 4 / 3;
+    }
+    int fw = kW, fh = kH;
+    if (ren) SDL_GetRendererOutputSize(ren, &fw, &fh);
+    const int avail = oh - h - touchpad::foot(SDL_Rect{ux, uy, ow, oh});
+    if (avail <= 0) return false;
+    int p = ow / 2, q = p * kSideH * 6 / (kSideW * 5);      // (1.2-tall pixels, as beside the game)
+    if (q > avail) {
+        q = avail;
+        p = q * kSideW * 5 / (kSideH * 6);
+    }
+    if (pw) *pw = p;
+    if (ph) *ph = q;
+    if (room) *room = avail;
+    const long pair = 2L * p * q, strip = static_cast<long>(w) * (w * kBelowH / kBelowW);
+    return pair * 10 > strip * 13;
+}
+
 void layout()
 {
     // (the room inside the safe margins - a phone's camera cutout; the
@@ -111,7 +140,9 @@ void layout()
     // (Original, the handhelds) by itself where it fits
     const bool right = uw == kW && side_on &&
                        (fit == Fit::Right || (fit == Fit::Original && kAutoDock && ow - w >= 200));
-    const bool below = !right && uw == kW && below_on &&
+    // (4:3 + Companion Below, a tall panel: the map and the party side by side under the game - below_pair)
+    const bool pair = !right && uw == kW && side_on && fit == Fit::Below;
+    const bool below = !right && !pair && uw == kW && below_on &&
                        (fit == Fit::Below || (fit == Fit::Original && kAutoDock && oh - h >= kBelowH && ow >= kBelowW));
     if (right && fit == Fit::Right) {
         // (the two pictures of 208 x 200, stacked, 1.2-tall pixels: 0.43 of the game's height across)
@@ -144,6 +175,12 @@ void layout()
     }
     // (upright with the on-screen buttons: the game at the top, the buttons at the foot)
     if (touchpad::shown() && oh > ow && uw == kW) dst.y = uy;
+    if (pair) {
+        int room = 0;
+        below_pair(ux, uy, ow, oh, nullptr, nullptr, &room);
+        dst.y = uy;
+        strip = SDL_Rect{ux, uy + h, ow, room > 0 ? room : 0};
+    }
     if (below) {
         dst.y = uy;                             // (the game at the top, the Companion under it)
         strip = fit == Fit::Below ? SDL_Rect{ux, uy + h, ow, w * kBelowH / kBelowW} : SDL_Rect{ux, uy + h, ow, oh - h};
@@ -238,6 +275,11 @@ bool side_room()
 {
     if (!ren || wide) return false;
     if (fit == Fit::Right) return true;
+    if (fit == Fit::Below) {
+        int ux, uy, ow, oh;
+        usable(ux, uy, ow, oh);
+        return below_pair(ux, uy, ow, oh);      // (the two pictures, side by side under the game)
+    }
     if (fit != Fit::Original || !kAutoDock) return false;
     int ux, uy, ow, oh;
     usable(ux, uy, ow, oh);
@@ -268,7 +310,7 @@ void set_side(const uint32_t* top, const uint32_t* bottom)
 bool below_room()
 {
     if (!ren || wide) return false;
-    if (fit == Fit::Below) return true;
+    if (fit == Fit::Below) return !side_room();
     if (fit != Fit::Original || !kAutoDock) return false;
     int ux, uy, ow, oh;
     usable(ux, uy, ow, oh);
@@ -309,6 +351,21 @@ void draw_side()
         return;
     }
     if (!side_on || strip.w <= 0) return;
+    if (fit == Fit::Below) {
+        // (under the game: the two side by side, as large as the room lets them be)
+        int w = strip.w / 2, h = w * kSideH * 6 / (kSideW * 5);
+        if (h > strip.h) {
+            h = strip.h;
+            w = h * kSideW * 5 / (kSideH * 6);
+        }
+        const int x0 = strip.x + (strip.w - 2 * w) / 2;
+        for (int i = 0; i < 2; ++i) {
+            if (!side[i]) continue;
+            const SDL_Rect to{x0 + i * w, strip.y, w, h};
+            SDL_RenderCopy(ren, side[i], nullptr, &to);
+        }
+        return;
+    }
     int w = strip.w, h = w * kSideH * 6 / (kSideW * 5);
     if (h * 2 > strip.h) {
         h = strip.h / 2;

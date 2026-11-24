@@ -279,6 +279,16 @@ void place(int W, int H, const SDL_Rect& use, const SDL_Rect& pic, const SDL_Rec
     lay_out(W, H, use, pic, strip);
 }
 
+int foot(const SDL_Rect& use)
+{
+    if (!on) return 0;
+    const int base = use.w < use.h ? use.w : use.h;
+    int c = base * 10 / 100 * size_pct / 100;
+    if (c < 20) c = 20;
+    const int mg = c / 3, sh = c * 7 / 10;
+    return 3 * c + mg + sh + 2 * mg;        // (lay_out's portrait: the D-Pad, the shoulders' row, the margins)
+}
+
 void set_style(int size, int opacity)
 {
     const bool changed = size != size_pct;

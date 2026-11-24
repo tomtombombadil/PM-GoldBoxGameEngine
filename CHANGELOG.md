@@ -3,7 +3,24 @@
 Every version of Gold Box Game Engine for PortMaster. A release's notes are
 its part of this file.
 
-## [0.12.12] - 2026-11-23## [0.12.17] - 2026-11-23
+## [0.12.12] - 2026-11-23## [0.12.18] - 2026-11-23
+
+Built on the CYD engine 0.215.2 (unchanged).
+
+**The Companion as large as its room allows** (Tom, 2026-11-23: "make them as large as will fit in the area
+available to them, keeping the same aspect ratio"):
+
+- **4:3 + Companion Below on a tall panel** (a phone held upright): the map (in a fight, the battlefield) and the
+  party side by side under the game, as large as the room down to the on-screen buttons lets them be - on a
+  1080 x 2400 phone each about 540 x 620 (the wide strip was 1080 x 270 for both). Where the room is short and
+  wide (a tablet upright, or Below held sideways) the wide strip stays - it comes out larger there; the larger of
+  the two is chosen by itself.
+- Beside the game (Companion Right) it already filled the game's height at its own shape - unchanged.
+
+Checked: the PC build's smoke test; the handhelds' shapes as before (640 x 480, 1280 x 720, 720 x 720); the
+layouts drawn by the real video code at 1080 x 2400, 1536 x 2048 and 2400 x 1080 (stand-in Companion pictures).
+
+## [0.12.17] - 2026-11-23
 
 Built on the CYD engine 0.215.2 (unchanged).
 

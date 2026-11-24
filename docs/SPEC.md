@@ -195,7 +195,10 @@ controller". All three, any mix; nothing is touch's alone (the rule above stands
 
 ## 5. The screen
 **Display - Picture** (Tom, 2026-11-23): Original 4:3 (Android: "4:3") / **4:3 + Companion Right** / **4:3 +
-Companion Below** / Square Pixels / Stretch (`fit` 0 / 3 / 4 / 1 / 2). Original docks the Companion by itself
+Companion Below** / Square Pixels / Stretch (`fit` 0 / 3 / 4 / 1 / 2). **The Companion as large as its room allows, at its own
+shape** (Tom, 2026-11-23): Below on a tall panel uses the two pictures beside the game's, side by side under it,
+down to the on-screen buttons (`below_pair`, `touchpad::foot`) - when they come out 1.3 times the wide strip's
+area or more; else the wide 600 x 150 strip. Original docks the Companion by itself
 where there is room on a handheld (`kAutoDock`), never on Android (the slide-out on Y). Right / Below dock it
 there whatever the panel: the game made smaller if it must (Right: the pair's width is 4/3 + 0.43 of the
 game's height; Below: the game's width + 1/4 of it in height); with the on-screen buttons the Right pair goes
