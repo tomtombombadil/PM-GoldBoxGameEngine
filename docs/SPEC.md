@@ -162,12 +162,15 @@ direction keys (`play::fight_dir`, `fight_select`), typed keys
 "Compatible with touch and/or a controller (via bluetooth or USB) or an onscreen overlay representing the
 controller". All three, any mix; nothing is touch's alone (the rule above stands):
 - **A controller**: as everywhere.
-- **The on-screen buttons** (`src/touchpad.*`): the same eleven, D-Pad left and face buttons right of the game
-  in landscape (L1 L2 Select above the D-Pad, R1 R2 Start above the face buttons), all under the game in
-  portrait (L2 L1 Select Start R1 R2 in a row, then D-Pad and face buttons). A thumb slides round the D-Pad;
-  several buttons at once. Start - Controls - **On-Screen Buttons: Auto** (shown at a touch, hidden while a
-  controller or keyboard is used) / **Always** / **Never** (`touch_pad` in settings.cfg). Shown, they take
-  the Companion's room beside / under the game (it slides out on Y).
+- **The on-screen buttons** (`src/touchpad.*`) - **an overlay** (Tom, 2026-11-23: "the controls need to be an
+  overlay, and the game needs to be maximized"): the picture keeps all its room, the buttons lie over it,
+  see-through. Landscape: the D-Pad and the face buttons in the free band beside the game when it is wide enough,
+  else over its sides, their foot above the game's menu line (canvas rows 23-24 stay clear); L2 L1 and MOUSE
+  (Select) top left after the hide / show arrow, R1 R2 and MENU (Start) top right. Portrait: the game at the
+  top, the buttons at the foot. **A touch on a button is the button's, anywhere else the game's** - only the
+  drawn shape (the D-Pad's corners are the game's outside a fight). **The arrow at the top left** hides /
+  shows them (`pad_hidden`). Start - Controls - **On-Screen Buttons: Auto / Always / Never** (`touch_pad`),
+  **Button Size** Small / Medium / Large / Huge (`pad_size`), **Button Opacity** 20 - 100% (`pad_alpha`).
 - **Touching the port's own screens** (`touch_tap` / `touch_swipe` in main.cpp - each the buttons a player
   would press there): a list's line tapped = picked and chosen at once (A) - one tap (Tom, 2026-11-23: "be
   more Android-friendly"); outside a page's box or its title = B;
@@ -191,6 +194,14 @@ controller". All three, any mix; nothing is touch's alone (the rule above stands
   the on-screen buttons and the Companion are laid out in the rest (`usable()` in video.cpp).
 
 ## 5. The screen
+**Display - Picture** (Tom, 2026-11-23): Original 4:3 (Android: "4:3") / **4:3 + Companion Right** / **4:3 +
+Companion Below** / Square Pixels / Stretch (`fit` 0 / 3 / 4 / 1 / 2). Original docks the Companion by itself
+where there is room on a handheld (`kAutoDock`), never on Android (the slide-out on Y). Right / Below dock it
+there whatever the panel: the game made smaller if it must (Right: the pair's width is 4/3 + 0.43 of the
+game's height; Below: the game's width + 1/4 of it in height); with the on-screen buttons the Right pair goes
+to the right, the left over room for the D-Pad. Android starts on Right (`fit_set`, once).
+
+
 The game's 320 x 200 canvas, with the port's overlay on top (same size; a
 40 x 25 grid of 8 x 8 cells in the engine's own Clear font - the game's
 font isn't known before a game is open). Fit (menu: Display):

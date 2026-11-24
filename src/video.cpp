@@ -57,15 +57,21 @@ void usable(int& x, int& y, int& w, int& h)
     }
 }
 
+// Original 4:3 docks the Companion by itself where there is room - the
+// handhelds' way (Tom, 2026-11-14). On Android it slides out (Tom,
+// 2026-11-23); the player picks 4:3 + Companion Right / Below to dock it
+#ifdef __ANDROID__
+constexpr bool kAutoDock = false;
+#else
+constexpr bool kAutoDock = true;
+#endif
+
 void layout()
 {
-    // (the room inside the safe margins; on-screen buttons, on a touch
-    // screen with no controller: the picture has the room between them -
-    // touchpad.h)
-    int ux, uy, uwid, uhgt;
-    usable(ux, uy, uwid, uhgt);
-    int ax = ux, ay = uy, ow = uwid, oh = uhgt;
-    touchpad::area(ux, uy, uwid, uhgt, ax, ay, ow, oh);
+    // (the room inside the safe margins - a phone's camera cutout; the
+    // on-screen buttons go over the picture, never take its room)
+    int ux, uy, ow, oh;
+    usable(ux, uy, ow, oh);
     int w, h;
     if (fit == Fit::Stretch) {
         w = ow;
@@ -101,23 +107,56 @@ void layout()
             if (w > ow) w = ow;
         }
     }
+    // The Companion docked: beside (Right) or under (Below) - by the choice, or
+    // (Original, the handhelds) by itself where it fits
+    const bool right = uw == kW && side_on &&
+                       (fit == Fit::Right || (fit == Fit::Original && kAutoDock && ow - w >= 200));
+    const bool below = !right && uw == kW && below_on &&
+                       (fit == Fit::Below || (fit == Fit::Original && kAutoDock && oh - h >= kBelowH && ow >= kBelowW));
+    if (right && fit == Fit::Right) {
+        // (the two pictures of 208 x 200, stacked, 1.2-tall pixels: 0.43 of the game's height across)
+        const int sw = h * kSideW * 5 / (kSideH * 12);
+        if (w + sw > ow) {
+            h = ow * kSideH * 12 / (kSideH * 16 + kSideW * 5);
+            w = h * 4 / 3;
+        }
+    }
+    if (below && fit == Fit::Below && h + w * kBelowH / kBelowW > oh) {
+        w = oh * kBelowW / (kBelowW * 3 / 4 + kBelowH);
+        h = w * 3 / 4;
+    }
     ox = (uw - kW) / 2;
     const SDL_Rect was = dst;
     const int was_uw = shape_uw;
-    dst = SDL_Rect{ax + (ow - w) / 2, ay + (oh - h) / 2, w, h};
+    dst = SDL_Rect{ux + (ow - w) / 2, uy + (oh - h) / 2, w, h};
     shape_uw = uw;
-    if (was.w != dst.w || was.h != dst.h || was_uw != uw) {
-        ++serial;
-        SDL_Log("[video] panel %d x %d: picture %d x %d, %d across%s", ow, oh, dst.w, dst.h, uw, wide ? " (a page of the port's)" : "");
-    }
     strip = SDL_Rect{0, 0, 0, 0};
-    if (uw == kW && side_on && !touchpad::shown() && fit == Fit::Original && ow - w >= 200) {
-        dst.x = ax;                             // (the game at the left, the Companion in the rest)
-        strip = SDL_Rect{ax + w, ay, ow - w, oh};
+    if (right) {
+        // (the game and the Companion side by side; with the on-screen buttons the
+        // pair goes to the right, the room left over at the left for the D-Pad)
+        const int sw = fit == Fit::Right ? h * kSideW * 5 / (kSideH * 12) : ow - w;
+        const int spare = ow - w - sw > 0 ? ow - w - sw : 0;
+        dst.x = ux + (touchpad::shown() ? spare : 0);
+        // (4:3 + Companion Right: the Companion as tall as the game and level with it - a 4:3 tablet's game is
+        // made smaller to make room and sits in the middle)
+        strip = fit == Fit::Right ? SDL_Rect{dst.x + w, dst.y, ux + ow - (dst.x + w), h}
+                                  : SDL_Rect{dst.x + w, uy, ux + ow - (dst.x + w), oh};
     }
-    if (uw == kW && below_on && !touchpad::shown() && fit == Fit::Original && oh - h >= kBelowH && ow >= kBelowW) {
-        dst.y = ay;                             // (the game at the top, the Companion under it)
-        strip = SDL_Rect{ax, ay + h, ow, oh - h};
+    // (upright with the on-screen buttons: the game at the top, the buttons at the foot)
+    if (touchpad::shown() && oh > ow && uw == kW) dst.y = uy;
+    if (below) {
+        dst.y = uy;                             // (the game at the top, the Companion under it)
+        strip = fit == Fit::Below ? SDL_Rect{ux, uy + h, ow, w * kBelowH / kBelowW} : SDL_Rect{ux, uy + h, ow, oh - h};
+    }
+    if (was.w != dst.w || was.h != dst.h || was.x != dst.x || was.y != dst.y || was_uw != uw) {
+        ++serial;
+        SDL_Log("[video] panel %d x %d: picture %d x %d at %d, %d, %d across%s", ow, oh, dst.w, dst.h, dst.x, dst.y, uw,
+                wide ? " (a page of the port's)" : "");
+    }
+    {
+        int fw = kW, fh = kH;
+        SDL_GetRendererOutputSize(ren, &fw, &fh);
+        touchpad::place(fw, fh, SDL_Rect{ux, uy, ow, oh}, dst, strip);
     }
     // The in-between texture: the next whole multiple at or above the
     // picture's size, so uneven scaling doesn't make uneven pixels
@@ -197,7 +236,9 @@ int back_w() { return uw * 2; }
 
 bool side_room()
 {
-    if (!ren || fit != Fit::Original || wide || touchpad::shown()) return false;
+    if (!ren || wide) return false;
+    if (fit == Fit::Right) return true;
+    if (fit != Fit::Original || !kAutoDock) return false;
     int ux, uy, ow, oh;
     usable(ux, uy, ow, oh);
     const int w = ow * 3 / 4 > oh ? oh * 4 / 3 : ow;
@@ -226,7 +267,9 @@ void set_side(const uint32_t* top, const uint32_t* bottom)
 
 bool below_room()
 {
-    if (!ren || fit != Fit::Original || wide || touchpad::shown()) return false;
+    if (!ren || wide) return false;
+    if (fit == Fit::Below) return true;
+    if (fit != Fit::Original || !kAutoDock) return false;
     int ux, uy, ow, oh;
     usable(ux, uy, ow, oh);
     const int h = ow * 3 / 4 > oh ? oh : ow * 3 / 4;
@@ -300,7 +343,20 @@ void set_backdrop(const uint32_t* argb, int top)
     back_on = true;
 }
 
-const char* fit_name(Fit f) { return f == Fit::Square ? "Square Pixels" : f == Fit::Stretch ? "Stretch" : "Original 4:3"; }
+const char* fit_name(Fit f)
+{
+    switch (f) {
+    case Fit::Square: return "Square Pixels";
+    case Fit::Stretch: return "Stretch";
+    case Fit::Right: return "4:3 + Companion Right";
+    case Fit::Below: return "4:3 + Companion Below";
+#ifdef __ANDROID__
+    default: return "4:3";
+#else
+    default: return "Original 4:3";
+#endif
+    }
+}
 
 bool begin(int window_w, int window_h)
 {

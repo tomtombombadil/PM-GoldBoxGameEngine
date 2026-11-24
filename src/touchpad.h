@@ -6,7 +6,10 @@
 // tap on the game, as before.
 //
 // Shown while no controller is in use: a controller's button hides them, a
-// touch on the screen brings them back.
+// touch on the screen brings them back. An overlay (Tom, 2026-11-23): the
+// picture is as large as the panel lets it be; a touch on a button is the
+// button's, anywhere else the game's; the arrow at the top left puts the
+// buttons away and brings them back.
 #pragma once
 
 #include <SDL.h>
@@ -29,10 +32,18 @@ bool shown();
 // fight's fighter moves or aims (main.cpp sets it each frame)
 void set_diagonals(bool on);
 
-// The room the game picture may use within the panel's usable part (x0, y0,
-// w x h - inside its safe margins): all of it when not shown; the buttons
-// are laid out in it
-void area(int x0, int y0, int w, int h, int& ax, int& ay, int& aw, int& ah);
+// Lays the buttons out over the panel (W x H pixels): `use` the part inside
+// its safe margins, `pic` where the game's picture is, `strip` the docked
+// Companion's room (w 0: none). The picture's room is the picture's - the
+// buttons go over it (video.cpp's layout calls this when it is done)
+void place(int W, int H, const SDL_Rect& use, const SDL_Rect& pic, const SDL_Rect& strip);
+
+// Controls - Button Size (percent of the standard) and Button Opacity (percent)
+void set_style(int size_pct, int opacity_pct);
+
+// The hide / show arrow (top left): the buttons put away, the arrow kept
+void set_hidden(bool hidden);
+bool hidden();
 
 // Draws the buttons over the frame (renderer output pixels)
 void draw(SDL_Renderer* ren);

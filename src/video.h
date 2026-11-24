@@ -18,6 +18,11 @@ enum class Fit : uint8_t {
     Original,       // 4:3, as a DOS monitor showed it (the default)
     Square,         // square pixels at the largest whole multiple
     Stretch,        // the whole panel
+    // (Tom, 2026-11-23: "a 4:3+companion right, and a 4:3+companion below. In
+    // 4:3 the companion slides out. On the 4:3+ options, the companion is
+    // where specified")
+    Right,          // 4:3, the Companion beside it at the right (the game made smaller when it must)
+    Below,          // 4:3, the Companion under it
     Count
 };
 const char* fit_name(Fit f);

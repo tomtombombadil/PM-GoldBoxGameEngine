@@ -14,7 +14,11 @@ struct Settings {
     bool    music = true;       // the games' own music (the later games)
     bool    pad_moves = true;
     uint8_t rotation = 0;       // Android: 0 Auto (the device's), 1 Landscape, 2 Portrait (Tom, 2026-11-23)
-    uint8_t touch_pad = 0;      // the on-screen buttons on a touch screen: 0 Auto, 1 Always, 2 Never (touchpad.h)   // exploring: the D-pad walks (off: it always moves the highlight)
+    uint8_t touch_pad = 0;
+    uint8_t pad_size = 1;       // the on-screen buttons' size: 0 Small, 1 Medium, 2 Large, 3 Huge (Tom, 2026-11-23)
+    uint8_t pad_alpha = 2;      // their opacity: 0 20%, 1 40%, 2 60%, 3 80%, 4 100%
+    bool    pad_hidden = false; // put away by the arrow at the top left
+    bool    fit_set = false;    // Android: Picture set to 4:3 + Companion Right once (Tom's default)      // the on-screen buttons on a touch screen: 0 Auto, 1 Always, 2 Never (touchpad.h)   // exploring: the D-pad walks (off: it always moves the highlight)
     uint16_t comforts_off = 0;  // the engine's Enhancements switched off (kOff* bits; 0: all on)
     bool    max_hp = false;     // the Max Hit Points cheat
     bool    no_race_limits = false;   // the Disable Race Level Limits cheat (Tom, 2026-11-21)

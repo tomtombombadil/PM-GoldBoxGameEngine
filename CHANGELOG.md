@@ -3,7 +3,36 @@
 Every version of Gold Box Game Engine for PortMaster. A release's notes are
 its part of this file.
 
-## [0.12.12] - 2026-11-23## [0.12.16] - 2026-11-23
+## [0.12.12] - 2026-11-23## [0.12.17] - 2026-11-23
+
+Built on the CYD engine 0.215.2 (unchanged).
+
+**Display - Picture: two new choices, everywhere** (Tom, 2026-11-23: "a 4:3+companion right, and a 4:3+companion
+below"): **4:3 + Companion Right** and **4:3 + Companion Below** - the Companion stays there, the game made a little
+smaller when the panel has no room beside / under a full-size one (a 4:3 tablet). The choices go 4:3, + Companion
+Right, + Companion Below, Square Pixels, Stretch. On a handheld **Original 4:3** is as before (the Companion beside
+or under the game where there is room); on Android plain **4:3** means the slide-out only, and the app starts on
+4:3 + Companion Right (once - your own choice stands).
+
+**For the Android app - the on-screen buttons are an overlay** (Tom's Galaxy Tab S2: the game was small in the
+middle, the button columns took the sides):
+
+- The game gets its whole room; the buttons lie over it, see-through. The D-Pad and the face buttons go in the
+  free room beside the game when there is enough (a wide phone), else over its sides - above the game's menu line,
+  which stays clear.
+- **A touch on a button is the button's; anywhere else is the game's** - only the button's own shape counts
+  (the D-Pad's empty corners too, outside a fight).
+- **The arrow at the top left** puts the buttons away (pointing up) and brings them back (pointing down); kept for
+  next time.
+- **Start - Controls - Button Size** (Small, Medium, Large, Huge) and **Button Opacity** (20% - 100%).
+- Upright, the game sits at the top and the buttons at the foot.
+
+Checked: the PC build's smoke test (the Picture test now steps through the five choices); the handhelds' shapes as
+before at 640 x 480, 1280 x 720 and 720 x 720; the overlay and the docked Companion drawn by the real video code at
+2400 x 1080, 1920 x 1080, 2048 x 1536, 1080 x 2400 and 1536 x 2048 (stand-in Companion pictures - no game here).
+Not on a phone or tablet yet.
+
+## [0.12.16] - 2026-11-23
 
 Built on the CYD engine 0.215.2 (was 0.215.1).
 

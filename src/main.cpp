@@ -156,6 +156,14 @@ void touch_pad_apply()
     touchpad::set_shown(cfg.touch_pad == 1 || (cfg.touch_pad == 0 && touch_last));
 }
 
+// Controls - Button Size / Button Opacity (Tom, 2026-11-23: "give the user options, don't use fixed values")
+const char* const kPadSize[4] = {"Small", "Medium", "Large", "Huge"};
+void pad_style_apply()
+{
+    static const int kSize[4] = {75, 100, 125, 150};
+    touchpad::set_style(kSize[cfg.pad_size % 4], 20 + 20 * (cfg.pad_alpha % 5));
+}
+
 // A folder as the player's phone and PC name it: "Internal storage/GoldBox"
 // (Android's /storage/emulated/0), "SD card/..." (/storage/XXXX-XXXX)
 std::string shown_path(const std::string& p)
@@ -642,7 +650,7 @@ enum MenuItem : uint8_t {
     MFix,                                   // a game's fixes (arg: rules::Fix)
     MHealer, MMerchant, MSanctuary, MTrainer, MMaxHp, MNoRace,   // Cheats
     MQuickOn, MQuick,                       // Quick Actions
-    MControls, MPadMoves, MSwap, MTouchPad, // Controls (MTouchPad: a touch screen's)
+    MControls, MPadMoves, MSwap, MTouchPad, MPadSize, MPadAlpha,   // Controls (the last three: a touch screen's)
     MRescan, MDevice, MUpdate, MSendLogs, MReplyAddr, MFolder,   // System (MFolder: Android's)
     MBack
 };
@@ -827,7 +835,11 @@ void menu_build()
         add(MControls);
         add(MPadMoves);
         add(MSwap);
-        if (touch_ui) add(MTouchPad);
+        if (touch_ui) {
+            add(MTouchPad);
+            add(MPadSize);
+            add(MPadAlpha);
+        }
         break;
     case Page::System:
 #ifdef __ANDROID__
@@ -910,6 +922,8 @@ void menu_label(const MItem& it, char* out, size_t cap)
     case MPadMoves: snprintf(out, cap, "D-Pad Walks: %s", cfg.pad_moves ? "On" : "Off"); break;
     case MSwap: snprintf(out, cap, "Confirm Button: %s", confirm_name()); break;
     case MTouchPad: snprintf(out, cap, "On-Screen Buttons: %s", kTouchPad[cfg.touch_pad % 3]); break;
+    case MPadSize: snprintf(out, cap, "Button Size: %s", kPadSize[cfg.pad_size % 4]); break;
+    case MPadAlpha: snprintf(out, cap, "Button Opacity: %d%%", 20 + 20 * (cfg.pad_alpha % 5)); break;
     case MFolder: snprintf(out, cap, "Games Folder..."); break;
     case MMaxHp: snprintf(out, cap, "Max Hit Points: %s", cfg.max_hp ? "On" : "Off"); break;
     case MNoRace: snprintf(out, cap, "Disable Race Level Limits: %s", cfg.no_race_limits ? "On" : "Off"); break;
@@ -953,7 +967,14 @@ const char* menu_help(const MItem& it)
     case MFixGame: return it.arg ? "The fixes of this game's own mistakes." : "The fixes that touch every game.";
     case MRule: return rules::adnd_info(it.arg).help;
     case MFix: return rules::fix_info(it.arg).help;
-    case MDisplay: return "Original 4:3 as the games' monitors showed them, Square Pixels, or Stretch to the whole screen.";
+    case MDisplay:
+#ifdef __ANDROID__
+        return "4:3 as the games' monitors showed them (the Companion slides out on Y), 4:3 + Companion Right or "
+               "Below (it stays there), Square Pixels, or Stretch to the whole screen.";
+#else
+        return "Original 4:3 as the games' monitors showed them (the Companion beside or under it where there is "
+               "room), 4:3 + Companion Right or Below, Square Pixels, or Stretch to the whole screen.";
+#endif
     case MSound:
         return "The games' sound effects: Tandy or PC Speaker, or the Darkness / Gateway / Treasures recordings "
                "when that game is here.";
@@ -965,6 +986,10 @@ const char* menu_help(const MItem& it)
     case MRotation:
         return "Auto: turns with the device (as its own rotation lock allows). Landscape or Portrait: stays that way "
                "however the device is held.";
+    case MPadSize: return "How big the on-screen buttons are: Small, Medium, Large or Huge.";
+    case MPadAlpha:
+        return "How solid the on-screen buttons look - they lie over the game, so less shows more of it. A touch on a "
+               "button is the button's, anywhere else the game's.";
     case MTouchPad:
         return "Auto: shown when the screen is touched, hidden while a controller or keyboard is used. Without them: "
                "tap a line to choose it; swipe to scroll; two fingers together = Start; the phone's Back = B.";
@@ -2101,7 +2126,13 @@ void menu_change(int step)
         if (playing) apply_options();
         break;
     case MDisplay:
-        cfg.fit = static_cast<uint8_t>((cfg.fit + (step < 0 ? 2 : 1)) % 3);
+    {
+        // (4:3, 4:3 + Companion Right, 4:3 + Companion Below, Square Pixels, Stretch)
+        static const uint8_t kOrder[5] = {0, 3, 4, 1, 2};
+        int at = 0;
+        while (at < 5 && kOrder[at] != cfg.fit) ++at;
+        cfg.fit = kOrder[((at < 5 ? at : 0) + (step < 0 ? 4 : 1)) % 5];
+    }
         video::set_fit(static_cast<video::Fit>(cfg.fit));
         // (the game list's pictures follow the shape: pictures_follow)
         break;
@@ -2132,6 +2163,14 @@ void menu_change(int step)
     case MTouchPad:
         cfg.touch_pad = static_cast<uint8_t>((cfg.touch_pad + (step < 0 ? 2 : 1)) % 3);
         touch_pad_apply();
+        break;
+    case MPadSize:
+        cfg.pad_size = static_cast<uint8_t>((cfg.pad_size + (step < 0 ? 3 : 1)) % 4);
+        pad_style_apply();
+        break;
+    case MPadAlpha:
+        cfg.pad_alpha = static_cast<uint8_t>((cfg.pad_alpha + (step < 0 ? 4 : 1)) % 5);
+        pad_style_apply();
         break;
     case MSwap: cfg.swap_ab = !cfg.swap_ab; cfg.ab_set = true; break;
     case MMaxHp:
@@ -3293,6 +3332,15 @@ int main(int argc, char** argv)
     }
     plat::log("[port] Gold Box Game Engine for PortMaster %s; games in %s\n", PM_VERSION, pm::games_root().c_str());
     settings_load(conf_dir, cfg);
+#ifdef __ANDROID__
+    if (!cfg.fit_set) {
+        // (Tom, 2026-11-23: the Companion beside the game "by default, but changeable in the display settings" -
+        // set once; the player's own choice stands after)
+        cfg.fit = static_cast<uint8_t>(video::Fit::Right);
+        cfg.fit_set = true;
+        settings_save(conf_dir, cfg);
+    }
+#endif
     if (ab_reversed && !cfg.ab_set) {
         cfg.swap_ab = cfg.ab_set = true;
         settings_save(conf_dir, cfg);
@@ -3309,6 +3357,8 @@ int main(int argc, char** argv)
     open_pad();
     touchpad::set_emit(button);
     touch_last = pad == nullptr;
+    pad_style_apply();
+    touchpad::set_hidden(cfg.pad_hidden);
     touch_pad_apply();
     rotation_apply();       // (after the window: SDL sets its own as it makes one)
     rescan();
@@ -3345,6 +3395,10 @@ int main(int argc, char** argv)
         last = now;
         dpad_tick(now);
         safe_check(now);
+        if (touch_ui && touchpad::hidden() != cfg.pad_hidden) {
+            cfg.pad_hidden = touchpad::hidden();        // (the arrow at the top left: kept for next time)
+            settings_save(conf_dir, cfg);
+        }
         // (the on-screen D-Pad's corners: diagonals while a fighter moves or aims)
         touchpad::set_diagonals(touch_ui && playing && screen == Screen::Play && !menu_open && keys.empty() &&
                                 play::fight_pad());

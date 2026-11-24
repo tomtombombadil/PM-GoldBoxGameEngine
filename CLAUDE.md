@@ -261,6 +261,14 @@ and maintains it; it is the primary output of the Claude Project
   highlight doesn't move to the tapped menu item as it should" - the engine's, 0.215.1).
 - **Display - Screen Rotation: Auto / Landscape / Portrait** on Android (Tom, 2026-11-23); Auto turns with
   the device.
+- **The on-screen buttons are an overlay** (Tom, 2026-11-23): the game as large as the panel allows; the
+  buttons over it, see-through, in the free band beside it when there is one; **a button wins only on its own
+  shape, everything else goes to the game**; the D-Pad and face buttons kept above the game's menu line ("it
+  might cover the menu line at the bottom"); **an arrow at the top left hides / shows them**; **Button Size and
+  Button Opacity are the player's** ("give the user options, don't use fixed values").
+- **Display - Picture has 4:3 + Companion Right and 4:3 + Companion Below** (Tom, 2026-11-23); in plain 4:3 on
+  Android the Companion slides out; Android starts on Right ("B by default, but changeable"). The handhelds'
+  Original 4:3 keeps docking by itself (Tom's 2026-11-14 rule) - whether it should change there too: TODO.
 - **The on-screen D-Pad has diagonals in a fight** (Tom, 2026-11-23: "there's no real d-pad ... we need to add
   diagonal movement buttons during combat"): its corners, while `play::fight_pad()`. **Start is labelled MENU,
   Select MOUSE** on the on-screen buttons (Tom).

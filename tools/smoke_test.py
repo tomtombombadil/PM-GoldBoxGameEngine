@@ -293,8 +293,9 @@ def main():
         out = run(exe, g, conf, "wait:100,quit")
         assert "[scan]" not in out, "a second scan of games already found"
         # (another Display shape: the list's pictures are made again when the menu closes - and only they)
-        out = run(exe, g, conf, "wait:100,start,menu:Display,a,menu:Picture,right,b,b,wait:100,a,"
-                                "start,menu:Display,a,menu:Picture,left,b,b,wait:100,a,quit")
+        # (Picture: 4:3 -> + Companion Right -> + Below -> Square Pixels, the only new shape on the list; and back)
+        out = run(exe, g, conf, "wait:100,start,menu:Display,a,menu:Picture,right,right,right,b,b,wait:100,a,"
+                                "start,menu:Display,a,menu:Picture,left,left,left,b,b,wait:100,a,quit")
         assert out.count("[scan] Preparing the ") == 4 and "[scan] Found" not in out, "pictures after a Display change"
         # (a panel whose real size arrives after the start - Tom's RGB10 MAX3, v0.6.2: the pictures are made
         # for the shape it settles at, once; the next start finds them ready)

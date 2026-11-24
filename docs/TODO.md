@@ -3,6 +3,11 @@
 Tick off with the version that did it. Never ask Tom the same thing twice.
 
 ## Tom
+- [ ] Handhelds: Display - Picture now has 4:3 + Companion Right / Below (v0.12.17). Their Original 4:3 still docks
+      the Companion by itself where there is room (as decided 2026-11-14); on Android plain 4:3 is the slide-out
+      only. Should the handhelds' Original 4:3 also be slide-out only, now that the two choices exist?
+- [ ] v0.12.17 (app 0.1.3) on the Tab S2 and the Pixel: the game larger, the buttons over it; the arrow at the top
+      left; Controls - Button Size / Opacity; Display - Picture's two new choices, landscape and portrait.
 - [ ] v0.12.16 (app 0.1.2) on your phone: a fight - move a fighter diagonally with the on-screen D-Pad's corners;
       after the fight (Curse's Fire Knives) the 3D view is back at once. The buttons read MENU and MOUSE.
 - [ ] v0.12.14 (app 0.1.1) on your phone: tap Modify Character in the party menu - the highlight goes there;
