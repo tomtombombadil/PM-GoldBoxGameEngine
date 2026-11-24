@@ -3,6 +3,26 @@
 Every version of Gold Box Game Engine for PortMaster. A release's notes are
 its part of this file.
 
+## [0.13.2] - 2026-11-24
+
+Built on the CYD engine 0.216.1. Two engine faults found by the Treasures play-through, each set against the
+original game (its program read, then the original run in DOSBox on the engine's own save):
+
+- **Treasures: training stops at the game's last levels** - cleric 10; fighter, paladin, ranger, magic-user and
+  thief 11. The engine had no such stop: a fighter with the experience trained on to 12 and beyond. In the
+  original a fighter of 11th level with 1,200,000 experience is not trained in Mirabar's hall; the engine now
+  refuses the same. (The journal's tables print a 12th level for fighters and thieves; the program stops at 11,
+  and the program is followed.) Characters already trained past it keep their levels.
+- **Darkness and Treasures: a Cloak of Protection gives nothing over magic armour** - as a Ring of Protection in
+  every game. The engine counted it. The original listed two of my clerics at AC -7 and -8 where the engine
+  showed -8 and -9. Saves are put right as they are loaded (those two games work the figures out at Load, as
+  Treasures' own Load does).
+
+Checked: the engine's test program and the original side by side from the same save (the eight members' AC
+agree; the fighter stays 11); through the port's buttons on the PC build: that save loaded from the party menu
+lists the same eight AC. Not done by buttons: the training hall. Darkness's cloak: by its program's code only,
+not seen in DOSBox. Not on a device.
+
 ## [0.13.1] - 2026-11-24
 
 Built on the CYD engine 0.216.0 at its newest commit (eb8cf7a; v0.13.0 was one commit behind).

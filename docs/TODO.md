@@ -343,7 +343,7 @@ Tick off with the version that did it. Never ask Tom the same thing twice.
       app updates ports) and a word with them about Send Logs (a port
       that uploads logs) - ask in the testing thread; (5) the PR itself
       from Tom's fork of PortsMaster/PortMaster-New, branch `goldbox`.
-- [ ] Keep the `cyd` pin current (built on CYD 0.216.0, eb8cf7a). Tom, 2026-11-14:
+- [ ] Keep the `cyd` pin current (built on CYD 0.216.1). Tom, 2026-11-14:
       Companion map / party-info changes are in work in the CYD (small
       boards first; the party-info layout may be rearranged) - when they
       land, move the pin and bring `src/panel.*` along.
@@ -495,3 +495,14 @@ Tick off with the version that did it. Never ask Tom the same thing twice.
       them looked at here by the play test (PoolRad) and shots at 640 x 480 and 1280 x 720 only.
 - [ ] Tom, on a handheld: Start - Clean Up Game Files on a card with a whole GOG / Steam copy (it deletes - the games
       still start after? the report: games/_CYD/CLEANUP.TXT).
+
+## v0.13.2
+- [x] Treasures' last levels (cleric 10, the others 11) and Darkness's / Treasures' cloaks of protection with magic
+      armour (engine 0.216.1) - found by the play-through, each run in the original (DOSBox) from the engine's save.
+- [ ] Tom, on a handheld: a Treasures or Darkness party with a Cloak of Protection over magic armour - its AC is one
+      (the cloak's plus) worse after loading; that is the original's figure.
+- [ ] Darkness's cloak rule seen in DOSBox (by its code so far); what the original's hall says to a member at the
+      last level (nothing was seen; the engine: "Not Enough Experience").
+- [ ] Treasures play-through: Bjorn's Hold done (journals 2, 9, 78, 79; 69 only by running its script branch - a
+      5 % path encounter); Icewolf, the Ice Peak, Freezefire next. The two blackrobed fights were won with the test
+      program's WINFIGHT (lost on 18 of 18 dice by Quick play).
