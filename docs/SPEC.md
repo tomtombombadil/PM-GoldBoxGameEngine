@@ -174,9 +174,14 @@ controller". All three, any mix; nothing is touch's alone (the rule above stands
   a swipe up / down scrolls (the finger up = on down the list), across = Left / Right (a setting's value; the
   game list's next game; a journal page). The game list: its sides = Left / Right, the middle = A, the title
   bar = Start. A notice: tapped = A; a Yes / No one: its foot's left = Yes, right = No, outside = No. The
-  journal: the left third a page back, else A. Quick Actions: a member, a switch (again = flip), the top line.
+  journal: the left third a page back, else A. Quick Actions: a member; a switch (flipped); the top line.
   Two fingers tapped together = Start. Android's Back = B. In the game a tap is the game's (pointer_tap: the
   highlight, the on-screen keyboard), as on the CYD boards.
+- In the game a tap moves the game's highlight to what it picks before acting (engine 0.215.1), as the
+  buttons would.
+- **Display - Screen Rotation** (Android): Auto (the device's, its rotation lock too) / Landscape / Portrait
+  (`rotation` in settings.cfg; `rotation_apply`, the activity's requested orientation). The window is made
+  resizable there, else SDL locks the screen to its first shape.
 - Script steps `touch:x:y` / `swipe:dx:dy` (canvas pixels) for the smoke test.
 
 ## 5. The screen

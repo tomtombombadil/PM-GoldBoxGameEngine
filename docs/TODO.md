@@ -3,6 +3,8 @@
 Tick off with the version that did it. Never ask Tom the same thing twice.
 
 ## Tom
+- [ ] v0.12.14 (app 0.1.1) on your phone: tap Modify Character in the party menu - the highlight goes there;
+      the Start menu chooses on one tap; turn the phone (Auto) and try Display - Screen Rotation.
 - [ ] The Android app (APK-GoldBoxGameEngine) on your phone: the folder screen (default folder, then Choose
       Folder on one of your own), a game copied in over USB, the scan, then play by touch alone (On-Screen
       Buttons Auto), then with a Bluetooth controller (the buttons go away; a touch brings them back).
