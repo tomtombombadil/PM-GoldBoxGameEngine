@@ -286,6 +286,11 @@ and maintains it; it is the primary output of the Claude Project
   Select MOUSE** on the on-screen buttons (Tom).
 - **A phone's camera cutout / notch is kept clear** (Tom, 2026-11-23, Pixel 10a): nothing of ours in its
   safe margins (`video::set_safe`); any new thing drawn on the panel goes inside `usable()`.
+- **The app's redesign (Tom, 2026-11-24): Android's own UI round the game** - the app (APK repo, its CLAUDE.md
+  "The redesign") draws the controls, the menu drawer, the game chooser in Android's views; this front end draws
+  the game and the Companion's pictures in the rectangles the app gives it (`src/shell.*`, Android only; the
+  on-screen overlay `touchpad.*` stays for when the app hasn't spoken). Phone landscape: the Companion's map
+  above the app's pad beside the game, a tap flips it to the party. **The handhelds are untouched by it.**
 - **Where the games go must be plain to the player** (Tom: "GoldBox/games doesn't tell me where that folder
   is") and **the player can point the app at a folder of their own**: names as the phone and a PC show them
   ("Internal storage/GoldBox/games/", `shown_path`), never a bare relative path or /storage/emulated/0.
