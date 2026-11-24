@@ -506,3 +506,14 @@ Tick off with the version that did it. Never ask Tom the same thing twice.
 - [ ] Treasures play-through: Bjorn's Hold done (journals 2, 9, 78, 79; 69 only by running its script branch - a
       5 % path encounter); Icewolf, the Ice Peak, Freezefire next. The two blackrobed fights were won with the test
       program's WINFIGHT (lost on 18 of 18 dice by Quick play).
+
+## v0.14.1
+- [x] Engine pin 0.216.2: Treasures' PROGRAM 5 (the party made well, then a key - the ending, the demo's fight).
+      Seen in the engine's test program; not through the port's buttons.
+- [x] **The Treasures play-through reached the ending** (2026-11-24; notes: the Project's
+      `claude/playtest_treasures_2.md`). The lair's two fights were won with the test program's help, not by play.
+- [ ] Treasures' journal entries not yet fired in the play-through, each cited by a script: 1, 3, 5 (Llorkh), 10
+      (Llorkh's second map), 17 (a city guardsman at a locked gate), 26 (the gate guard at Leilon / Waterdeep), 39
+      (the tied man), 4 (an overland story); 47 and 59 belong to answers not taken. Walk those places from a new
+      game / a backup and tick them.
+
