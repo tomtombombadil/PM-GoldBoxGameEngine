@@ -171,6 +171,28 @@ std::string shown_path(const std::string& p)
     return p;
 }
 
+// Display - Screen Rotation (Android; Tom, 2026-11-23: "an option under Display
+// on the menu to force one rotation or the other"): Auto follows the device
+// (and its rotation lock), Landscape / Portrait hold either way round
+const char* const kRotation[3] = {"Auto", "Landscape", "Portrait"};
+
+void rotation_apply()
+{
+#ifdef __ANDROID__
+    // (Android's ActivityInfo: FULL_USER 13, USER_LANDSCAPE 11, USER_PORTRAIT 12)
+    static const int kWant[3] = {13, 11, 12};
+    JNIEnv* env = static_cast<JNIEnv*>(SDL_AndroidGetJNIEnv());
+    jobject act = static_cast<jobject>(SDL_AndroidGetActivity());
+    if (!env || !act) return;
+    jclass c = env->GetObjectClass(act);
+    jmethodID m = env->GetMethodID(c, "setRequestedOrientation", "(I)V");
+    if (m) env->CallVoidMethod(act, m, kWant[cfg.rotation % 3]);
+    if (env->ExceptionCheck()) env->ExceptionClear();
+    env->DeleteLocalRef(c);
+    env->DeleteLocalRef(act);
+#endif
+}
+
 #ifdef __ANDROID__
 // Start - System - Games Folder: the app's folder screen (Java,
 // GoldBoxActivity.chooseFolder) opens; this program then ends
@@ -579,7 +601,7 @@ enum MenuItem : uint8_t {
     MResume,
     // the pages
     MDisplayPg, MAudioPg, MPlayPg, MJournal, MCheats, MQuickPg, MControlsPg, MSystemPg, MLeaveGame, MExit,
-    MDisplay,                               // Display
+    MDisplay, MRotation,                    // Display (MRotation: Android's)
     MSound, MMusic, MVolume,                // Audio
     MOriginal, MEnhancePg, MRulesPg, MFixGamesPg,       // Game Play
     MFont, MRolls, MSaveInfo, MAutoJoin, MKeepMem, MCampFix, MCoins, MOil, MAddInfo, MMoreGuys, MPortrait, MGallery,    // Enhancements
@@ -727,7 +749,12 @@ void menu_build()
         if (playing) add(MLeaveGame);
         add(MExit);
         break;
-    case Page::Display: add(MDisplay); break;
+    case Page::Display:
+        add(MDisplay);
+#ifdef __ANDROID__
+        add(MRotation);
+#endif
+        break;
     case Page::Audio:
         add(MSound);
         add(MMusic);
@@ -843,6 +870,7 @@ void menu_label(const MItem& it, char* out, size_t cap)
     case MQuick: snprintf(out, cap, "Quick Actions"); break;
     case MControls: snprintf(out, cap, "Button Guide"); break;
     case MDisplay: snprintf(out, cap, "Picture: %s", video::fit_name(static_cast<video::Fit>(cfg.fit))); break;
+    case MRotation: snprintf(out, cap, "Screen Rotation: %s", kRotation[cfg.rotation % 3]); break;
     case MSound: snprintf(out, cap, "Game Sound: %s", sound_name(sound_shown())); break;
     case MMusic: snprintf(out, cap, "AdLib Music: %s", cfg.music ? "On" : "Off"); break;
     case MVolume: snprintf(out, cap, "Volume: %d%%", cfg.volume); break;
@@ -902,10 +930,12 @@ const char* menu_help(const MItem& it)
     case MFont: return "The game's letters: its own, the engine's Clear (easier to read), Darkness's, or Clear Caps.";
     case MPadMoves: return "On: exploring, the D-pad walks and L1 R1 L2 R2 move the highlights. Off: the D-pad moves them.";
     case MSwap: return "Which of A and B chooses; the other goes back.";
+    case MRotation:
+        return "Auto: turns with the device (as its own rotation lock allows). Landscape or Portrait: stays that way "
+               "however the device is held.";
     case MTouchPad:
         return "Auto: shown when the screen is touched, hidden while a controller or keyboard is used. Without them: "
-               "tap a line to pick it, tap it again to choose; swipe to scroll; two fingers together = Start; the "
-               "phone's Back = B.";
+               "tap a line to choose it; swipe to scroll; two fingers together = Start; the phone's Back = B.";
     case MFolder: {
         static std::string words;
         words = "Your games: " + shown_path(pm::games_root()) +
@@ -2063,6 +2093,10 @@ void menu_change(int step)
         if (playing) apply_options();
         break;
     case MPadMoves: cfg.pad_moves = !cfg.pad_moves; break;
+    case MRotation:
+        cfg.rotation = static_cast<uint8_t>((cfg.rotation + (step < 0 ? 2 : 1)) % 3);
+        rotation_apply();
+        break;
     case MTouchPad:
         cfg.touch_pad = static_cast<uint8_t>((cfg.touch_pad + (step < 0 ? 2 : 1)) % 3);
         touch_pad_apply();
@@ -2483,8 +2517,9 @@ void pointer_tick(float dt)
 
 // ---- Touching the port's screens ------------------------------------------
 // A tap at (cx, cy) - canvas pixels, a wide page's margins outside 0..319 -
-// as the button the player would press there: a line of a list is picked,
-// picked again it is chosen (A); outside a page's box is Back. In the game a
+// as the buttons the player would press there: a line of a list is picked
+// and chosen at once (Tom, 2026-11-23: "It should only take one tap - you
+// know, be more Android-friendly"); outside a page's box is Back. In the game a
 // tap is the game's own (pointer_tap), as on the CYD boards.
 void presses(int b, int n)
 {
@@ -2524,8 +2559,8 @@ void touch_tap(int cx, int cy)
         if (first < 0) first = 0;
         const int i = first + (cy + 1) / 8 - 5;
         if (cy + 1 >= 40 && i >= first && i < n && i < first + rows) {
-            if (i == jlist_sel) press(BA);
-            else jlist_sel = i;
+            jlist_sel = i;
+            press(BA);
         }
         return;
     }
@@ -2535,8 +2570,8 @@ void touch_tap(int cx, int cy)
             return;
         }
         if (cy >= 19 && cy < 30) {
-            if (q_col < 0) press(BA);
-            else q_col = -1;
+            q_col = -1;
+            press(BA);
             return;
         }
         if (cfg.comforts_off & kOffQuick) return;           // (off: the rows are dimmed)
@@ -2545,8 +2580,8 @@ void touch_tap(int cx, int cy)
         if (cx < 162) {
             if (r < q_rows && r < 9) q_row = r;
         } else if (r < quickacts::kCols) {
-            if (r == q_col) press(BA);
-            else q_col = r;
+            q_col = r;
+            press(BA);
         }
         return;
     }
@@ -2563,8 +2598,8 @@ void touch_tap(int cx, int cy)
         if (cy >= 19 && cy < 19 + kMenuLines * kMenuPitch) {
             const int i = menu_top + (cy - 19) / kMenuPitch;
             if (i < n) {
-                if (i == menu_sel) press(BA);
-                else menu_sel = i;
+                menu_sel = i;
+                press(BA);
             }
         }
         return;
@@ -3243,6 +3278,7 @@ int main(int argc, char** argv)
     touchpad::set_emit(button);
     touch_last = pad == nullptr;
     touch_pad_apply();
+    rotation_apply();       // (after the window: SDL sets its own as it makes one)
     rescan();
     plat::log("[port] %d game folder(s) found\n", static_cast<int>(games_found.size()));
     for (const auto& g : games_found)

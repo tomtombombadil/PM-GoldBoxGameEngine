@@ -35,6 +35,7 @@ bool settings_load(const std::string& dir, Settings& s)
         else if (!strcmp(line, "swap_ab")) s.swap_ab = v != 0;
         else if (!strcmp(line, "ab_set")) s.ab_set = v != 0;
         else if (!strcmp(line, "pad_moves")) s.pad_moves = v != 0;
+        else if (!strcmp(line, "rotation")) s.rotation = static_cast<uint8_t>(v < 0 || v > 2 ? 0 : v);
         else if (!strcmp(line, "touch_pad")) s.touch_pad = static_cast<uint8_t>(v < 0 || v > 2 ? 0 : v);
         else if (!strcmp(line, "music")) s.music = v != 0;
         else if (!strcmp(line, "comforts_off")) s.comforts_off = static_cast<uint16_t>(v);
@@ -69,7 +70,7 @@ bool settings_save(const std::string& dir, const Settings& s)
     if (!f) return false;
     fprintf(f, "fit=%d\nsound=%d\nvolume=%d\nfont=%d\nswap_ab=%d\npad_moves=%d\n", s.fit, s.sound, s.volume, s.font,
             s.swap_ab ? 1 : 0, s.pad_moves ? 1 : 0);
-    fprintf(f, "touch_pad=%d\n", s.touch_pad);
+    fprintf(f, "touch_pad=%d\nrotation=%d\n", s.touch_pad, s.rotation);
     fprintf(f, "music=%d\ncomforts_off=%d\nmax_hp=%d\nreply_asked=%d\nab_set=%d\nreply_email=%s\n", s.music ? 1 : 0, s.comforts_off,
             s.max_hp ? 1 : 0, s.reply_asked ? 1 : 0, s.ab_set ? 1 : 0, s.reply_email.c_str());
     fprintf(f, "menus=2\nrules_off=%d\nfixes_off=%llu\noriginal=%d\nsaved_comforts_off=%d\nsaved_rules_off=%d\n"

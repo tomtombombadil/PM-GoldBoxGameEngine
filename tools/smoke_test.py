@@ -222,10 +222,10 @@ def main():
         assert "comforts_off=0" in cfg and "max_hp=0" in cfg and "swap_ab=1" in cfg, cfg
         assert "rules_off=0" in cfg and "\nfixes_off=0" in cfg and "original=0" in cfg and "menus=2" in cfg, cfg
         (conf / "settings.cfg").unlink()
-        # (Original Games: everything off, the player's set kept; off again: given back)
+        # (Original Games: everything off - every AD&D 1E rule, 991 since engine 0.215.0 - the player's set kept; off again: given back)
         out = run(exe, t / "nothing", conf, "wait:100,start,menu:Game_Play,a,menu:AD&D,a,menu:Thrown,a,b,menu:Original,a,quit")
         cfg = (conf / "settings.cfg").read_text()
-        assert "original=1" in cfg and "rules_off=479" in cfg and "saved_rules_off=1" in cfg and "fixes_off=18446744073709551615" in cfg, cfg
+        assert "original=1" in cfg and "rules_off=991" in cfg and "saved_rules_off=1" in cfg and "fixes_off=18446744073709551615" in cfg, cfg
         out = run(exe, t / "nothing", conf, "wait:100,start,menu:Game_Play,a,menu:Original,a,quit")
         cfg = (conf / "settings.cfg").read_text()
         assert "original=0" in cfg and "\nrules_off=1" in cfg and "\nfixes_off=0" in cfg, cfg
@@ -257,11 +257,12 @@ def main():
         (conf / "settings.cfg").unlink()
         # 1c. A touch screen (--touchpad; Android's always): the title bar opens the
         # menu, a line tapped is picked, tapped again chosen; Controls' On-Screen
-        # Buttons cycles Auto -> Always; swipes scroll; the game list's sides page
+        # Buttons cycles Auto -> Always (one tap chooses - Tom, 2026-11-23); swipes
+        # scroll; the game list's sides page
         pitch, top = 11, 19
         row = lambda i: top + i * pitch + 3
         out = run(exe, t / "nothing", conf,
-                  f"wait:100,touch:100:5,touch:100:{row(4)},touch:100:{row(4)},touch:100:{row(3)},touch:100:{row(3)},"
+                  f"wait:100,touch:100:5,touch:100:{row(4)},touch:100:{row(3)},"
                   "swipe:0:-40,swipe:0:40,touch:60:10,touch:60:10,touch:60:10,swipe:-80:0,touch:5:100,quit",
                   window="1280x720", extra=["--touchpad"])
         cfg = (conf / "settings.cfg").read_text()

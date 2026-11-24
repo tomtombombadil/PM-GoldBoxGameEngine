@@ -168,8 +168,9 @@ controller". All three, any mix; nothing is touch's alone (the rule above stands
   several buttons at once. Start - Controls - **On-Screen Buttons: Auto** (shown at a touch, hidden while a
   controller or keyboard is used) / **Always** / **Never** (`touch_pad` in settings.cfg). Shown, they take
   the Companion's room beside / under the game (it slides out on Y).
-- **Touching the port's own screens** (`touch_tap` / `touch_swipe` in main.cpp - each the button a player
-  would press there): a list's line tapped = picked, tapped again = A; outside a page's box or its title = B;
+- **Touching the port's own screens** (`touch_tap` / `touch_swipe` in main.cpp - each the buttons a player
+  would press there): a list's line tapped = picked and chosen at once (A) - one tap (Tom, 2026-11-23: "be
+  more Android-friendly"); outside a page's box or its title = B;
   a swipe up / down scrolls (the finger up = on down the list), across = Left / Right (a setting's value; the
   game list's next game; a journal page). The game list: its sides = Left / Right, the middle = A, the title
   bar = Start. A notice: tapped = A; a Yes / No one: its foot's left = Yes, right = No, outside = No. The

@@ -288,7 +288,13 @@ bool begin(int window_w, int window_h)
     const bool whole = window_w <= 0 || window_h <= 0;
     win = SDL_CreateWindow("Gold Box Game Engine", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
                            whole ? 640 : window_w, whole ? 480 : window_h,
+#ifdef __ANDROID__
+                           // (resizable: SDL lets the device turn - else it locks to the
+                           // way it was held at the start; Tom, 2026-11-23)
+                           SDL_WINDOW_FULLSCREEN_DESKTOP | SDL_WINDOW_RESIZABLE);
+#else
                            whole ? SDL_WINDOW_FULLSCREEN_DESKTOP : SDL_WINDOW_RESIZABLE);
+#endif
     if (!win) return false;
     ren = SDL_CreateRenderer(win, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
     if (!ren) ren = SDL_CreateRenderer(win, -1, SDL_RENDERER_SOFTWARE);

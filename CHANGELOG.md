@@ -3,7 +3,34 @@
 Every version of Gold Box Game Engine for PortMaster. A release's notes are
 its part of this file.
 
-## [0.12.12] - 2026-11-23## [0.12.13] - 2026-11-23
+## [0.12.12] - 2026-11-23## [0.12.14] - 2026-11-23
+
+Built on the CYD engine 0.215.1 (was 0.214.10).
+
+**For the Android app** (Tom's first tries on his phone):
+
+- **One tap chooses** on the port's own pages - the Start menu's lines, the journal list, Quick Actions (was:
+  the first tap picked, the second chose; Tom: "It should only take one tap - you know, be more
+  Android-friendly").
+- **The screen turns with the device** (was: held the way it was at the start). And **Display - Screen
+  Rotation: Auto / Landscape / Portrait** (Android; Tom: "an option under Display on the menu to force one
+  rotation or the other"). Auto follows the device, its rotation lock too.
+
+**Fixed (in the engine, 0.215.1)**
+
+- **A tap in the game moves the highlight to what it picks** before acting, as the D-pad and A do: the party
+  menu's line (tapping Modify Character left the highlight on Drop Character while it asked for a character)
+  and the menu line's word. On the CYD boards' touch screens too.
+
+**From the engine (0.215.0)**
+
+- AD&D 1E Rules - **Level Drain & Restoration** (the books' drain and Restoration): a new switch on Start -
+  Game Play - AD&D 1E Rules, on by default, off under Original Games.
+
+Checked: the PC build's smoke test (Original Games turns the new rule off too). The engine's tap change not
+played here (no game files in this session): the state is the one the D-pad and A reach.
+
+## [0.12.13] - 2026-11-23
 
 Built on the CYD engine 0.214.10 (unchanged).
 

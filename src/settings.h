@@ -13,6 +13,7 @@ struct Settings {
     bool    ab_set = false;     // the firmware's default was applied, or the player chose (never applied again)
     bool    music = true;       // the games' own music (the later games)
     bool    pad_moves = true;
+    uint8_t rotation = 0;       // Android: 0 Auto (the device's), 1 Landscape, 2 Portrait (Tom, 2026-11-23)
     uint8_t touch_pad = 0;      // the on-screen buttons on a touch screen: 0 Auto, 1 Always, 2 Never (touchpad.h)   // exploring: the D-pad walks (off: it always moves the highlight)
     uint16_t comforts_off = 0;  // the engine's Enhancements switched off (kOff* bits; 0: all on)
     bool    max_hp = false;     // the Max Hit Points cheat
