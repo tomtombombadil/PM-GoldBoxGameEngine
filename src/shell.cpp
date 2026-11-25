@@ -28,7 +28,6 @@ bool       lay_new = false;
 enum : Sint32 { kButton = 1, kLayout = 2, kMenu = 3 };
 
 void (*menu_fn)(int, int, int) = nullptr;
-std::string menu_sent;
 
 void push(Sint32 code, intptr_t a, intptr_t b)
 {
@@ -63,6 +62,7 @@ void call(const char* name, const char* sig, int arg, bool with_arg)
 } // namespace
 
 bool on() { return laid_out; }
+bool wanted() { return true; }
 
 void begin()
 {
@@ -109,25 +109,76 @@ void companion() { call("onShellCompanion", "()V", 0, false); }
 
 void set_menu(void (*fn)(int, int, int)) { menu_fn = fn; }
 
-void menu_state(const char* text, size_t len)
+void pad_style(int size, int alpha)
 {
-    if (menu_sent.size() == len && memcmp(menu_sent.data(), text, len) == 0) return;
-    menu_sent.assign(text, len);
+    static int last = -1;
+    const int v = size * 1000 + alpha;
+    if (v == last) return;
+    last = v;
+    JNIEnv* env = static_cast<JNIEnv*>(SDL_AndroidGetJNIEnv());
+    jobject act = static_cast<jobject>(SDL_AndroidGetActivity());
+    if (!env || !act) return;
+    jclass c = env->GetObjectClass(act);
+    jmethodID m = env->GetMethodID(c, "onShellPad", "(II)V");
+    if (m) env->CallVoidMethod(act, m, static_cast<jint>(size), static_cast<jint>(alpha));
+    if (env->ExceptionCheck()) env->ExceptionClear();
+    env->DeleteLocalRef(c);
+    env->DeleteLocalRef(act);
+}
+
+void text(int channel, const std::string& t)
+{
+    static std::string sent[ChCount];
+    static bool any[ChCount] = {};
+    if (channel < 0 || channel >= ChCount) return;
+    if (any[channel] && sent[channel] == t) return;
+    any[channel] = true;
+    sent[channel] = t;
     // (bytes, not a jstring: the engine's words may hold any byte - Java reads them as UTF-8)
     JNIEnv* env = static_cast<JNIEnv*>(SDL_AndroidGetJNIEnv());
     jobject act = static_cast<jobject>(SDL_AndroidGetActivity());
     if (!env || !act) return;
-    jbyteArray b = env->NewByteArray(static_cast<jsize>(len));
+    jbyteArray b = env->NewByteArray(static_cast<jsize>(t.size()));
     if (b) {
-        env->SetByteArrayRegion(b, 0, static_cast<jsize>(len), reinterpret_cast<const jbyte*>(text));
+        env->SetByteArrayRegion(b, 0, static_cast<jsize>(t.size()), reinterpret_cast<const jbyte*>(t.data()));
         jclass c = env->GetObjectClass(act);
-        jmethodID m = env->GetMethodID(c, "onShellMenu", "([B)V");
-        if (m) env->CallVoidMethod(act, m, b);
+        jmethodID m = env->GetMethodID(c, "onShellText", "(I[B)V");
+        if (m) env->CallVoidMethod(act, m, static_cast<jint>(channel), b);
         env->DeleteLocalRef(c);
         env->DeleteLocalRef(b);
     }
     if (env->ExceptionCheck()) env->ExceptionClear();
     env->DeleteLocalRef(act);
+}
+
+bool save_art(const std::string& jpeg, const uint8_t* rgba, int w, int h, const std::string& out)
+{
+    JNIEnv* env = static_cast<JNIEnv*>(SDL_AndroidGetJNIEnv());
+    jobject act = static_cast<jobject>(SDL_AndroidGetActivity());
+    if (!env || !act) return false;
+    bool ok = false;
+    jclass c = env->GetObjectClass(act);
+    jmethodID m = env->GetStaticMethodID(c, "saveArt", "(Ljava/lang/String;[BIILjava/lang/String;)Z");
+    if (m) {
+        jstring jj = env->NewStringUTF(jpeg.c_str());
+        jstring jo = env->NewStringUTF(out.c_str());
+        jbyteArray px = nullptr;
+        if (rgba && w > 0 && h > 0) {
+            px = env->NewByteArray(w * h * 4);
+            if (px) env->SetByteArrayRegion(px, 0, w * h * 4, reinterpret_cast<const jbyte*>(rgba));
+        }
+        ok = env->CallStaticBooleanMethod(c, m, jj, px, static_cast<jint>(w), static_cast<jint>(h), jo);
+        env->DeleteLocalRef(jj);
+        env->DeleteLocalRef(jo);
+        if (px) env->DeleteLocalRef(px);
+    }
+    if (env->ExceptionCheck()) {
+        env->ExceptionClear();
+        ok = false;
+    }
+    env->DeleteLocalRef(c);
+    env->DeleteLocalRef(act);
+    return ok;
 }
 
 } // namespace shell
@@ -169,12 +220,15 @@ JNIEXPORT void JNICALL Java_io_github_tomtombombadil_goldbox_GoldBoxActivity_nat
 
 namespace shell {
 bool on() { return false; }
+bool wanted() { return false; }
 void begin() {}
 bool take(const SDL_Event&, void (*)(int, bool)) { return false; }
 void state(State) {}
 void companion() {}
 void set_menu(void (*)(int, int, int)) {}
-void menu_state(const char*, size_t) {}
+void pad_style(int, int) {}
+void text(int, const std::string&) {}
+bool save_art(const std::string&, const uint8_t*, int, int, const std::string&) { return false; }
 } // namespace shell
 
 #endif

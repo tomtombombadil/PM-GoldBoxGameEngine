@@ -3,6 +3,23 @@
 Every version of Gold Box Game Engine for PortMaster. A release's notes are
 its part of this file.
 
+## [0.16.0] - 2026-11-24
+
+Built on the CYD engine 0.216.2. **Android only - nothing changes on a handheld.**
+
+- **The Android app shows all of the port's own screens itself** (Tom's redesign, stage 3): besides the menu's pages
+  now Device Info, the Button Guide, the journal list, Quick Actions, notices and messages, the game chooser and
+  the scan's page - their lines go to the app, its taps come back as the buttons would act.
+- **The chooser's pictures are made by the scan** (`_CYD/<folder>/APPART.IMG`: the box art decoded whole, or the
+  logo), and no picture is remade when the device turns.
+- What 0.15.0 left out of the app's menu (Tom: "you missed some menus and menu items"): the Display page with
+  Picture (4:3, Square Pixels, Stretch) and Screen Rotation, Controls - Button Size (for the app's pad), Back to
+  Game.
+- Test steps `layout:` and `menutext` (the drawer's view of the open page, to stderr) to check these off the phone.
+
+Checked: the smoke test on the PC build; every menu page's lines through `menutext` at the game list and in a game
+(Curse); the app on the Android emulator (see the app's 0.4.0).
+
 ## [0.15.0] - 2026-11-24
 
 Built on the CYD engine 0.216.2 (as v0.14.1). **Android only - nothing changes on a handheld.**

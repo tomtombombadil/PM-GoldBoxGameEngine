@@ -12,6 +12,7 @@
 
 #include <cstdint>
 #include <string>
+#include <vector>
 
 #include "engine/games.h"
 
@@ -36,5 +37,12 @@ bool ready(const library::GameDir& g, const std::string& cache_dir, Want w);
 // file - nothing is decoded; nullptr: none. Kept until the next call for
 // another game.
 const uint32_t* load(const library::GameDir& g, const std::string& cache_dir, Want w);
+
+// The Android app's own picture of a game (its scan step, Tom's redesign):
+// the box art's file as the player has it (games/Launcher/...; "" none) -
+// the app decodes it whole - else the logo drawn at `size` x `size` (or its
+// own shape within it) into rgba (R G B A rows). True: one of the two.
+bool box_file(const library::GameDir& g, std::string& path);
+bool logo_rgba(const library::GameDir& g, int size, std::vector<uint8_t>& rgba, int& w, int& h);
 
 } // namespace art

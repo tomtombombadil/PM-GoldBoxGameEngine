@@ -266,6 +266,51 @@ const uint32_t* icon(const library::GameDir& g, int rows, int icon_rows)
     return ihave_ok ? ipixels.data() : nullptr;
 }
 
+struct LogoTo {
+    std::vector<uint8_t>* out;
+    int w;
+};
+
+void logo_row(int y, const uint8_t* rgba, int w, void* ctx)
+{
+    LogoTo* t = static_cast<LogoTo*>(ctx);
+    if (w != t->w) return;
+    memcpy(t->out->data() + static_cast<size_t>(y) * w * 4, rgba, static_cast<size_t>(w) * 4);
+}
+
 } // namespace
+
+bool box_file(const library::GameDir& g, std::string& path)
+{
+    const char* name = games::box_art_file(g.game);
+    if (!name) return false;
+    char p[160];
+    snprintf(p, sizeof p, "%s/%s/%s", games::kRootDir, games::kLauncherArt, name);
+    if (!plat::exists(p)) return false;
+    path = p;
+    return true;
+}
+
+bool logo_rgba(const library::GameDir& g, int size, std::vector<uint8_t>& rgba, int& w, int& h)
+{
+    std::string path;
+    int best = 0;
+    find_icon(g.folder, path, best);
+    if (g.data_dir != g.folder) find_icon(g.data_dir, path, best);
+    if (best == 0) return false;
+    plat::File f = plat::open(path.c_str());
+    if (!f) return false;
+    plat::FileSource src(f);
+    icon::Found found;
+    if (!icon::find(src, found)) return false;
+    if (size > icon::kMaxOut) size = icon::kMaxOut;
+    w = h = size;
+    rgba.assign(static_cast<size_t>(w) * h * 4, 0);
+    std::vector<uint8_t> window(inflate::kWindow);
+    LogoTo to{&rgba, w};
+    const bool ok = icon::render(src, found, w, h, window.data(), logo_row, &to);
+    f.close();
+    return ok;
+}
 
 } // namespace art

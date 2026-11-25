@@ -187,6 +187,18 @@ controller". All three, any mix; nothing is touch's alone (the rule above stands
   Guide, Device Info, notices, the journal list and Quick Actions are still the front end's own screens (the
   drawer steps aside). The volume: a slider, - / + (5 a press), mute (the app keeps the level to come back to).
   The Display page is gone there: Screen Rotation stands on the top page.
+- **The Android app's own screens** (Tom, 2026-11-24, the redesign's stage 3; v0.16.0): once the app has laid the
+  screen out, every screen of the port's own is shown by the app in Android's views and none is drawn here - the
+  menu's pages and also Device Info, the Button Guide, the journal list and Quick Actions (the drawer, channel 0),
+  notices and messages (a dialog, 1), the game chooser (2), the scan's page (3); each one's lines go to the app as
+  text when they change (`android_menu_text`, `android_notice_text`, `android_chooser_text`,
+  `android_scan_text`) and its taps come back as the buttons would act (`android_op`; the chooser's ops 10 play,
+  11 look again, 12 the chosen one). A controller still drives each. **The chooser's pictures are made by the
+  scan** (the rule of section 6): the box art's JPEG decoded whole by Android, else the logo from the engine's
+  icon reader at 256 x 256, saved as `_CYD/<folder>/APPART.IMG` (empty: none to be had; a game found before
+  gets it at the next start, "Preparing the picture for ..."); the chooser only reads them. They don't follow
+  the screen's shape (no picture remade on a turn). Controls - Button Size sizes the app's pad (Button Opacity is
+  the overlay's only). The start waits up to 1.5 s for the app's layout so the first scan's page is the app's.
 - **Touching the port's own screens** (`touch_tap` / `touch_swipe` in main.cpp - each the buttons a player
   would press there): a list's line tapped = picked and chosen at once (A) - one tap (Tom, 2026-11-23: "be
   more Android-friendly"); outside a page's box or its title = B;

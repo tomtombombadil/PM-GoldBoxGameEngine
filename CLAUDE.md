@@ -291,6 +291,12 @@ and maintains it; it is the primary output of the Claude Project
   the game and the Companion's pictures in the rectangles the app gives it (`src/shell.*`, Android only; the
   on-screen overlay `touchpad.*` stays for when the app hasn't spoken). Phone landscape: the Companion's map
   above the app's pad beside the game, a tap flips it to the party. **The handhelds are untouched by it.**
+  Since v0.16.0 the app shows **every screen of the port's own** (the menu and its pages, Device Info, the Button
+  Guide, the journal list, Quick Actions, notices, messages, the game chooser, the scan's page - SPEC 4): **a new
+  screen or menu line of the port's own needs its lines in `android_*_text` and its taps in `android_op` in the
+  same version** (Tom, 2026-11-24, after 0.15.0's drawer had left out menus: "Check your work for completeness") -
+  check with `menutext` on every page, at the game list and in a game. The chooser's pictures are made by the scan
+  (`app_art_make`, APPART.IMG), never at the list.
 - **Where the games go must be plain to the player** (Tom: "GoldBox/games doesn't tell me where that folder
   is") and **the player can point the app at a folder of their own**: names as the phone and a PC show them
   ("Internal storage/GoldBox/games/", `shown_path`), never a bare relative path or /storage/emulated/0.
@@ -544,6 +550,9 @@ and maintains it; it is the primary output of the Claude Project
   (`a! wait:700!`), and keep sheets small - a shot per step that matters.
 - `journal:K:N` (script step, in a game): opens that journal entry as if
   the game had mentioned it.
+- `layout:gx:gy:gw:gh:cx:cy:cw:ch:view` (script step): the Android app's layout, to see the game and the Companion
+  in it off the phone; `menutext`: the drawer's text of what is open (the menu's page, Device Info, Quick Actions
+  ...) to stderr between `[menutext]` / `[/menutext]`.
 - `--script` steps: button names (`up down left right a b x y l1 r1 l2 r2
   start select`), `hold:<dir>` / `let:<dir>`, `wait:<ms>`, `tap:x:y`,
   `type:TEXT`, `menu:<line's start, _ for a space>` (the open Start

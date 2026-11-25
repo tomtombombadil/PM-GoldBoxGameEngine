@@ -13,10 +13,15 @@
 
 #include <SDL.h>
 
+#include <cstdint>
+#include <string>
+
 namespace shell {
 
 // The app lays the screen out (it has sent a layout)
 bool on();
+// There is an app to lay it out (Android)
+bool wanted();
 
 // After SDL_Init: the event type the app's calls come as
 void begin();
@@ -39,7 +44,17 @@ void companion();
 // line i by value (-1 / +1), 3 back a page, 4 set line i to value (a level)
 enum MenuOp : int { MenuClose = 0, MenuChoose = 1, MenuChange = 2, MenuBack = 3, MenuSet = 4 };
 void set_menu(void (*fn)(int op, int index, int value));
-// What the menu shows now, as text for the app (sent only when it changed)
-void menu_state(const char* text, size_t len);
+// Controls - Button Size (0 - 3) and Button Opacity (20 - 100 %) for the app's pad (sent when changed)
+void pad_style(int size, int alpha);
+// What the port's own screens show, as text for the app (each sent only when
+// it changed): 0 the drawer's page (the menu, Device Info, the Button Guide,
+// the journal list, Quick Actions), 1 a notice / message, 2 the game chooser,
+// 3 the scan's page - main.cpp's android_* say each one's lines
+enum Channel : int { ChDrawer = 0, ChNotice = 1, ChChooser = 2, ChScan = 3, ChCount = 4 };
+void text(int channel, const std::string& t);
+
+// The app's picture of a game (the scan's step): the box art's JPEG decoded
+// by Android (jpeg: its path; "" none), else rgba (w x h) - saved as `out`
+bool save_art(const std::string& jpeg, const uint8_t* rgba, int w, int h, const std::string& out);
 
 } // namespace shell

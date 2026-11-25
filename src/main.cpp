@@ -11,6 +11,7 @@
 
 #include <cctype>
 #include <cstdio>
+#include <sys/stat.h>
 #include <dirent.h>
 #include <strings.h>
 #include <fcntl.h>
@@ -780,10 +781,7 @@ void menu_build()
     switch (menu_page) {
     case Page::Top:
         if (playing) add(MResume);
-        // (the Android app: no Display page - Screen Rotation alone is left of it, so it stands here; Tom 2026-11-17:
-        // no page of one line)
-        if (shell::on()) add(MRotation);
-        else add(MDisplayPg);
+        add(MDisplayPg);
         add(MAudioPg);
         add(MPlayPg);
         if (playing) add(MJournal);
@@ -801,7 +799,7 @@ void menu_build()
         add(MExit);
         break;
     case Page::Display:
-        if (!shell::on()) add(MDisplay);     // (the Android app lays the screen out itself)
+        add(MDisplay);      // (in the Android app's drawer: 4:3, Square Pixels, Stretch - the app places the Companion)
 #ifdef __ANDROID__
         add(MRotation);
 #endif
@@ -846,10 +844,12 @@ void menu_build()
         add(MControls);
         add(MPadMoves);
         add(MSwap);
-        if (touch_ui && !shell::on()) {       // (the Android app's own pad: none of these)
-            add(MTouchPad);
+        if (touch_ui) {
+            // (the Android app's own pad: its size and how solid it is - shown or not is its handle's and pin's)
+            // (Button Opacity: the overlay's - the app's pad has its own room, never over the game)
+            if (!shell::on()) add(MTouchPad);
             add(MPadSize);
-            add(MPadAlpha);
+            if (!shell::on()) add(MPadAlpha);
         }
         break;
     case Page::System:
@@ -924,7 +924,11 @@ void menu_label(const MItem& it, char* out, size_t cap)
     case MFix: snprintf(out, cap, "%s: %s", rules::fix_info(it.arg).name, cfg.fixes_off >> it.arg & 1 ? "Off" : "On"); break;
     case MQuick: snprintf(out, cap, "Quick Actions"); break;
     case MControls: snprintf(out, cap, "Button Guide"); break;
-    case MDisplay: snprintf(out, cap, "Picture: %s", video::fit_name(static_cast<video::Fit>(cfg.fit))); break;
+    case MDisplay:
+        // (the Android app's layout: its own Companion - Right / Below read as 4:3)
+        snprintf(out, cap, "Picture: %s",
+                 video::fit_name(static_cast<video::Fit>(shell::on() && cfg.fit > 2 ? 0 : cfg.fit)));
+        break;
     case MRotation: snprintf(out, cap, "Screen Rotation: %s", kRotation[cfg.rotation % 3]); break;
     case MSound: snprintf(out, cap, "Game Sound: %s", sound_name(sound_shown())); break;
     case MMusic: snprintf(out, cap, "AdLib Music: %s", cfg.music ? "On" : "Off"); break;
@@ -981,6 +985,8 @@ const char* menu_help(const MItem& it)
     case MFix: return rules::fix_info(it.arg).help;
     case MDisplay:
 #ifdef __ANDROID__
+        if (shell::on())
+            return "4:3 as the games' monitors showed them, Square Pixels, or Stretch to all of the game's room.";
         return "4:3 as the games' monitors showed them (the Companion slides out on Y), 4:3 + Companion Right or "
                "Below (it stays there), Square Pixels, or Stretch to the whole screen.";
 #else
@@ -997,8 +1003,11 @@ const char* menu_help(const MItem& it)
     case MRotation:
         return "Auto: turns with the device (as its own rotation lock allows). Landscape or Portrait: stays that way "
                "however the device is held.";
-    case MPadSize: return "How big the on-screen buttons are: Small, Medium, Large or Huge.";
+    case MPadSize:
+        if (shell::on()) return "How big the controls' keys are: Small, Medium, Large or Huge.";
+        return "How big the on-screen buttons are: Small, Medium, Large or Huge.";
     case MPadAlpha:
+        if (shell::on()) return "How solid the controls look: less shows more of what is behind them.";
         return "How solid the on-screen buttons look - they lie over the game, so less shows more of it. A touch on a "
                "button is the button's, anywhere else the game's.";
     case MTouchPad:
@@ -1062,6 +1071,32 @@ const char* release_name(const library::GameDir& g)
     return gog ? "GOG" : "unknown release";
 }
 
+// Device Info's lines for the Android app's drawer (name, value): what draw_device shows
+const char* release_name(const library::GameDir& g);
+std::vector<std::pair<std::string, std::string>> device_lines()
+{
+    std::vector<std::pair<std::string, std::string>> out;
+    out.push_back({"Version", "App v" PM_VERSION ", engine " CYD_VERSION});
+    if (FILE* f = fopen((port_dir() + "/device.txt").c_str(), "r")) {
+        char l[200];
+        while (fgets(l, sizeof l, f)) {
+            l[strcspn(l, "\r\n")] = 0;
+            char* eq = strchr(l, '=');
+            if (!eq || !strcmp(l, "version")) continue;
+            *eq = 0;
+            l[0] = static_cast<char>(toupper(static_cast<unsigned char>(l[0])));
+            out.push_back({l, eq + 1});
+        }
+        fclose(f);
+    }
+    if (games_found.empty()) out.push_back({"Games found", "None"});
+    for (const library::GameDir& g : games_found) {
+        const char* title = g.game == games::Game::Unknown ? g.folder.c_str() : games::title(g.game);
+        out.push_back({title, release_name(g)});
+    }
+    return out;
+}
+
 void draw_device()
 {
     box(1, 1, 38, 23);
@@ -1095,14 +1130,13 @@ void draw_device()
     centred(22, line, video::kMuted);
 }
 
-void draw_help()
+// The Button Guide's lines (key, what it does) - drawn here, and the Android app's drawer shows them
+struct HelpLine { const char* key; const char* what; };
+std::vector<HelpLine> help_lines()
 {
-    box(2, 2, 36, 21);
-    centred(2, "Controls", video::kGold);
     const char* a = confirm_name();
     const char* b = back_name();
-    struct Line { const char* key; const char* what; };
-    const Line lines[] = {
+    return {
         {"D-Pad", "Walk / move the highlight"},
         {a, "Choose the highlighted thing"},
         {b, "Back / the menu's Exit"},
@@ -1119,8 +1153,15 @@ void draw_help()
         {"L2 R2", "Down-left / down-right"},
         {a, "End the move / Target"},
     };
+}
+
+void draw_help()
+{
+    box(2, 2, 36, 21);
+    centred(2, "Controls", video::kGold);
+    const char* b = back_name();
     int row = 4;
-    for (const Line& l : lines) {
+    for (const HelpLine& l : help_lines()) {
         video::text(3, row, l.key, video::kGold);
         video::text(l.what[0] && strlen(l.key) > 6 ? 15 : 10, row, l.what, video::kCream);
         ++row;
@@ -1423,7 +1464,12 @@ void draw_frame()
 {
     // The port's own pages fill the panel; a game is 320 across
     video::set_wide(!playing);
-    if (screen == Screen::Games) {
+    // (the Android app shows the port's own screens in its own views: nothing of them drawn here - shell.h)
+    const bool app = shell::on();
+    if (app && (screen == Screen::Games || screen == Screen::Scan || screen == Screen::Message)) {
+        video::clear(video::kBlack);
+        video::set_backdrop(nullptr);
+    } else if (screen == Screen::Games) {
         draw_games();
     } else if (screen == Screen::Scan) {
         draw_scan();
@@ -1442,17 +1488,15 @@ void draw_frame()
     if (jour::active() && !menu_open) {
         // (an entry: the viewer's own frame - the game's text screen or a page)
         const bool canvas = jour::draw(cv);
-        if (notice.open) draw_notice();
+        if (notice.open && !app) draw_notice();
         video::present(canvas ? &cv : nullptr);
         return;
     }
-    // (the Android app shows the menu's pages in its own drawer - shell.h; the Button Guide and Device Info
-    // are still drawn here)
-    if (menu_open && (!shell::on() || help_open || device_open)) draw_menu();
-    if (quick_open) draw_quick();
-    if (jlist_open) draw_jlist();
+    if (menu_open && !app) draw_menu();
+    if (quick_open && !app) draw_quick();
+    if (jlist_open && !app) draw_jlist();
     if (prompt_open) draw_prompt();
-    if (notice.open) draw_notice();
+    if (notice.open && !app) draw_notice();
     video::present(playing ? &cv : nullptr);
 }
 
@@ -1637,13 +1681,22 @@ void draw_scan()
     video::set_backdrop(scan_page.data(), kHeaderH);
 }
 
+std::string android_scan_text();
+
 // A line onto the scan's list (replace: over the last one), shown at once
 void scan_put(const char* line, bool replace)
 {
     if (replace && !scan_log.empty()) scan_log.back() = line;
     else scan_log.push_back(line);
     plat::log("[scan] %s\n", line);
-    draw_scan();
+    if (shell::on()) {
+        // (the Android app's page: its lines go to it)
+        shell::text(shell::ChScan, android_scan_text());
+        video::clear(video::kBlack);
+        video::set_backdrop(nullptr);
+    } else {
+        draw_scan();
+    }
     video::present(nullptr);
     SDL_PumpEvents();           // (minutes may pass: the window stays alive)
 }
@@ -1733,8 +1786,32 @@ void scan_begin(bool& any)
     scan_say("Searching for Gold Box games...", false, nullptr);
 }
 
+// The Android app's picture of a game (its game chooser, Tom's redesign stage 3): made by the scan as
+// everything else made from a game's files - the box art's JPEG decoded whole by Android, or the logo -
+// into _CYD/<folder>/APPART.IMG; the chooser only reads it. Nothing of it on a handheld.
+std::string app_art_path(const library::GameDir& g) { return library::cache_dir(g) + "/APPART.IMG"; }
+
+bool app_art_make(const library::GameDir& g)
+{
+#ifdef __ANDROID__
+    const std::string out = pm::host_path(app_art_path(g).c_str());
+    std::string box;
+    if (art::box_file(g, box) && shell::save_art(pm::host_path(box.c_str()), nullptr, 0, 0, out)) return true;
+    std::vector<uint8_t> rgba;
+    int w = 0, h = 0;
+    if (art::logo_rgba(g, 256, rgba, w, h) && shell::save_art("", rgba.data(), w, h, out)) return true;
+    // (none to be had: an empty file, so the next start doesn't look again)
+    plat::File f = plat::open(app_art_path(g).c_str(), "w");
+    if (f) f.close();
+#else
+    (void)g;
+#endif
+    return false;
+}
+
 void scan_picture(const library::GameDir& g, const std::string& cache)
 {
+    app_art_make(g);
     const int kind = art::make(g, cache, art_want(g));
     scan_say(kind == 2 ? "  Its box art is ready." : kind == 1 ? "  Its logo is ready." : "  No picture: no box art or icon found.",
              false, nullptr);
@@ -1758,6 +1835,15 @@ bool discover(bool all, bool pictures = true)
             // (found by a version whose scan didn't make these yet)
             if (!g.hlib && !plat::exists((cache + "/PROGRAM.BIN").c_str()))
                 play::prepare_program(g.data_dir.c_str(), g.game, cache.c_str());
+#ifdef __ANDROID__
+            // (found by a version before the app's own pictures: made now, once - none: an empty file says so)
+            if (!plat::exists(app_art_path(g).c_str())) {
+                scan_begin(any);
+                snprintf(line, sizeof line, "Preparing the picture for %s", games::title(g.game));
+                scan_say(line, false, nullptr);
+                app_art_make(g);
+            }
+#endif
             if (pictures && !art::ready(g, cache, art_want(g))) {
                 scan_begin(any);
                 snprintf(line, sizeof line, "Preparing the picture for %s", games::title(g.game));
@@ -2090,6 +2176,8 @@ void pictures_follow()
         since = SDL_GetTicks();
     }
     if (screen != Screen::Games || playing || menu_open || notice.open) return;
+    // (the Android app's chooser has pictures of its own, made once: none follow the screen's shape)
+    if (shell::on()) return;
     if (now_serial == shape_seen || SDL_GetTicks() - since < 300) return;
     shape_seen = now_serial;
     discover(false);
@@ -2146,6 +2234,13 @@ void menu_change(int step)
     case MDisplay:
 #ifdef __ANDROID__
     {
+        // (the app's drawer: 4:3, Square Pixels, Stretch - the app places the Companion itself)
+        if (shell::on()) {
+            const int at = cfg.fit > 2 ? 0 : cfg.fit;
+            cfg.fit = static_cast<uint8_t>((at + (step < 0 ? 2 : 1)) % 3);
+            video::set_fit(static_cast<video::Fit>(cfg.fit));
+            break;
+        }
         // (Android: 4:3, 4:3 + Companion Right, 4:3 + Companion Below, Square Pixels, Stretch)
         static const uint8_t kOrder[5] = {0, 3, 4, 1, 2};
         int at = 0;
@@ -2436,14 +2531,70 @@ void menu_press(int b)
 }
 
 // A button went down (b: with Confirm / Back already as the player set them)
-// ---- The Android app's menu drawer (shell.h; the redesign's stage 2)
-// Its taps: the same as the buttons would do on the line
-void android_menu(int op, int index, int value)
+// ---- The Android app's own screens (shell.h; the redesign's stages 2 and 3)
+// The port's own screens - the menu's pages, Device Info, the Button Guide,
+// the journal list, Quick Actions, notices and messages, the game chooser and
+// the scan's page - are shown by the app in Android's views when it has laid
+// the screen out; their lines go to it as text (android_*_text, sent when
+// changed), its taps come back here as the buttons would act (android_op).
+// The screens stay this front end's: a controller still drives each.
+
+constexpr int kOpChooserPlay = 10, kOpLookAgain = 11, kOpChooserSelect = 12;
+void press(int b);
+
+void android_op(int op, int index, int value)
 {
-    if (!menu_open || help_open || device_open) {
-        if (op == shell::MenuClose && menu_open && !help_open && !device_open) menu_open = false;
+    if (op == kOpChooserPlay) {
+        const int n = static_cast<int>(games_found.size());
+        if (screen == Screen::Games && !menu_open && !notice.open && index >= 0 && index < n) {
+            game_sel = index;
+            press(BA);
+        }
         return;
     }
+    if (op == kOpChooserSelect) {
+        if (screen == Screen::Games && index >= 0 && index < static_cast<int>(games_found.size())) game_sel = index;
+        return;
+    }
+    if (op == kOpLookAgain) {
+        if (screen == Screen::Games && !menu_open && !notice.open && games_found.empty()) press(BA);
+        return;
+    }
+    if (notice.open || prompt_open) return;
+    // Device Info, the Button Guide (over the menu): Back or close
+    if (menu_open && (help_open || device_open)) {
+        if (op == shell::MenuBack || op == shell::MenuClose) menu_press(BB);
+        return;
+    }
+    if (jlist_open) {
+        const int n = play::journal_seen_count();
+        if (op == shell::MenuChoose && index >= 0 && index < n) {
+            jlist_sel = index;
+            jlist_press(BA);
+        } else if (op == shell::MenuBack) {
+            jlist_press(BB);
+        } else if (op == shell::MenuClose) {
+            jlist_open = false;
+            menu_open = false;
+        }
+        return;
+    }
+    if (quick_open) {
+        // (its lines: 0 the On / Off line, 1 the member, 2 - 9 the member's switches)
+        if (op == shell::MenuChoose && index == 0) {
+            q_col = -1;
+            quick_press(BA);
+        } else if (op == shell::MenuChoose && index >= 2 && index < 2 + quickacts::kCols) {
+            q_col = index - 2;
+            quick_press(BA);
+        } else if (op == shell::MenuChange && index == 1) {
+            quick_press(value < 0 ? BLeft : BRight);
+        } else if (op == shell::MenuBack || op == shell::MenuClose) {
+            quick_press(BB);
+        }
+        return;
+    }
+    if (!menu_open) return;
     const int n = static_cast<int>(menu_items.size());
     const bool line = index >= 0 && index < n;
     switch (op) {
@@ -2472,57 +2623,195 @@ void android_menu(int op, int index, int value)
     }
 }
 
-// What the menu shows, for the drawer (sent when it changes): a head line -
-// open / busy (the menu is up but something of the port's is over it: the
-// drawer steps aside) / closed, the page's title, the highlighted line, a
-// page above (1 / 0) - then a line each: kind (P a page or screen, S a
-// switch, C a choice, L a level 0 - 100, A an action, X none of the drawer's),
-// its name, its value, its words. Tab-separated.
-void android_menu_tick()
+// (tabs and line ends out of a field)
+void field(std::string& out, const char* s)
+{
+    for (; s && *s; ++s) out += (*s == '\t' || *s == '\n' || *s == '\r') ? ' ' : *s;
+}
+
+void row(std::string& t, char kind, const char* name, const char* value, const char* help)
+{
+    t += '\n';
+    t += kind;
+    t += '\t';
+    field(t, name);
+    t += '\t';
+    field(t, value);
+    t += '\t';
+    field(t, help);
+}
+
+// The drawer's page: a head line - open / busy (the port's own screen is over
+// it: the drawer steps aside) / closed, the title, the highlighted line, a
+// page above it (1 / 0) - then a line each: kind (P a page or screen, S a
+// switch, C a choice - its < and >, L a level 0 - 100, A an action, T a line of
+// text only (a name and its words), H a heading, X none of the drawer's), its name, its value, its words. Tab-separated.
+std::string android_menu_text()
+{
+    std::string t;
+    const bool busy = prompt_open || notice.open || screen == Screen::Scan || screen == Screen::Message;
+    auto head = [&](const char* title, int sel, bool above) {
+        t = busy ? "busy\t" : "open\t";
+        field(t, title);
+        t += "\t" + std::to_string(sel) + "\t" + (above ? "1" : "0");
+    };
+    if (quick_open) {
+        const bool on = !(cfg.comforts_off & kOffQuick);
+        head("Quick Actions", q_col < 0 ? 0 : q_col + 2, false);
+        row(t, 'S', "Quick Actions", on ? "On" : "Off",
+            "On: each member's own Quick Actions, set below. Off: Quick plays every member as the original games do.");
+        if (on && q_rows > 0) {
+            char nm[32] = "", who[48];
+            if (!play::quick_name(q_row, nm, sizeof nm)) nm[0] = 0;
+            snprintf(who, sizeof who, "%s%s", nm, play::quick_npc(q_row) ? " (NPC)" : "");
+            row(t, 'C', "Member", who, "Whose Quick Actions the switches below are.");
+            const uint8_t mask = play::quick_get(q_row);
+            for (int k = 0; k < quickacts::kCols; ++k)
+                row(t, 'S', quickacts::kName[k], mask >> k & 1 ? "On" : "Off", quickacts::kDesc[k]);
+        }
+        return t;
+    }
+    if (jlist_open) {
+        head("Journal", jlist_sel, true);
+        const int n = play::journal_seen_count();
+        for (int i = 0; i < n; ++i) {
+            char kind, name[48];
+            int number;
+            if (!play::journal_seen(i, &kind, &number)) continue;
+            journal::mention_name(kind, number, name, sizeof name);
+            row(t, 'A', name, "", "Opens the entry.");
+        }
+        return t;
+    }
+    if (!menu_open) return "closed";
+    if (help_open) {
+        head("Button Guide", -1, true);
+        // (a line with no key goes on the line before it: "Pointer: D-Pad moves it, Confirm taps, Back ends";
+        // a key with no words is a heading - "In a fight:")
+        std::vector<std::pair<std::string, std::string>> rows;
+        for (const HelpLine& l : help_lines()) {
+            if (!l.key[0] && !rows.empty()) rows.back().second += std::string(" ") + l.what;
+            else rows.push_back({l.key, l.what});
+        }
+        for (const auto& r : rows) row(t, r.second.empty() ? 'H' : 'T', r.first.c_str(), r.second.c_str(), "");
+        return t;
+    }
+    if (device_open) {
+        head("Device Info", -1, true);
+        for (const auto& l : device_lines()) row(t, 'T', l.first.c_str(), l.second.c_str(), "");
+        return t;
+    }
+    char title[48];
+    snprintf(title, sizeof title, "%s", page_title(menu_page));
+    if (menu_page == Page::Fixes) snprintf(title, sizeof title, "Fixes: %s", fix_game_name(fix_game));
+    head(title, menu_sel, menu_page != Page::Top);
+    for (const MItem& it : menu_items) {
+        char label[160];
+        menu_label(it, label, sizeof label);
+        std::string name = label, value;
+        char kind = 'A';
+        const size_t colon = name.rfind(": ");
+        const bool dots = name.size() > 3 && name.compare(name.size() - 3, 3, "...") == 0;
+        if (it.m == MBack) kind = 'X';                    // (the drawer's back arrow)
+        else if (it.m == MReplyAddr) kind = 'A';          // (opens the keyboard)
+        else if (it.m == MJournal || it.m == MQuick) kind = 'P';   // (open a page of their own)
+        else if (it.m == MVolume) {
+            kind = 'L';
+            name = "Volume";
+            value = std::to_string(cfg.volume);
+        } else if (page_of(it.m) != Page::Top || dots) {
+            kind = 'P';
+            if (dots) name.resize(name.size() - 3);
+        } else if (colon != std::string::npos) {
+            value = name.substr(colon + 2);
+            name.resize(colon);
+            kind = value == "On" || value == "Off" ? 'S' : 'C';
+        }
+        row(t, kind, name.c_str(), value.c_str(), menu_help(it));
+    }
+    return t;
+}
+
+// A notice (or a message page): "1", its title, Confirm's word ("" none),
+// Back's word, waiting (1: a job runs - no buttons yet); then its words. "0": none.
+std::string android_notice_text()
+{
+    std::string t;
+    if (notice.open) {
+        t = "1\t";
+        field(t, notice.title.c_str());
+        t += "\t";
+        field(t, notice.yes ? notice.yes : "");
+        t += "\t";
+        field(t, notice.no ? notice.no : (notice.yes ? "" : "Close"));
+        t += job != Job::None ? "\t1\n" : "\t0\n";
+        t += notice.body;
+    } else if (screen == Screen::Message) {
+        t = "1\t";
+        field(t, msg_title.c_str());
+        t += "\tOK\t\t0\n";
+        t += msg_body;
+    } else {
+        t = "0";
+    }
+    return t;
+}
+
+// The game chooser (screen Games): "games", the chosen one, then a line a
+// game - its name, short name, playable (1 / 0), its picture's file as the
+// phone has it ("" none), the picture's kind (2 box art, 1 logo, 0 none), its
+// release; with none found: "none", the folder as the phone shows it. "off":
+// not on the chooser.
+std::string android_chooser_text()
+{
+    if (screen != Screen::Games || playing) return "off";
+    std::string t;
+    if (games_found.empty()) {
+        t = have_root ? "none\t" : "nofolder\t";
+        field(t, (shown_path(pm::games_root()) + "/").c_str());
+        return t;
+    }
+    t = "games\t" + std::to_string(game_sel);
+    for (const library::GameDir& g : games_found) {
+        const std::string art = app_art_path(g);
+        struct stat st;
+        const bool there = stat(pm::host_path(art.c_str()).c_str(), &st) == 0 && st.st_size > 0;
+        std::string dummy;
+        const int kind = !there ? 0 : art::box_file(g, dummy) ? 2 : 1;
+        t += '\n';
+        field(t, g.game == games::Game::Unknown ? g.folder.c_str() : games::title(g.game));
+        t += '\t';
+        field(t, g.game == games::Game::Unknown ? g.folder.c_str() : games::short_title(g.game));
+        t += play::available(g.game) ? "\t1\t" : "\t0\t";
+        if (there) field(t, pm::host_path(art.c_str()).c_str());
+        t += "\t" + std::to_string(kind) + "\t";
+        field(t, release_name(g));
+    }
+    return t;
+}
+
+// The scan's page: "scan", its title, done (1 / 0); then its lines. "off": not up.
+std::string android_scan_text()
+{
+    if (screen != Screen::Scan) return "off";
+    std::string t = "scan\t";
+    field(t, scan_title);
+    t += scan_done ? "\t1" : "\t0";
+    for (const std::string& l : scan_log) {
+        t += '\n';
+        field(t, l.c_str());
+    }
+    return t;
+}
+
+void android_ui_tick()
 {
     if (!shell::on()) return;
-    std::string t;
-    auto clean = [](std::string& out, const char* s) {
-        for (; s && *s; ++s) out += (*s == '\t' || *s == '\n' || *s == '\r') ? ' ' : *s;
-    };
-    const bool busy = help_open || device_open || quick_open || jlist_open || prompt_open || notice.open ||
-                      screen == Screen::Scan || screen == Screen::Message;
-    if (!menu_open) {
-        t = "closed";
-    } else {
-        t = busy ? "busy\t" : "open\t";
-        clean(t, menu_page == Page::Fixes ? fix_game_name(fix_game) : page_title(menu_page));
-        t += "\t" + std::to_string(menu_sel) + "\t" + (menu_page != Page::Top ? "1" : "0");
-        for (const MItem& it : menu_items) {
-            char label[160];
-            menu_label(it, label, sizeof label);
-            std::string name = label, value;
-            char kind = 'A';
-            const size_t colon = name.rfind(": ");
-            if (it.m == MBack || it.m == MResume) kind = 'X';
-            else if (it.m == MVolume) {
-                kind = 'L';
-                name = "Volume";
-                value = std::to_string(cfg.volume);
-            } else if (page_of(it.m) != Page::Top || (name.size() > 3 && name.compare(name.size() - 3, 3, "...") == 0)) {
-                kind = 'P';
-                if (name.size() > 3 && name.compare(name.size() - 3, 3, "...") == 0) name.resize(name.size() - 3);
-            } else if (colon != std::string::npos) {
-                value = name.substr(colon + 2);
-                name.resize(colon);
-                kind = value == "On" || value == "Off" ? 'S' : 'C';
-            }
-            t += "\n";
-            t += kind;
-            t += "\t";
-            clean(t, name.c_str());
-            t += "\t";
-            clean(t, value.c_str());
-            t += "\t";
-            clean(t, menu_help(it));
-        }
-    }
-    shell::menu_state(t.data(), t.size());
+    shell::text(shell::ChDrawer, android_menu_text());
+    shell::text(shell::ChNotice, android_notice_text());
+    shell::text(shell::ChChooser, android_chooser_text());
+    shell::text(shell::ChScan, android_scan_text());
+    shell::pad_style(cfg.pad_size % 4, 100);
 }
 
 void press(int b)
@@ -3397,6 +3686,9 @@ void script_tick(Uint32 now)
         // (journal:J:12 - that entry opened, as if the game had just mentioned it)
         journal_queue.push_back(JRef{t[8], atoi(t.c_str() + 10)});
         journal_next();
+    } else if (t == "menutext") {
+        // (the Android drawer's view of the open menu page, to the log - to check it off the phone)
+        fprintf(stderr, "[menutext] %s\n[/menutext]\n", android_menu_text().c_str());
     } else if (t.compare(0, 7, "layout:") == 0) {
         // (layout:gx:gy:gw:gh:cx:cy:cw:ch:view - the Android app's layout (shell.h), to look at off the phone)
         int v[9] = {};
@@ -3539,7 +3831,7 @@ int main(int argc, char** argv)
         return 1;
     }
     shell::begin();
-    shell::set_menu(android_menu);
+    shell::set_menu(android_op);
     plat::log("[port] Gold Box Game Engine for PortMaster %s; games in %s\n", PM_VERSION, pm::games_root().c_str());
     settings_load(conf_dir, cfg);
 #ifdef __ANDROID__
@@ -3578,7 +3870,9 @@ int main(int argc, char** argv)
                   g.data_dir.c_str(), play::available(g.game) ? "" : " - not playable");
     // (a handheld's panel can report its real size only after the first
     // frames: let it settle before anything is made for its shape)
-    for (int k = 0; k < 6; ++k) {
+    // (the Android app: asked for its layout first, so the scan's page is its own - up to 1.5 s)
+    shell::state(shell::State::Pages);
+    for (int k = 0; k < 6 || (k < 75 && shell::wanted() && !shell::on()); ++k) {
         SDL_Event e;
         while (SDL_PollEvent(&e)) handle(e);
         video::resized();
@@ -3612,7 +3906,7 @@ int main(int argc, char** argv)
         // (the on-screen D-Pad's corners: diagonals while a fighter moves or aims)
         touchpad::set_diagonals(touch_ui && playing && screen == Screen::Play && !menu_open && keys.empty() &&
                                 play::fight_pad());
-        android_menu_tick();
+        android_ui_tick();
         // (the Android app: what is on screen - its Companion and pad follow; nothing elsewhere)
         shell::state(!playing ? shell::State::Pages
                      : in_title() ? shell::State::Titles
