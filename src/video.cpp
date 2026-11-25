@@ -15,6 +15,7 @@ SDL_Renderer* ren = nullptr;
 SDL_Texture*  tex = nullptr;        // 320 x 200, the frame as composed
 SDL_Texture*  big = nullptr;        // the frame at a whole multiple (sharp pixels, then smoothed to the panel)
 SDL_Texture*  side[2] = {nullptr, nullptr};     // the Companion beside the game (wide panels)
+int           side_used = kSideH;             // the party picture's rows in use (set_side_used)
 bool          side_on = false;
 SDL_Texture*  below = nullptr;                  // the Companion under the game (square panels)
 bool          below_on = false;
@@ -303,6 +304,8 @@ bool side_room()
     return ow - w >= 200;
 }
 
+void set_side_used(int rows) { side_used = rows < 1 ? 1 : rows > kSideH ? kSideH : rows; }
+
 void set_side(const uint32_t* top, const uint32_t* bottom)
 {
     const bool want = top != nullptr && side_room();
@@ -380,15 +383,23 @@ void draw_side()
         };
         if (shell_view == 3) {
             // (the app's column sideways - Tom, 2026-11-25: the map never made smaller for the party - the map
-            // as wide as the room at its top, the party under it as large as what is left lets it be)
-            int mw, mh, pw, ph;
+            // as wide as the room at its top; the party under it as wide as the map, its members' rows only - the
+            // empty rows under them cut off; made smaller only when even those don't fit)
+            int mw, mh;
             fit_in(strip.w, strip.h, mw, mh);
-            const int g = mh / 40;
-            fit_in(strip.w, strip.h - mh - g, pw, ph);
+            const int g = mh / 40, room = strip.h - mh - g;
             const SDL_Rect a{strip.x + (strip.w - mw) / 2, strip.y, mw, mh};
-            const SDL_Rect b{strip.x + (strip.w - pw) / 2, strip.y + mh + g, pw, ph};
             if (side[0]) SDL_RenderCopy(ren, side[0], nullptr, &a);
-            if (side[1] && ph > 0) SDL_RenderCopy(ren, side[1], nullptr, &b);
+            if (side[1] && room > 0) {
+                int pw = mw, ph = mh * side_used / kSideH;
+                if (ph > room) {
+                    pw = pw * room / ph;
+                    ph = room;
+                }
+                const SDL_Rect src{0, 0, kSideW, side_used};
+                const SDL_Rect b{strip.x + (strip.w - mw) / 2, strip.y + mh + g, pw, ph};
+                SDL_RenderCopy(ren, side[1], &src, &b);
+            }
             return;
         }
         const int n = shell_view == 0 ? 2 : 1;

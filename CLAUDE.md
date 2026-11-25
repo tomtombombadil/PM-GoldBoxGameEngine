@@ -302,7 +302,8 @@ and maintains it; it is the primary output of the Claude Project
   (a handheld keeps them on the main menu, Tom 2026-11-17); **Display › Game Chooser: Auto / Tiles / Cards**
   (`cfg.chooser`; Auto - tiles on a tablet; the chooser's own toggle sets it too, op 14; its value in the chooser
   text's head). The Companion's view 3 (`video.cpp`): the map as wide as the app's room at its top, the party under
-  it in what is left - "don't shrink the map to make them fit".
+  it - as wide as the map, right under it, its members' rows only (the empty rows below cut: `set_side_used`) -
+  "don't shrink the map to make them fit"; the party "justified like the map" (Tom, 2026-11-25).
 - **Where the games go must be plain to the player** (Tom: "GoldBox/games doesn't tell me where that folder
   is") and **the player can point the app at a folder of their own**: names as the phone and a PC show them
   ("Internal storage/GoldBox/games/", `shown_path`), never a bare relative path or /storage/emulated/0.

@@ -99,6 +99,9 @@ void set_backdrop(const uint32_t* argb, int top = 0);
 constexpr int kSideW = 208, kSideH = kH;
 bool side_room();
 void set_side(const uint32_t* top, const uint32_t* bottom);
+// How many of the party picture's rows its members use (from the top; the rest is empty) - the app's column
+// shows it as wide as the map, cut below them (Tom, 2026-11-25)
+void set_side_used(int rows);
 
 // A square or tall panel (1:1, 720 x 720 and the like - Tom, 2026-11-15):
 // the 4:3 game picture leaves room UNDER it; the game moves to the top and

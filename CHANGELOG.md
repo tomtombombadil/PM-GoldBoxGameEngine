@@ -3,6 +3,14 @@
 Every version of Gold Box Game Engine for PortMaster. A release's notes are
 its part of this file.
 
+## [0.18.1] - 2026-11-25
+
+Built on the CYD engine 0.217.0. **Android only - nothing changes on a handheld.**
+
+- The Companion's party in the app's column (view 3; Tom): as wide as the map, starting right under it, its
+  members' rows only (the empty rows under them cut off) - made smaller only when even those don't fit. Before, the
+  whole picture was shrunk to the room left and centred.
+
 ## [0.18.0] - 2026-11-25
 
 Built on the CYD engine 0.217.0. **Android only - nothing changes on a handheld.**

@@ -219,6 +219,10 @@ void draw_side(uint32_t now_ms)
     }
     pixels = buf[0];
     side_shown = true;
+    // (the rows the party's members take: the engine's Party view, rows of up to 26 from the top)
+    const int n = play::panel_members();
+    const int pitch = n ? ((kH - 1) / n > 26 ? 26 : (kH - 1) / n) : 0;
+    video::set_side_used(n ? 1 + n * pitch : 12);
     video::set_side(buf[0], buf[1]);
 }
 
