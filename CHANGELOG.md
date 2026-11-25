@@ -3,6 +3,18 @@
 Every version of Gold Box Game Engine for PortMaster. A release's notes are
 its part of this file.
 
+## [0.18.0] - 2026-11-25
+
+Built on the CYD engine 0.217.0. **Android only - nothing changes on a handheld.**
+
+- The Android app's menu (Tom, 2026-11-25): **Rescan Game Files and Clean Up Game Files under System** (a
+  handheld keeps them on the main menu); **Display › Game Chooser: Auto / Tiles / Cards** - all the games at
+  once or one at a time (Auto: tiles on a tablet), also set by the chooser's own toggle (op 14).
+- The Companion beside the game in the app's column: the map as wide as the column at its top, the party under it
+  in what is left (layout view 3) - the map never made smaller to fit the party.
+- System › Games Folder's words in the app name the folder as the phone does (Internal storage › GoldBox ›
+  games).
+
 ## [0.17.1] - 2026-11-24
 
 Built on the CYD engine 0.217.0. **Android only.**

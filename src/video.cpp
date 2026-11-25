@@ -44,7 +44,8 @@ int           safe[4] = {};
 // gives the game's room and the Companion's; nothing else decides then
 bool          shell_on = false;
 SDL_Rect      shell_game{0, 0, 0, 0}, shell_comp{0, 0, 0, 0};
-int           shell_view = 0;         // the Companion's pictures: 0 both, 1 the first (map / battle), 2 the party
+int           shell_view = 0;         // the Companion's pictures: 0 both, 1 the first (map / battle), 2 the party,
+                                      // 3 the first as wide as the room at its top, the party in what is left under it
 
 // The panel's size less the safe margins: where things may go
 void usable(int& x, int& y, int& w, int& h)
@@ -369,7 +370,6 @@ void draw_side()
     if (shell_on) {
         // (the app's room: one picture, or both - side by side or stacked, whichever shows them larger;
         // rows 1.2 tall as the game's)
-        const int n = shell_view == 0 ? 2 : 1;
         auto fit_in = [](int rw, int rh, int& w, int& h) {
             w = rw;
             h = w * kSideH * 6 / (kSideW * 5);
@@ -378,6 +378,20 @@ void draw_side()
                 w = h * kSideW * 5 / (kSideH * 6);
             }
         };
+        if (shell_view == 3) {
+            // (the app's column sideways - Tom, 2026-11-25: the map never made smaller for the party - the map
+            // as wide as the room at its top, the party under it as large as what is left lets it be)
+            int mw, mh, pw, ph;
+            fit_in(strip.w, strip.h, mw, mh);
+            const int g = mh / 40;
+            fit_in(strip.w, strip.h - mh - g, pw, ph);
+            const SDL_Rect a{strip.x + (strip.w - mw) / 2, strip.y, mw, mh};
+            const SDL_Rect b{strip.x + (strip.w - pw) / 2, strip.y + mh + g, pw, ph};
+            if (side[0]) SDL_RenderCopy(ren, side[0], nullptr, &a);
+            if (side[1] && ph > 0) SDL_RenderCopy(ren, side[1], nullptr, &b);
+            return;
+        }
+        const int n = shell_view == 0 ? 2 : 1;
         int aw, ah, bw, bh;
         fit_in(strip.w / n, strip.h, aw, ah);           // (side by side)
         fit_in(strip.w, strip.h / n, bw, bh);           // (stacked)
@@ -679,7 +693,7 @@ void set_shell(const SDL_Rect& game, const SDL_Rect& comp, int view)
     shell_on = game.w > 0 && game.h > 0;
     shell_game = game;
     shell_comp = comp;
-    shell_view = view < 0 || view > 2 ? 0 : view;
+    shell_view = view < 0 || view > 3 ? 0 : view;
     SDL_Log("[video] the app's layout: game %d,%d %dx%d, Companion %d,%d %dx%d (view %d)", game.x, game.y, game.w,
             game.h, comp.x, comp.y, comp.w, comp.h, shell_view);
     if (ren) layout();

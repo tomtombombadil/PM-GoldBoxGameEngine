@@ -224,6 +224,8 @@ controller". All three, any mix; nothing is touch's alone (the rule above stands
 - **Display - Screen Rotation** (Android): Auto (the device's, its rotation lock too) / Landscape / Portrait
   (`rotation` in settings.cfg; `rotation_apply`, the activity's requested orientation). The window is made
   resizable there, else SDL locks the screen to its first shape.
+- **Display - Game Chooser** (the Android app's; Tom, 2026-11-25): Auto (tiles on a tablet, cards on a phone) /
+  Tiles / Cards (`chooser` in settings.cfg; the chooser's text's head carries it; the app's toggle sets it, op 14).
 - Script steps `touch:x:y` / `swipe:dx:dy` (canvas pixels) for the smoke test.
 - **A camera cutout / notch** (Android; Tom's Pixel 10a, 2026-11-23): its safe margins (`video::set_safe`,
   from the activity's `cutoutInsets()`, asked about once a second by `safe_check`) are left black; the picture,
@@ -323,7 +325,8 @@ on screen the overlay is 320 again.
     Files, Check for Updates, Exit Game, Quit. At the game list: Display, Audio, Game Play,
     Cheats (Max Hit Points and Disable Race Level Limits only), Controls, System, Rescan Game Files,
     Clean Up Game Files, Check for Updates, Quit. (Rescan and Check for Updates on the top page
-    are the port's own - Tom, 2026-11-17: "not buried".)
+    are the port's own - Tom, 2026-11-17: "not buried".) **The Android app** (Tom, 2026-11-25): Rescan and
+    Clean Up under System instead (System: Games Folder, Rescan Game Files, Clean Up Game Files, Device Info).
   - **Display**: Picture (the fit, section 5).
   - **Audio**: Game Sound, AdLib Music, Volume.
   - **Game Play**: Original Games (a switch: on - every Enhancement, AD&D

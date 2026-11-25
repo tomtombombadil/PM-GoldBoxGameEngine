@@ -650,7 +650,7 @@ enum MenuItem : uint8_t {
     MResume,
     // the pages
     MDisplayPg, MAudioPg, MPlayPg, MJournal, MCheats, MQuickPg, MControlsPg, MSystemPg, MLeaveGame, MExit,
-    MDisplay, MRotation,                    // Display (MRotation: Android's)
+    MDisplay, MRotation, MChooser,          // Display (MRotation, MChooser: Android's)
     MSound, MMusic, MVolume,                // Audio
     MOriginal, MEnhancePg, MRulesPg, MFixGamesPg,       // Game Play
     MFont, MRolls, MSaveInfo, MAutoJoin, MKeepMem, MCampFix, MCoins, MOil, MAddInfo, MMoreGuys, MPortrait, MGallery,    // Enhancements
@@ -790,10 +790,11 @@ void menu_build()
         if (playing) add(MQuick);
         add(MControlsPg);
         add(MSystemPg);
-        // (the port's own, Tom 2026-11-17: on the main menu, "not buried")
+#ifndef __ANDROID__
+        // (the port's own, Tom 2026-11-17: on the main menu, "not buried" - a handheld's; the Android app has them
+        // under System, Tom 2026-11-25)
         add(MRescan);
         add(MClean);
-#ifndef __ANDROID__
         add(MUpdate);
 #endif
         if (playing) add(MLeaveGame);
@@ -803,6 +804,7 @@ void menu_build()
         add(MDisplay);      // (in the Android app's drawer: 4:3, Square Pixels, Stretch - the app places the Companion)
 #ifdef __ANDROID__
         add(MRotation);
+        if (shell::on()) add(MChooser);
 #endif
         break;
     case Page::Audio:
@@ -856,6 +858,8 @@ void menu_build()
     case Page::System:
 #ifdef __ANDROID__
         add(MFolder);
+        add(MRescan);
+        add(MClean);
 #endif
         add(MDevice);
 #ifndef __ANDROID__
@@ -931,6 +935,11 @@ void menu_label(const MItem& it, char* out, size_t cap)
                  video::fit_name(static_cast<video::Fit>(shell::on() && cfg.fit > 2 ? 0 : cfg.fit)));
         break;
     case MRotation: snprintf(out, cap, "Screen Rotation: %s", kRotation[cfg.rotation % 3]); break;
+    case MChooser: {
+        static const char* const kChooser[3] = {"Auto", "Tiles", "Cards"};
+        snprintf(out, cap, "Game Chooser: %s", kChooser[cfg.chooser % 3]);
+        break;
+    }
     case MSound: snprintf(out, cap, "Game Sound: %s", sound_name(sound_shown())); break;
     case MMusic: snprintf(out, cap, "AdLib Music: %s", cfg.music ? "On" : "Off"); break;
     case MVolume: snprintf(out, cap, "Volume: %d%%", cfg.volume); break;
@@ -1001,6 +1010,9 @@ const char* menu_help(const MItem& it)
     case MFont: return "The game's letters: its own, the engine's Clear (easier to read), Darkness's, or Clear Caps.";
     case MPadMoves: return "On: exploring, the D-pad walks and L1 R1 L2 R2 move the highlights. Off: the D-pad moves them.";
     case MSwap: return "Which of A and B chooses; the other goes back.";
+    case MChooser:
+        return "How the game chooser shows the games: Tiles - all at once; Cards - one at a time, swiped through; "
+               "Auto - tiles on a tablet, cards on a phone.";
     case MRotation:
         return "Auto: turns with the device (as its own rotation lock allows). Landscape or Portrait: stays that way "
                "however the device is held.";
@@ -1016,8 +1028,16 @@ const char* menu_help(const MItem& it)
                "tap a line to choose it; swipe to scroll; two fingers together = Start; the phone's Back = B.";
     case MFolder: {
         static std::string words;
-        words = "Your games: " + shown_path(pm::games_root()) +
-                "/ - Choose another folder: the game list closes and the folder screen opens.";
+        words = "Your games: " + shown_path(pm::games_root()) + "/";
+        if (shell::on()) {
+            // (the app's drawer: as the phone's file manager names it - "Internal storage › GoldBox › games")
+            std::string w;
+            for (char ch : words) w += ch == '/' ? std::string(" \xE2\x80\xBA ") : std::string(1, ch);
+            words = w.substr(0, w.size() - 5) + ".";
+        } else {
+            words += " -";
+        }
+        words += " Choose another folder: the game list closes and the folder screen opens.";
         return words.c_str();
     }
     case MControls: return "What each button does.";
@@ -2303,6 +2323,7 @@ void menu_change(int step)
         cfg.rotation = static_cast<uint8_t>((cfg.rotation + (step < 0 ? 2 : 1)) % 3);
         rotation_apply();
         break;
+    case MChooser: cfg.chooser = static_cast<uint8_t>((cfg.chooser + (step < 0 ? 2 : 1)) % 3); break;
     case MTouchPad:
         cfg.touch_pad = static_cast<uint8_t>((cfg.touch_pad + (step < 0 ? 2 : 1)) % 3);
         touch_pad_apply();
@@ -2580,7 +2601,8 @@ void menu_press(int b)
 // changed), its taps come back here as the buttons would act (android_op).
 // The screens stay this front end's: a controller still drives each.
 
-constexpr int kOpChooserPlay = 10, kOpLookAgain = 11, kOpChooserSelect = 12, kOpChooserContinue = 13;
+constexpr int kOpChooserPlay = 10, kOpLookAgain = 11, kOpChooserSelect = 12, kOpChooserContinue = 13,
+              kOpChooserMode = 14;
 void press(int b);
 
 void android_op(int op, int index, int value)
@@ -2605,6 +2627,12 @@ void android_op(int op, int index, int value)
         if (!slot) show_notice("Continue", "This game has no saved game yet - start it and save from Encamp.");
         else if (!play::continue_game(slot, cv, &why) && why) show_notice("Continue", why);
         else plat::log("[port] continued from saved game %c\n", slot);
+        return;
+    }
+    if (op == kOpChooserMode) {
+        // (the chooser's own toggle - Tiles 1 / Cards 2; the Display page's line shows the same)
+        cfg.chooser = static_cast<uint8_t>(value < 0 || value > 2 ? 0 : value);
+        settings_save(conf_dir, cfg);
         return;
     }
     if (op == kOpChooserSelect) {
@@ -2826,7 +2854,7 @@ std::string android_chooser_text()
         field(t, (shown_path(pm::games_root()) + "/").c_str());
         return t;
     }
-    t = "games\t" + std::to_string(game_sel);
+    t = "games\t" + std::to_string(game_sel) + "\t" + std::to_string(cfg.chooser % 3);
     for (const library::GameDir& g : games_found) {
         const std::string art = app_art_path(g);
         struct stat st;

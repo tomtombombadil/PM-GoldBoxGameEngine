@@ -298,6 +298,11 @@ and maintains it; it is the primary output of the Claude Project
   check with `menutext` on every page, at the game list and in a game. The chooser's pictures are made by the scan
   (`app_art_make`, APPART.IMG), never at the list. **Its order is by series** (Tom, 2026-11-24): the Realms four, Gateway, Treasures, the Krynn
   three - a tablet's grid has Krynn as its last row (`rescan`, Android only).
+- **The app's menu, Tom 2026-11-25** (Android only): Rescan Game Files and Clean Up Game Files under **System**
+  (a handheld keeps them on the main menu, Tom 2026-11-17); **Display › Game Chooser: Auto / Tiles / Cards**
+  (`cfg.chooser`; Auto - tiles on a tablet; the chooser's own toggle sets it too, op 14; its value in the chooser
+  text's head). The Companion's view 3 (`video.cpp`): the map as wide as the app's room at its top, the party under
+  it in what is left - "don't shrink the map to make them fit".
 - **Where the games go must be plain to the player** (Tom: "GoldBox/games doesn't tell me where that folder
   is") and **the player can point the app at a folder of their own**: names as the phone and a PC show them
   ("Internal storage/GoldBox/games/", `shown_path`), never a bare relative path or /storage/emulated/0.

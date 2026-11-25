@@ -13,6 +13,7 @@ struct Settings {
     bool    ab_set = false;     // the firmware's default was applied, or the player chose (never applied again)
     bool    music = true;       // the games' own music (the later games)
     bool    pad_moves = true;
+    uint8_t chooser = 0;        // Android: the game chooser - 0 Auto (tiles on a tablet), 1 Tiles, 2 Cards (Tom, 2026-11-25)
     uint8_t rotation = 0;       // Android: 0 Auto (the device's), 1 Landscape, 2 Portrait (Tom, 2026-11-23)
     uint8_t touch_pad = 0;
     uint8_t pad_size = 1;       // the on-screen buttons' size: 0 Small, 1 Medium, 2 Large, 3 Huge (Tom, 2026-11-23)

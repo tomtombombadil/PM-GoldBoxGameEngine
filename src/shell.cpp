@@ -194,7 +194,8 @@ JNIEXPORT void JNICALL Java_io_github_tomtombombadil_goldbox_GoldBoxActivity_nat
 }
 
 // Where the game goes (gx, gy, gw, gh) and the Companion (cx, cy, cw, ch; w 0: none), in the surface's pixels;
-// view: the Companion's pictures shown - 0 both, 1 the map (a fight: the battlefield), 2 the party
+// view: the Companion's pictures shown - 0 both, 1 the map (a fight: the battlefield), 2 the party, 3 both - the map
+// as wide as the room at its top, the party under it in what is left (the app's column sideways)
 JNIEXPORT void JNICALL Java_io_github_tomtombombadil_goldbox_GoldBoxActivity_nativeLayout(
     JNIEnv*, jclass, jint gx, jint gy, jint gw, jint gh, jint cx, jint cy, jint cw, jint ch, jint view)
 {
