@@ -7,9 +7,10 @@ its part of this file.
 
 Built on the CYD engine 0.217.0. **Android only - nothing changes on a handheld.**
 
-- The Companion's party in the app's column (view 3; Tom): as wide as the map, starting right under it, its
-  members' rows only (the empty rows under them cut off) - made smaller only when even those don't fit. Before, the
-  whole picture was shrunk to the room left and centred.
+- The Companion's party in the app's column (view 3; Tom): as wide as the map, starting right under the map's
+  "Locked Secret", its members' rows only (the empty rows under the map's legend and under the last member cut
+  off: `video::set_side_used`) - made smaller only when even those don't fit. Before, the whole picture was shrunk
+  to the room left and centred.
 
 ## [0.18.0] - 2026-11-25
 

@@ -23,6 +23,7 @@ uint32_t* pixels = buf[0];                  // the one being drawn
 int      pw = kW, ph = kH;                  // (its size)
 uint32_t sig = 0, sig2 = 0;
 bool     side_wanted = true;                // beside the game on a wide panel (Y: off / on)
+int      map_rows = kH;                     // the map's picture: its rows in use from the top (to the legend)
 bool     side_shown = false;
 bool     held = false;                      // the game's title screens: no Companion
 float    shown = 0;                         // how far out it is: 0 closed, 1 fully
@@ -82,6 +83,7 @@ void draw_map(int zx, int zy, int zw, int zh, bool square)
     const geo::Map* m = play::map();
     if (!m) {
         letters(zx + 8, zy + (square ? 8 : 40), "No map here.", video::kCream);
+        map_rows = zy + 52;
         return;
     }
     int cw = square ? (zh - 6) / m->h : (zw - 10) / m->w, ch = square ? cw : (zh - 24) / m->h;
@@ -149,6 +151,7 @@ void draw_map(int zx, int zy, int zw, int zh, bool square)
         }
     } else {
         const int ly = my + m->h * ch + 6;
+        map_rows = ly + 10;
         if (places) letters(zx + 4, ly, "Place", kPlace);
         else {
             letters(zx + 4, ly, "Locked", video::kWarn);
@@ -222,7 +225,8 @@ void draw_side(uint32_t now_ms)
     // (the rows the party's members take: the engine's Party view, rows of up to 26 from the top)
     const int n = play::panel_members();
     const int pitch = n ? ((kH - 1) / n > 26 ? 26 : (kH - 1) / n) : 0;
-    video::set_side_used(n ? 1 + n * pitch : 12);
+    // (the map to its legend; a fight's field stands at its picture's foot - all of it)
+    video::set_side_used(top == View::Map ? map_rows : kH, n ? 1 + n * pitch : 12);
     video::set_side(buf[0], buf[1]);
 }
 
