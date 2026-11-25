@@ -296,7 +296,8 @@ and maintains it; it is the primary output of the Claude Project
   screen or menu line of the port's own needs its lines in `android_*_text` and its taps in `android_op` in the
   same version** (Tom, 2026-11-24, after 0.15.0's drawer had left out menus: "Check your work for completeness") -
   check with `menutext` on every page, at the game list and in a game. The chooser's pictures are made by the scan
-  (`app_art_make`, APPART.IMG), never at the list.
+  (`app_art_make`, APPART.IMG), never at the list. **Its order is by series** (Tom, 2026-11-24): the Realms four, Gateway, Treasures, the Krynn
+  three - a tablet's grid has Krynn as its last row (`rescan`, Android only).
 - **Where the games go must be plain to the player** (Tom: "GoldBox/games doesn't tell me where that folder
   is") and **the player can point the app at a folder of their own**: names as the phone and a PC show them
   ("Internal storage/GoldBox/games/", `shown_path`), never a bare relative path or /storage/emulated/0.

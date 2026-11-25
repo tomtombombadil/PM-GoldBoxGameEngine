@@ -3,6 +3,13 @@
 Every version of Gold Box Game Engine for PortMaster. A release's notes are
 its part of this file.
 
+## [0.17.1] - 2026-11-24
+
+Built on the CYD engine 0.217.0. **Android only.**
+
+- The Android app's game chooser lists the games by series (Tom): Gateway and Treasures before the Krynn three,
+  so a tablet's last row is Krynn's.
+
 ## [0.17.0] - 2026-11-24
 
 Built on the CYD engine 0.217.0 (871d27c). **Android only - nothing changes on a handheld.**

@@ -10,6 +10,7 @@
 #include <SDL.h>
 
 #include <cctype>
+#include <algorithm>
 #include <cstdio>
 #include <sys/stat.h>
 #include <dirent.h>
@@ -2337,6 +2338,23 @@ void menu_change(int step)
 void rescan()
 {
     have_root = library::scan(games_found);
+#ifdef __ANDROID__
+    // (the app's chooser by series, Tom 2026-11-24: the Forgotten Realms four, the Savage Frontier two, then
+    // Krynn's three - a tablet's grid has Krynn as its whole last row)
+    auto rank = [](games::Game g) {
+        switch (g) {
+        case games::Game::GatewayToTheSavageFrontier: return 5;
+        case games::Game::TreasuresOfTheSavageFrontier: return 6;
+        case games::Game::ChampionsOfKrynn: return 7;
+        case games::Game::DeathKnightsOfKrynn: return 8;
+        case games::Game::DarkQueenOfKrynn: return 9;
+        case games::Game::Unknown: return 100;
+        default: return static_cast<int>(g) < 5 ? static_cast<int>(g) : 10 + static_cast<int>(g);
+        }
+    };
+    std::stable_sort(games_found.begin(), games_found.end(),
+                     [&](const library::GameDir& a, const library::GameDir& b) { return rank(a.game) < rank(b.game); });
+#endif
     if (game_sel >= static_cast<int>(games_found.size())) game_sel = 0;
 }
 

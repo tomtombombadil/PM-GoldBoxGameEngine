@@ -204,6 +204,9 @@ controller". All three, any mix; nothing is touch's alone (the rule above stands
   game and goes straight into its newest saved game (past the titles and the party menu); the chooser shows it for
   a game with a saved game - noted in `_CYD/<folder>/CONTINUE.TXT` whenever a game opens and is left
   (`continue_note`). None found at the tap: a notice says so.
+  **The chooser's order** (Tom, 2026-11-24): by series - PoolRad, Curse, Secret, Darkness, Gateway, Treasures,
+  Champions, Knights, Queen (a tablet's three rows: the Realms, ..., Krynn the last row) - `rescan`, Android only;
+  the handhelds' list keeps its order.
 - **Touching the port's own screens** (`touch_tap` / `touch_swipe` in main.cpp - each the buttons a player
   would press there): a list's line tapped = picked and chosen at once (A) - one tap (Tom, 2026-11-23: "be
   more Android-friendly"); outside a page's box or its title = B;
