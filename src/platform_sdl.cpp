@@ -183,6 +183,13 @@ bool remove(const char* path) { return ::remove(pm::host_path(path).c_str()) == 
 // When the file was last written, as the player reads a date - the engine's
 // Save Slot Info shows it beside each save ("Nov 17 2026 9:41 PM", the
 // device's local time; the handhelds have a clock, the boards none)
+uint32_t file_stamp(const char* path)
+{
+    struct stat st;
+    if (stat(pm::host_path(path).c_str(), &st) != 0) return 0;
+    return static_cast<uint32_t>(st.st_mtime);
+}
+
 bool file_time(const char* path, char* out, size_t cap)
 {
     if (cap) out[0] = 0;

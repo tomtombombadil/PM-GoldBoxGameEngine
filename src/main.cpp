@@ -1907,9 +1907,31 @@ bool discover(bool all, bool pictures = true)
 
 std::string card_dir(const library::GameDir& g) { return std::string(games::kRootDir) + "/" + g.data_dir; }
 
+// Continue on the Android app's chooser (Tom, 2026-11-24): the game's newest
+// saved game, noted in _CYD/<folder>/CONTINUE.TXT whenever a game opens and
+// closes - the chooser shows Continue for a game with one; the slot itself is
+// looked for anew at the tap (play::newest_save). Android only.
+void continue_note()
+{
+#ifdef __ANDROID__
+    if (!playing || games_found.empty()) return;
+    const std::string f = library::cache_dir(games_found[game_sel]) + "/CONTINUE.TXT";
+    const char slot = play::newest_save();
+    if (!slot) {
+        plat::remove(f.c_str());
+        return;
+    }
+    if (plat::File out = plat::open(f.c_str(), "w")) {
+        out.write(reinterpret_cast<const uint8_t*>(&slot), 1);
+        out.close();
+    }
+#endif
+}
+
 void leave_game()
 {
     if (!playing) return;
+    continue_note();
     if (jour::active()) jour::close(cv);
     journal_queue.clear();
     jlist_open = false;
@@ -1983,6 +2005,7 @@ void start_game()
     screen = Screen::Play;
     sync_palette(true);
     plat::log("[port] playing %s from games/%s\n", games::title(here), g.data_dir.c_str());
+    continue_note();
 }
 
 void message(const char* title, const std::string& body);
@@ -2539,7 +2562,7 @@ void menu_press(int b)
 // changed), its taps come back here as the buttons would act (android_op).
 // The screens stay this front end's: a controller still drives each.
 
-constexpr int kOpChooserPlay = 10, kOpLookAgain = 11, kOpChooserSelect = 12;
+constexpr int kOpChooserPlay = 10, kOpLookAgain = 11, kOpChooserSelect = 12, kOpChooserContinue = 13;
 void press(int b);
 
 void android_op(int op, int index, int value)
@@ -2550,6 +2573,20 @@ void android_op(int op, int index, int value)
             game_sel = index;
             press(BA);
         }
+        return;
+    }
+    if (op == kOpChooserContinue) {
+        // Continue: the game opened and its newest save loaded, past the titles and the party menu
+        const int n = static_cast<int>(games_found.size());
+        if (screen != Screen::Games || menu_open || notice.open || index < 0 || index >= n) return;
+        game_sel = index;
+        start_game();
+        if (!playing) return;
+        const char slot = play::newest_save();
+        const char* why = nullptr;
+        if (!slot) show_notice("Continue", "This game has no saved game yet - start it and save from Encamp.");
+        else if (!play::continue_game(slot, cv, &why) && why) show_notice("Continue", why);
+        else plat::log("[port] continued from saved game %c\n", slot);
         return;
     }
     if (op == kOpChooserSelect) {
@@ -2760,7 +2797,7 @@ std::string android_notice_text()
 // The game chooser (screen Games): "games", the chosen one, then a line a
 // game - its name, short name, playable (1 / 0), its picture's file as the
 // phone has it ("" none), the picture's kind (2 box art, 1 logo, 0 none), its
-// release; with none found: "none", the folder as the phone shows it. "off":
+// release, Continue (1: it has a saved game - CONTINUE.TXT); with none found: "none", the folder as the phone shows it. "off":
 // not on the chooser.
 std::string android_chooser_text()
 {
@@ -2786,6 +2823,7 @@ std::string android_chooser_text()
         if (there) field(t, pm::host_path(art.c_str()).c_str());
         t += "\t" + std::to_string(kind) + "\t";
         field(t, release_name(g));
+        t += plat::exists((library::cache_dir(g) + "/CONTINUE.TXT").c_str()) ? "\t1" : "\t0";
     }
     return t;
 }
@@ -3686,6 +3724,12 @@ void script_tick(Uint32 now)
         // (journal:J:12 - that entry opened, as if the game had just mentioned it)
         journal_queue.push_back(JRef{t[8], atoi(t.c_str() + 10)});
         journal_next();
+    } else if (t == "continue") {
+        // (the Android chooser's Continue in an open game: its newest save, past the titles - to check it here)
+        const char slot = play::newest_save();
+        const char* why = nullptr;
+        const bool ok = slot && play::continue_game(slot, cv, &why);
+        fprintf(stderr, "[continue] slot %c: %s%s\n", slot ? slot : '-', ok ? "in the game" : "not: ", ok ? "" : why ? why : "no save");
     } else if (t == "menutext") {
         // (the Android drawer's view of the open menu page, to the log - to check it off the phone)
         fprintf(stderr, "[menutext] %s\n[/menutext]\n", android_menu_text().c_str());

@@ -552,7 +552,8 @@ and maintains it; it is the primary output of the Claude Project
   the game had mentioned it.
 - `layout:gx:gy:gw:gh:cx:cy:cw:ch:view` (script step): the Android app's layout, to see the game and the Companion
   in it off the phone; `menutext`: the drawer's text of what is open (the menu's page, Device Info, Quick Actions
-  ...) to stderr between `[menutext]` / `[/menutext]`.
+  ...) to stderr between `[menutext]` / `[/menutext]`; `continue`: the chooser's Continue in the open game
+  (`[continue] slot X: in the game` to stderr).
 - `--script` steps: button names (`up down left right a b x y l1 r1 l2 r2
   start select`), `hold:<dir>` / `let:<dir>`, `wait:<ms>`, `tap:x:y`,
   `type:TEXT`, `menu:<line's start, _ for a space>` (the open Start

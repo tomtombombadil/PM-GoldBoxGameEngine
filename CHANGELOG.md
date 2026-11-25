@@ -3,6 +3,21 @@
 Every version of Gold Box Game Engine for PortMaster. A release's notes are
 its part of this file.
 
+## [0.17.0] - 2026-11-24
+
+Built on the CYD engine 0.217.0 (871d27c). **Android only - nothing changes on a handheld.**
+
+- **Continue** on the Android app's game chooser (Tom, 2026-11-24): straight into the game's newest saved game,
+  past the titles and the party menu - the engine's new `play::newest_save` / `play::continue_game`. The chooser
+  shows it for a game that has a saved game (`_CYD/<folder>/CONTINUE.TXT`, noted when a game opens and closes).
+- From engine 0.216.3 / .4: a flight's runners can fight again; Resist Fire / Resist Cold halve their damage in
+  Secret, Champions, Darkness, Treasures and Death Knights.
+- Test step `continue` (the chooser's Continue in an open game).
+
+Checked: the smoke test; `continue` with the nine GOG copies on the PC build - eight went into their game at
+their newest save (Curse, PoolRad, Secret, Darkness, Champions, Death Knights, Dark Queen, Treasures; shots looked
+at); Gateway's GOG copy has no saved game and said so.
+
 ## [0.16.0] - 2026-11-24
 
 Built on the CYD engine 0.216.2. **Android only - nothing changes on a handheld.**

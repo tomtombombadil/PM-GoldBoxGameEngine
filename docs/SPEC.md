@@ -200,6 +200,10 @@ controller". All three, any mix; nothing is touch's alone (the rule above stands
   gets it at the next start, "Preparing the picture for ..."); the chooser only reads them. They don't follow
   the screen's shape (no picture remade on a turn). Controls - Button Size sizes the app's pad (Button Opacity is
   the overlay's only). The start waits up to 1.5 s for the app's layout so the first scan's page is the app's.
+  **Continue** (v0.17.0; engine 0.217.0's `play::newest_save` / `continue_game`): the chooser's op 13 opens the
+  game and goes straight into its newest saved game (past the titles and the party menu); the chooser shows it for
+  a game with a saved game - noted in `_CYD/<folder>/CONTINUE.TXT` whenever a game opens and is left
+  (`continue_note`). None found at the tap: a notice says so.
 - **Touching the port's own screens** (`touch_tap` / `touch_swipe` in main.cpp - each the buttons a player
   would press there): a list's line tapped = picked and chosen at once (A) - one tap (Tom, 2026-11-23: "be
   more Android-friendly"); outside a page's box or its title = B;
