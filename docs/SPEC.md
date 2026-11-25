@@ -175,7 +175,8 @@ controller". All three, any mix; nothing is touch's alone (the rule above stands
   once the app has sent a layout, the app draws the pad (8 ways - the corners only in a fight -, OK, Back), the
   edge handles and the panels in Android's views; the front end draws the game in the app's rectangle and the
   Companion's pictures in its other (one - the map / battlefield or the party - or both). The overlay above is
-  then never shown, and Display - Picture and Controls' button lines leave the menu. The app's pad sends the
+  then never shown; Display - Picture offers 4:3 / Square Pixels / Stretch only (the app places the Companion) and
+  Controls keeps Button Size (the app's pad) - On-Screen Buttons and Button Opacity are the overlay's, gone. The app's pad sends the
   front end's buttons (A / B never swapped); Y on a controller asks the app for its Companion. The front end
   tells the app what is on screen: its own pages, a game's titles, play, a fighter's move / aim.
 - **The Android app's menu drawer** (Tom, 2026-11-24, the redesign's stage 2; v0.15.0): once the app has laid
@@ -183,10 +184,10 @@ controller". All three, any mix; nothing is touch's alone (the rule above stands
   pages are shown in the app's drawer from the left, not drawn on the game: the front end sends each page (its
   title, the highlighted line, each line's kind - a page, a switch, a choice, the volume, an action - its name,
   value and words: `android_menu_tick`) and takes the drawer's taps as the buttons would act on that line
-  (`android_menu`). A controller still moves the highlight and changes values; the drawer follows. The Button
-  Guide, Device Info, notices, the journal list and Quick Actions are still the front end's own screens (the
-  drawer steps aside). The volume: a slider, - / + (5 a press), mute (the app keeps the level to come back to).
-  The Display page is gone there: Screen Rotation stands on the top page.
+  (`android_op` since v0.16.0). A controller still moves the highlight and changes values; the drawer follows.
+  The volume: a slider, - / + (5 a press), mute (the app keeps the level to come back to). (v0.15.0 left out the
+  Display page, Button Size and Back to Game - put back in v0.16.0; the screens it left to the front end are the
+  app's since v0.16.0, below.)
 - **The Android app's own screens** (Tom, 2026-11-24, the redesign's stage 3; v0.16.0): once the app has laid the
   screen out, every screen of the port's own is shown by the app in Android's views and none is drawn here - the
   menu's pages and also Device Info, the Button Guide, the journal list and Quick Actions (the drawer, channel 0),
