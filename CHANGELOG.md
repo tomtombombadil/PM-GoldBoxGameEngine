@@ -3,6 +3,24 @@
 Every version of Gold Box Game Engine for PortMaster. A release's notes are
 its part of this file.
 
+## [0.19.6] - 2026-11-26
+
+Built on the CYD engine 0.221.2.
+
+- **Treasures: a new character starts as in the original.** Create New Character gave Darkness's 1,500,001
+  experience - a new thief came out at level 11. The original gives 22,600 (level 5 or 6; a new elf thief made in
+  DOSBox: level 6, 22,600). It has been wrong since Treasures was added; a party brought over from Gateway was
+  never touched by it. Checked through the port: six characters made by buttons, Modify, Begin Adventuring, the
+  Merchant, 41 steps (newgame_test). Gateway's and Secret's new characters compared with DOSBox too: the same
+  (level 2 at 3,000; an elf fighter level 5 at 200,000).
+- **A new Game Fix, Poison Save Bonus** (every game but PoolRad, on by default): dwarves' and halflings'
+  Constitution bonus against poison makes the save easier, as the Players Handbook has it (pp. 15, 17). The
+  originals add the bonus to the number the roll must reach, which makes it harder - read in Curse's code. Off, or
+  with Original Games, the originals' way. Its line is in the menu; its effect was checked in the engine's rule
+  checks, not by the port's buttons.
+- tools/newgame_test.py: finds the made character in Treasures' Add list (the sheet beside the list had its name
+  too, and the test paged for ever).
+
 ## [0.19.5] - 2026-11-26
 
 Built on the CYD engine 0.220.0.

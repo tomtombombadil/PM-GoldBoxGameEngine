@@ -46,7 +46,10 @@ def add(r, name):
     r.do("a,wait:600")
     for i in range(40):
         if ex.members(p) > before: break
-        at = p.find(name)
+        # (the list's own column: Treasures' / Darkness's Add list shows the lit character's sheet
+        # beside it, its name at the top - found first, never lit, and the test paged for ever)
+        at = next(((y, t.upper().find(name.upper())) for y, t in enumerate(p.text[:23])
+                   if 0 <= t.upper().find(name.upper()) < 18), None)
         if at and at[0] < 23:
             if p.lit_at(*at, len(name)): how = "name"; r.do("a,wait:600")
             else: r.do("r2,wait:120")

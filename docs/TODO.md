@@ -571,3 +571,8 @@ Tick off with the version that did it. Never ask Tom the same thing twice.
       Pool, the Girdle traded and readied: 40); now Game Fixes' Imported Hit Points (Curse, on by default; playsim:
       on 64, off 40). The port's menu shows the line (menutext); its effect by the port's buttons not yet seen.
       Secret's demo party seen drawn through the port (demo_shots, game 3).
+- [x] v0.19.6 (engine 0.221.2): Treasures' new characters at 22,600 experience (they got Darkness's 1,500,001 -
+      found when the engine's rule checks were run for every game); Game Fixes' Poison Save Bonus. newgame_test on
+      Treasures by the port's buttons: six made, added, modified, Begin, the Merchant, 41 steps, 0 "!!".
+      Not compared with DOSBox: a new character's level in Darkness, Champions, Knights, Queen (Curse, Secret,
+      Gateway, Treasures were).
