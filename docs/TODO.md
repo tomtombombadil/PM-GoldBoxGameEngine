@@ -566,3 +566,8 @@ Tick off with the version that did it. Never ask Tom the same thing twice.
       and the port's screen after, the same names whole. Found while checking the old "RADIU" note.
 - [x] Gateway's menu line after a town is entered from the overland's Move ("Move (Use arrow keys): Exit" stays):
       the original does the same (DOSBox, Port Llast from the overland) - no fault.
+- [x] v0.19.5 (engine 0.220.0): Curse's Girdle of the Dwarves cutting an imported PoolRad character's hit points
+      (Tom's Thorin, 56 -> 40) - the original's own (DOSBox: a PoolRad dwarf fighter 8 added by Add Character -
+      Pool, the Girdle traded and readied: 40); now Game Fixes' Imported Hit Points (Curse, on by default; playsim:
+      on 64, off 40). The port's menu shows the line (menutext); its effect by the port's buttons not yet seen.
+      Secret's demo party seen drawn through the port (demo_shots, game 3).

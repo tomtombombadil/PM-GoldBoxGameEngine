@@ -3,6 +3,19 @@
 Every version of Gold Box Game Engine for PortMaster. A release's notes are
 its part of this file.
 
+## [0.19.5] - 2026-11-26
+
+Built on the CYD engine 0.220.0.
+
+- **Curse: a PoolRad character and the Girdle of the Dwarves.** A character brought over from PoolRad lost hit
+  points when the Girdle was readied (56 down to 40). The original does exactly that - seen in DOSBox with a PoolRad
+  dwarf fighter added by Add Character - Pool. It is now a Game Fix, **Imported Hit Points** (Start - Game Play -
+  Game Fixes - Curse, on by default): the character keeps the hit points its Constitution gives (64 in the same
+  test). Off, or with Original Games, the original's drop. The line is in the port's menu; its effect was seen in
+  the engine's playsim, not yet by the port's buttons.
+- **Secret's demo**: the party is drawn with its pictures (they were black figures) - seen through the port.
+- The Dark Queen: the other session's fixes (a walled side's door bits, Save Slot Info's position).
+
 ## [0.19.4] - 2026-11-26
 
 Built on the CYD engine 0.219.3.
