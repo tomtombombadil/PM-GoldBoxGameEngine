@@ -16,6 +16,8 @@ SDL_Texture*  tex = nullptr;        // 320 x 200, the frame as composed
 SDL_Texture*  big = nullptr;        // the frame at a whole multiple (sharp pixels, then smoothed to the panel)
 SDL_Texture*  side[2] = {nullptr, nullptr};     // the Companion beside the game (wide panels)
 int           side_used[2] = {kSideH, kSideH};   // the two pictures' rows in use from the top (set_side_used)
+int           shell_pics[28] = {};                // view 4: the app's placing (set_shell_pics)
+int           shell_pics_n = 0;
 bool          side_on = false;
 SDL_Texture*  below = nullptr;                  // the Companion under the game (square panels)
 bool          below_on = false;
@@ -385,6 +387,22 @@ void draw_side()
                 w = h * kSideW * 5 / (kSideH * 6);
             }
         };
+        if (shell_view == 4) {
+            // (the app placed each picture - Tom, 2026-11-25 evening: the Companion laid out by rule on every
+            // screen; the app knows the room, the rows in use come from here)
+            for (int i = 0; i < shell_pics_n; ++i) {
+                const int* q = &shell_pics[i * 7];
+                SDL_Texture* t = side[q[0] ? 1 : 0];
+                if (!t || q[3] <= 0 || q[4] <= 0) continue;
+                int top = q[5] < 0 ? 0 : q[5] > kSideH - 1 ? kSideH - 1 : q[5];
+                int rows = q[6] < 1 ? 1 : q[6];
+                if (top + rows > kSideH) rows = kSideH - top;
+                const SDL_Rect src{0, top, kSideW, rows};
+                const SDL_Rect dst{q[1], q[2], q[3], q[4]};
+                SDL_RenderCopy(ren, t, &src, &dst);
+            }
+            return;
+        }
         if (shell_view == 3) {
             // (the app's column sideways - Tom, 2026-11-25: the map never made smaller for the party - the map
             // as wide as the room at its top; the party under it as wide as the map, its members' rows only - the
@@ -703,15 +721,27 @@ void output_size(int& w, int& h)
     if (ren) SDL_GetRendererOutputSize(ren, &w, &h);
 }
 
+bool shell_pics_new = false;            // (set_shell_pics changed them: set_shell lays out again)
+
+void set_shell_pics(const int* v, int n)
+{
+    n = n < 0 ? 0 : n > 4 ? 4 : n;
+    if (n == shell_pics_n && memcmp(v, shell_pics, sizeof(int) * 7 * static_cast<size_t>(n)) == 0) return;
+    shell_pics_n = n;
+    for (int i = 0; i < shell_pics_n * 7; ++i) shell_pics[i] = v[i];
+    shell_pics_new = true;
+}
+
 void set_shell(const SDL_Rect& game, const SDL_Rect& comp, int view)
 {
     const bool same = shell_on && memcmp(&game, &shell_game, sizeof game) == 0 &&
-                      memcmp(&comp, &shell_comp, sizeof comp) == 0 && view == shell_view;
+                      memcmp(&comp, &shell_comp, sizeof comp) == 0 && view == shell_view && !shell_pics_new;
+    shell_pics_new = false;
     if (same) return;
     shell_on = game.w > 0 && game.h > 0;
     shell_game = game;
     shell_comp = comp;
-    shell_view = view < 0 || view > 3 ? 0 : view;
+    shell_view = view < 0 || view > 4 ? 0 : view;
     SDL_Log("[video] the app's layout: game %d,%d %dx%d, Companion %d,%d %dx%d (view %d)", game.x, game.y, game.w,
             game.h, comp.x, comp.y, comp.w, comp.h, shell_view);
     if (ren) layout();

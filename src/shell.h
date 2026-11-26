@@ -50,7 +50,8 @@ void pad_style(int size, int alpha);
 // it changed): 0 the drawer's page (the menu, Device Info, the Button Guide,
 // the journal list, Quick Actions), 1 a notice / message, 2 the game chooser,
 // 3 the scan's page - main.cpp's android_* say each one's lines
-enum Channel : int { ChDrawer = 0, ChNotice = 1, ChChooser = 2, ChScan = 3, ChCount = 4 };
+// 4 the Companion's pictures' rows in use (the app lays them out), 5 an open journal entry (the app shows it)
+enum Channel : int { ChDrawer = 0, ChNotice = 1, ChChooser = 2, ChScan = 3, ChCompanion = 4, ChJournal = 5, ChCount = 6 };
 void text(int channel, const std::string& t);
 
 // The app's picture of a game (the scan's step): the box art's JPEG decoded

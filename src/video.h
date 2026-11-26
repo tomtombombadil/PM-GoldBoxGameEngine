@@ -129,6 +129,8 @@ void set_safe(int left, int top, int right, int bottom);
 // party. Once given, these decide where everything goes (the safe margins,
 // Display - Picture's Right / Below, the on-screen buttons no longer do)
 void set_shell(const SDL_Rect& game, const SDL_Rect& comp, int view);
+// The app's own placing of the Companion's pictures (view 4): n groups of (which, x, y, w, h, source top, rows)
+void set_shell_pics(const int* v, int n);
 
 // The renderer's size in pixels (the whole panel); the window's in its points
 void output_size(int& w, int& h);

@@ -7,8 +7,10 @@
 #include "platform/file.h"
 #include "platform/platform.h"
 
+#include "shell.h"
 #include "video.h"
 
+#include <algorithm>
 #include <cstdio>
 #include <cstring>
 #include <memory>
@@ -694,21 +696,27 @@ bool load(pic::Canvas& game, std::string& why)
             ok = ok && src.read_at(p.offset, reinterpret_cast<uint8_t*>(&text[at]), n) == n;
             text += "\n\n";
         }
-        // The game's own text screen, the game screen kept meanwhile
-        if (ok && saved.empty()) {
+        // The game's own text screen, the game screen kept meanwhile (the Android app shows the text itself)
+        if (shell::on()) {
+            game_look = ok;
+            if (ok) layout_text();
+        } else if (ok && saved.empty()) {
             saved.assign(game.px, game.px + static_cast<size_t>(video::kW) * video::kH);
             saved_bpp = game.bpp;
         }
-        ok = ok && play::text_screen(game);
-        game_look = ok;
-        if (ok) layout_text();
+        if (!shell::on()) {
+            ok = ok && play::text_screen(game);
+            game_look = ok;
+            if (ok) layout_text();
+        }
     } else {
         // A map? The scanned editions' tables mark them; a Steam entry's
         // picture (the Companion's JE_nnn.jpg) is one
         const journal::Table* t = journal::find_table(info.pdf_id);
         entry_map = t ? journal::is_map(*t, open_kind, open_number) : true;
-        ok = make_doc(src, info, first, count, Zoom::Width);
-        if (ok) view.assign(static_cast<size_t>(video::kBackW) * video::kBackH, 0xFF000000u);
+        // (the Android app: its own viewer from the pieces themselves - app_entry; no page made here)
+        ok = shell::on() || make_doc(src, info, first, count, Zoom::Width);
+        if (ok && !shell::on()) view.assign(static_cast<size_t>(video::kBackW) * video::kBackH, 0xFF000000u);
     }
     f.close();
     if (!ok) why = std::string("There was a problem showing ") + named + ". Read it in your Adventurer's Journal.";
@@ -853,6 +861,80 @@ bool draw(pic::Canvas& game)
     snprintf(keys, sizeof keys, "X %s  B Back", kZoom[static_cast<int>(pic_zoom)]);
     video::text_at(video::kW - static_cast<int>(strlen(keys)) * 8, video::kH - 9, keys, video::kMuted);
     return false;
+}
+
+std::string app_entry(int font)
+{
+    std::string out = "journal\t";
+    out += title;
+    out += "\t" + std::to_string(font < 0 || font > 3 ? 0 : font) + "\n";
+    plat::File f = plat::open((open_cache + "/JOURNAL.DAT").c_str());
+    if (!f) return out;
+    plat::FileSource src(f);
+    journal::Info info;
+    int first = 0, count = 0;
+    if (!journal::read_info(src, info) || !journal::find(src, info, open_kind, open_number, &first, &count)) {
+        f.close();
+        return out;
+    }
+    for (int i = 0; i < count && i < 64; ++i) {
+        journal::PieceInfo p;
+        if (!journal::piece(src, info, first + i, p)) break;
+        if (p.text()) {
+            const size_t n = static_cast<size_t>(p.h < 16000 ? p.h : 16000);
+            std::string t(n, '\0');
+            if (src.read_at(p.offset, reinterpret_cast<uint8_t*>(&t[0]), n) != n) break;
+            out += "T\t";
+            for (char c : t) out += c == '\n' ? '\x1f' : c == '\t' ? ' ' : c == '\r' ? ' ' : c;
+            out += "\n";
+            continue;
+        }
+        if (p.w <= 0 || p.w > 8000 || p.h <= 0 || p.h > 40000) continue;
+        // The picture as it was scanned (its levels in colour), made at most 2400 across - kept as a file the
+        // app opens; made once
+        char name[48];
+        snprintf(name, sizeof name, "/JE_%c%03d_%02d.IMG", open_kind, open_number % 1000, i);
+        const std::string path = open_cache + name;
+        const int k = (p.w + 2399) / 2400;                      // (every k x k scan pixels one)
+        const int w = p.w / k > 0 ? p.w / k : 1, h = p.h / k > 0 ? p.h / k : 1;
+        if (!plat::exists(path.c_str())) {
+            std::vector<uint8_t> row(static_cast<size_t>(p.w)), rgba(static_cast<size_t>(w) * h * 4);
+            const int black = journal::piece_black(src, p, row.data());
+            uint8_t lut[256][3];
+            for (int v = 0; v < 256; ++v) journal::level_rgb(v, black, &lut[v][0], &lut[v][1], &lut[v][2]);
+            std::vector<uint32_t> acc(static_cast<size_t>(w) * 3);
+            bool ok = true;
+            for (int y = 0; y < h && ok; ++y) {
+                std::fill(acc.begin(), acc.end(), 0u);
+                for (int j = 0; j < k; ++j) {
+                    const uint32_t sy = static_cast<uint32_t>(y * k + j);
+                    if (src.read_at(p.offset + sy * static_cast<uint32_t>(p.w), row.data(), row.size()) != row.size()) {
+                        ok = false;
+                        break;
+                    }
+                    for (int x = 0; x < w; ++x)
+                        for (int q = 0; q < k; ++q) {
+                            const uint8_t* c = lut[row[static_cast<size_t>(x * k + q)]];
+                            acc[x * 3] += c[0];
+                            acc[x * 3 + 1] += c[1];
+                            acc[x * 3 + 2] += c[2];
+                        }
+                }
+                const uint32_t n = static_cast<uint32_t>(k * k);
+                for (int x = 0; x < w; ++x) {
+                    uint8_t* o = &rgba[(static_cast<size_t>(y) * w + x) * 4];
+                    o[0] = static_cast<uint8_t>(acc[x * 3] / n);
+                    o[1] = static_cast<uint8_t>(acc[x * 3 + 1] / n);
+                    o[2] = static_cast<uint8_t>(acc[x * 3 + 2] / n);
+                    o[3] = 255;
+                }
+            }
+            if (!ok || !shell::save_art("", rgba.data(), w, h, path)) continue;
+        }
+        out += "P\t" + path + "\t" + std::to_string(w) + "\t" + std::to_string(h) + "\n";
+    }
+    f.close();
+    return out;
 }
 
 } // namespace jour

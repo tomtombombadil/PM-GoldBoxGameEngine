@@ -43,6 +43,7 @@ bool settings_load(const std::string& dir, Settings& s)
         else if (!strcmp(line, "swap_ab")) s.swap_ab = v != 0;
         else if (!strcmp(line, "ab_set")) s.ab_set = v != 0;
         else if (!strcmp(line, "pad_moves")) s.pad_moves = v != 0;
+        else if (!strcmp(line, "journal_font")) s.journal_font = static_cast<uint8_t>(v < 0 || v > 3 ? 0 : v);
         else if (!strcmp(line, "chooser")) s.chooser = static_cast<uint8_t>(v < 0 || v > 2 ? 0 : v);
         else if (!strcmp(line, "rotation")) s.rotation = static_cast<uint8_t>(v < 0 || v > 2 ? 0 : v);
         else if (!strcmp(line, "touch_pad")) s.touch_pad = static_cast<uint8_t>(v < 0 || v > 2 ? 0 : v);
@@ -79,7 +80,8 @@ bool settings_save(const std::string& dir, const Settings& s)
     if (!f) return false;
     fprintf(f, "fit=%d\nsound=%d\nvolume=%d\nfont=%d\nswap_ab=%d\npad_moves=%d\n", s.fit, s.sound, s.volume, s.font,
             s.swap_ab ? 1 : 0, s.pad_moves ? 1 : 0);
-    fprintf(f, "touch_pad=%d\nrotation=%d\nchooser=%d\n", s.touch_pad, s.rotation, s.chooser);
+    fprintf(f, "touch_pad=%d\nrotation=%d\nchooser=%d\njournal_font=%d\n", s.touch_pad, s.rotation, s.chooser,
+            s.journal_font);
     fprintf(f, "fit_set=%d\npad_size=%d\npad_alpha=%d\npad_hidden=%d\n", s.fit_set ? 1 : 0, s.pad_size, s.pad_alpha,
             s.pad_hidden ? 1 : 0);
     fprintf(f, "music=%d\ncomforts_off=%d\nmax_hp=%d\nreply_asked=%d\nab_set=%d\nreply_email=%s\n", s.music ? 1 : 0, s.comforts_off,

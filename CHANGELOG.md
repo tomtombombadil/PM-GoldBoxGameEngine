@@ -3,6 +3,22 @@
 Every version of Gold Box Game Engine for PortMaster. A release's notes are
 its part of this file.
 
+## [0.19.0] - 2026-11-25
+
+Built on the CYD engine 0.217.0. **Android only - nothing changes on a handheld.**
+
+- **The journal, Android's own** (Tom): the app shows an entry itself (channel 5, `jour::app_entry`) - a text
+  entry's words, a picture entry's scans saved once as pictures (at most 2400 across) for the app's viewer. The
+  game's own text screen, its "X Width  B Back" line and its entry number / % line are not drawn on Android. The
+  app's close is op 15 (the journal's B).
+- **Display › Journal Font: Journal / Book / Serif / Plain** (Android): the type the app shows a text entry in
+  (`journal_font` in the settings).
+- **System › About** (Android): the app's, the front end's and the engine's versions and repos, the licence, the
+  credits (`--app-version` from the app).
+- **The Companion placed by the app** (layout view 4, `nativePictures`): the app lays the map and the party out
+  by rule for every screen - each picture's place and the rows of it shown; the front end says what the pictures
+  hold (channel 4: the map's rows in use, the party's members and their pitch, a fight).
+
 ## [0.18.1] - 2026-11-25
 
 Built on the CYD engine 0.217.0. **Android only - nothing changes on a handheld.**

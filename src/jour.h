@@ -50,4 +50,10 @@ bool at_end();
 // text entry in the game's look); false: the backdrop.
 bool draw(pic::Canvas& game);
 
+// The Android app's own viewer (Tom, 2026-11-25: the journal "Android-ified" - its pictures pinched and panned,
+// its text in Android's type): the open entry for the app - its title, then each piece, a text ("T", its words,
+// a line's end as \x1f) or a picture ("P", the file it is saved as - made once, beside JOURNAL.DAT - and its
+// size). font: the journal's typeface the app shows text in (Display - Journal Font)
+std::string app_entry(int font);
+
 } // namespace jour

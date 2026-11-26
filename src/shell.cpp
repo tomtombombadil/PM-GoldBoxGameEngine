@@ -24,6 +24,9 @@ bool                  told_any = false;
 std::mutex lay_mu;
 int        lay[9] = {};
 bool       lay_new = false;
+// The Companion's pictures as the app places them (view 4): up to 4 of (which, x, y, w, h, source top, rows)
+int        pics[28] = {};
+int        pics_n = 0;
 
 enum : Sint32 { kButton = 1, kLayout = 2, kMenu = 3 };
 
@@ -84,14 +87,17 @@ bool take(const SDL_Event& e, void (*press)(int, bool))
             menu_fn(static_cast<int>(reinterpret_cast<intptr_t>(e.user.data1)), static_cast<int>(packed >> 16),
                     static_cast<int16_t>(packed & 0xFFFF));
     } else if (e.user.code == kLayout) {
-        int v[9];
+        int v[9], p[28], pn;
         {
             std::lock_guard<std::mutex> g(lay_mu);
             if (!lay_new) return true;
             lay_new = false;
             for (int i = 0; i < 9; ++i) v[i] = lay[i];
+            pn = pics_n;
+            for (int i = 0; i < pn * 7; ++i) p[i] = pics[i];
         }
         laid_out = true;
+        video::set_shell_pics(p, pn);
         video::set_shell(SDL_Rect{v[0], v[1], v[2], v[3]}, SDL_Rect{v[4], v[5], v[6], v[7]}, v[8]);
     }
     return true;
@@ -206,6 +212,20 @@ JNIEXPORT void JNICALL Java_io_github_tomtombombadil_goldbox_GoldBoxActivity_nat
         shell::lay_new = true;
     }
     shell::push(shell::kLayout, 0, 0);
+}
+
+// The Companion's pictures as the app places them (view 4 of the next nativeLayout): groups of 7 - which (0 the map
+// or battlefield, 1 the party), x, y, w, h in the surface's pixels, the picture's first row and how many rows
+JNIEXPORT void JNICALL Java_io_github_tomtombombadil_goldbox_GoldBoxActivity_nativePictures(JNIEnv* env, jclass,
+                                                                                           jintArray a)
+{
+    jsize n = a ? env->GetArrayLength(a) : 0;
+    if (n > 28) n = 28;
+    jint buf[28] = {};
+    if (n > 0) env->GetIntArrayRegion(a, 0, n, buf);
+    std::lock_guard<std::mutex> g(shell::lay_mu);
+    shell::pics_n = static_cast<int>(n / 7);
+    for (int i = 0; i < shell::pics_n * 7; ++i) shell::pics[i] = buf[i];
 }
 
 // The menu drawer's taps (shell::MenuOp)

@@ -650,7 +650,7 @@ enum MenuItem : uint8_t {
     MResume,
     // the pages
     MDisplayPg, MAudioPg, MPlayPg, MJournal, MCheats, MQuickPg, MControlsPg, MSystemPg, MLeaveGame, MExit,
-    MDisplay, MRotation, MChooser,          // Display (MRotation, MChooser: Android's)
+    MDisplay, MRotation, MChooser, MJFont,  // Display (MRotation, MChooser, MJFont: Android's)
     MSound, MMusic, MVolume,                // Audio
     MOriginal, MEnhancePg, MRulesPg, MFixGamesPg,       // Game Play
     MFont, MRolls, MSaveInfo, MAutoJoin, MKeepMem, MCampFix, MCoins, MOil, MAddInfo, MMoreGuys, MPortrait, MGallery,    // Enhancements
@@ -660,7 +660,7 @@ enum MenuItem : uint8_t {
     MHealer, MMerchant, MSanctuary, MTrainer, MMaxHp, MNoRace,   // Cheats
     MQuickOn, MQuick,                       // Quick Actions
     MControls, MPadMoves, MSwap, MTouchPad, MPadSize, MPadAlpha,   // Controls (the last three: a touch screen's)
-    MRescan, MClean, MDevice, MUpdate, MSendLogs, MReplyAddr, MFolder,   // System (MFolder: Android's)
+    MRescan, MClean, MDevice, MUpdate, MSendLogs, MReplyAddr, MFolder, MAbout,   // System (MFolder, MAbout: Android's)
     MBack
 };
 enum class Page : uint8_t { Top, Display, Audio, Play, Enhance, Rules, FixGames, Fixes, Cheats, Quick, Controls, System };
@@ -673,6 +673,8 @@ Page               menu_page = Page::Top;
 int                menu_top = 0;        // the first line shown
 int                fix_game = 0;        // the Fixes page's game (games::Game; 0: Every Game)
 bool               device_open = false; // Device Info is up
+bool               about_open = false;  // (with device_open) About instead - the Android app's
+std::string        app_version;         // the Android app's (--app-version)
 
 Page page_parent(Page p)
 {
@@ -805,6 +807,7 @@ void menu_build()
 #ifdef __ANDROID__
         add(MRotation);
         if (shell::on()) add(MChooser);
+        if (shell::on()) add(MJFont);
 #endif
         break;
     case Page::Audio:
@@ -862,6 +865,9 @@ void menu_build()
         add(MClean);
 #endif
         add(MDevice);
+#ifdef __ANDROID__
+        add(MAbout);
+#endif
 #ifndef __ANDROID__
         add(MSendLogs);
         add(MReplyAddr);
@@ -955,6 +961,12 @@ void menu_label(const MItem& it, char* out, size_t cap)
     case MRescan: snprintf(out, cap, "Rescan Game Files"); break;
     case MClean: snprintf(out, cap, "Clean Up Game Files"); break;
     case MDevice: snprintf(out, cap, "Device Info"); break;
+    case MAbout: snprintf(out, cap, "About"); break;
+    case MJFont: {
+        static const char* const kFont[4] = {"Journal", "Book", "Serif", "Plain"};
+        snprintf(out, cap, "Journal Font: %s", kFont[cfg.journal_font % 4]);
+        break;
+    }
     case MUpdate: snprintf(out, cap, "%s", update_staged.empty() ? "Check for Updates" : "Restart to Update"); break;
     case MSendLogs: snprintf(out, cap, "Send Logs"); break;
     case MReplyAddr: snprintf(out, cap, "Reply Address: %.14s", cfg.reply_email.empty() ? "Not Set" : cfg.reply_email.c_str()); break;
@@ -1064,6 +1076,10 @@ const char* menu_help(const MItem& it)
         return "Frees space: takes out of each game's folder what the engine never reads (DOSBox, installers, the "
                "Steam launcher's files). Game files, saves and every PDF stay. A report: games/_CYD/CLEANUP.TXT.";
     case MDevice: return "This port's version, the device, and each game found with its release (Steam or GOG).";
+    case MAbout: return "The app's, the front end's and the engine's versions, where they are made, the licence and credits.";
+    case MJFont:
+        return "The type the journal's text is shown in: Journal - like the printed Adventurer's Journal's hand; Book - "
+               "an italic book face; Serif - like Times; Plain - the app's own.";
     case MUpdate: return "Looks for a newer version of the port and installs it (needs Wi-Fi).";
     case MSendLogs: return "Sends the port's logs to the developer by the internet (needs Wi-Fi).";
     case MHealer: return "The game's temple, wherever you are: cures, all free.";
@@ -1116,6 +1132,28 @@ std::vector<std::pair<std::string, std::string>> device_lines()
         out.push_back({title, release_name(g)});
     }
     return out;
+}
+
+// About (the Android app's, System - About; Tom, 2026-11-25). (The app builds PM_VERSION as its own version; the
+// front end's own comes as PM_FRONT_VERSION, this repo's VERSION.)
+#ifndef PM_FRONT_VERSION
+#define PM_FRONT_VERSION PM_VERSION
+#endif
+std::vector<std::pair<std::string, std::string>> about_lines()
+{
+    return {
+        {"Gold Box Game Engine", "An engine for SSI's Gold Box AD&D games - play your own GOG or Steam copies."},
+        {"App", "v" + (app_version.empty() ? std::string("?") : app_version) +
+                    " - github.com/tomtombombadil/APK-GoldBoxGameEngine"},
+        {"Front end", "v" PM_FRONT_VERSION " - github.com/tomtombombadil/PM-GoldBoxGameEngine"},
+        {"Engine", "v" CYD_VERSION " - github.com/tomtombombadil/CYD-GoldBoxGameEngine"},
+        {"Author", "tomtombombadil"},
+        {"Licence", "MIT - free and open source. No game data is included."},
+        {"SDL2", "Simple DirectMedia Layer, zlib licence"},
+        {"Fonts", "Fondamento (Astigmatic), Alegreya (Huerta Tipografica), Liberation Serif (Red Hat) - SIL Open Font "
+                  "Licence; Roboto - Android's own"},
+        {"Games", "Pool of Radiance and the other Gold Box games are SSI's and their owners' - not part of this app."},
+    };
 }
 
 void draw_device()
@@ -1507,8 +1545,9 @@ void draw_frame()
         if (ptr_on && !menu_open) video::pointer(static_cast<int>(ptr_x), static_cast<int>(ptr_y));
     }
     if (jour::active() && !menu_open) {
-        // (an entry: the viewer's own frame - the game's text screen or a page)
-        const bool canvas = jour::draw(cv);
+        // (an entry: the viewer's own frame - the game's text screen or a page; the Android app's viewer is over the
+        // game, which stays as it was)
+        const bool canvas = shell::on() ? true : jour::draw(cv);
         if (notice.open && !app) draw_notice();
         video::present(canvas ? &cv : nullptr);
         return;
@@ -1953,7 +1992,10 @@ void leave_game()
 {
     if (!playing) return;
     continue_note();
-    if (jour::active()) jour::close(cv);
+    if (jour::active()) {
+        jour::close(cv);
+        shell::text(shell::ChJournal, "");
+    }
     journal_queue.clear();
     jlist_open = false;
     audio_stop();
@@ -2038,7 +2080,11 @@ void journal_next()
         const JRef r = journal_queue.front();
         journal_queue.erase(journal_queue.begin());
         std::string why;
-        if (jour::open(cur_cache, r.kind, r.number, cv, why)) return;
+        if (jour::open(cur_cache, r.kind, r.number, cv, why)) {
+            // (the Android app shows it in its own viewer - Tom, 2026-11-25)
+            if (shell::on()) shell::text(shell::ChJournal, jour::app_entry(cfg.journal_font));
+            return;
+        }
         message("Adventurer's Journal", why);
         return;
     }
@@ -2119,6 +2165,7 @@ void journal_press(int b)
         // fall through
     case BB:
         jour::close(cv);
+        shell::text(shell::ChJournal, "");
         journal_next();         // (the next one mentioned, if there was one)
         break;
     default: break;
@@ -2324,6 +2371,7 @@ void menu_change(int step)
         rotation_apply();
         break;
     case MChooser: cfg.chooser = static_cast<uint8_t>((cfg.chooser + (step < 0 ? 2 : 1)) % 3); break;
+    case MJFont: cfg.journal_font = static_cast<uint8_t>((cfg.journal_font + (step < 0 ? 3 : 1)) % 4); break;
     case MTouchPad:
         cfg.touch_pad = static_cast<uint8_t>((cfg.touch_pad + (step < 0 ? 2 : 1)) % 3);
         touch_pad_apply();
@@ -2539,7 +2587,8 @@ void menu_press(int b)
         switch (it.m) {
         case MResume: menu_open = false; break;
         case MControls: help_open = true; break;
-        case MDevice: device_open = true; break;
+        case MDevice: device_open = true; about_open = false; break;
+        case MAbout: device_open = about_open = true; break;
         case MJournal:
             if (play::journal_seen_count() <= 0) {
                 show_notice("Journal", "The game hasn't told you to read a journal entry yet. Each one it mentions is listed here.");
@@ -2602,7 +2651,7 @@ void menu_press(int b)
 // The screens stay this front end's: a controller still drives each.
 
 constexpr int kOpChooserPlay = 10, kOpLookAgain = 11, kOpChooserSelect = 12, kOpChooserContinue = 13,
-              kOpChooserMode = 14;
+              kOpChooserMode = 14, kOpJournalClose = 15;
 void press(int b);
 
 void android_op(int op, int index, int value)
@@ -2633,6 +2682,11 @@ void android_op(int op, int index, int value)
         // (the chooser's own toggle - Tiles 1 / Cards 2; the Display page's line shows the same)
         cfg.chooser = static_cast<uint8_t>(value < 0 || value > 2 ? 0 : value);
         settings_save(conf_dir, cfg);
+        return;
+    }
+    if (op == kOpJournalClose) {
+        // (the app's journal viewer closed - its close button, Back, a controller's B)
+        if (jour::active()) journal_press(BB);
         return;
     }
     if (op == kOpChooserSelect) {
@@ -2777,6 +2831,11 @@ std::string android_menu_text()
             else rows.push_back({l.key, l.what});
         }
         for (const auto& r : rows) row(t, r.second.empty() ? 'H' : 'T', r.first.c_str(), r.second.c_str(), "");
+        return t;
+    }
+    if (device_open && about_open) {
+        head("About", -1, true);
+        for (const auto& l : about_lines()) row(t, 'T', l.first.c_str(), l.second.c_str(), "");
         return t;
     }
     if (device_open) {
@@ -3880,6 +3939,7 @@ int main(int argc, char** argv)
         const char* v = i + 1 < argc ? argv[i + 1] : nullptr;
         if (a == "--games" && v) pm::games_root() = argv[++i];
         else if (a == "--conf" && v) conf_dir = argv[++i];
+        else if (a == "--app-version" && v) app_version = argv[++i];
         else if (a == "--tools" && v) tools_dir = argv[++i];
         else if (a == "--window" && v) sscanf(argv[++i], "%dx%d", &win_w, &win_h);
         else if (a == "--game" && v) auto_game = atoi(argv[++i]);

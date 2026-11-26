@@ -207,6 +207,16 @@ controller". All three, any mix; nothing is touch's alone (the rule above stands
   **The chooser's order** (Tom, 2026-11-24): by series - PoolRad, Curse, Secret, Darkness, Gateway, Treasures,
   Champions, Knights, Queen (a tablet's three rows: the Realms, ..., Krynn the last row) - `rescan`, Android only;
   the handhelds' list keeps its order.
+- **The Android app's journal, Companion and About** (Tom, 2026-11-25 afternoon; v0.19.0): a journal entry is
+  shown by the app (channel 5, `jour::app_entry`: "journal\t<title>\t<font>" then a line a piece - "T\t<text>"
+  with line breaks as 0x1F, or "P\t<path>\t<w>\t<h>", the scan's picture saved once in `_CYD/<folder>` as
+  `JE_<kind><nnn>_<ii>.IMG`, at most 2400 across; "" closes it). None of the game's journal screen is drawn there
+  (no "X Width  B Back", no entry number / %). The app's close is op 15 (as B: the next entry mentioned follows).
+  **Display › Journal Font** (Android): Journal / Book / Serif / Plain - the type the app uses (`journal_font`).
+  **System › About** (Android): the app's (`--app-version`), the front end's and the engine's versions and repos,
+  the licence, credits. **The Companion's layout is the app's** (view 4): it sends each picture's place and the
+  rows of it shown (`nativePictures`: groups of which, x, y, w, h, top row, rows); the front end tells it what
+  the pictures hold (channel 4: "comp\t<map rows>\t<members>\t<pitch>\t<fight>").
 - **Touching the port's own screens** (`touch_tap` / `touch_swipe` in main.cpp - each the buttons a player
   would press there): a list's line tapped = picked and chosen at once (A) - one tap (Tom, 2026-11-23: "be
   more Android-friendly"); outside a page's box or its title = B;
@@ -408,6 +418,8 @@ on screen the overlay is 320 again.
     the end, X as above, B close. Start - Journal: the entries met so
     far (`play::journal_seen`).
   - An entry that can't be shown is named in a message instead, with why.
+  - **The Android app** (v0.19.0): none of the above is drawn there - the app shows the entry in its own viewer
+    (section 4, "The Android app's journal"); its close is the journal's B.
 
 ## 7. Building and packaging
 CMake. CI (GitHub Actions) on every push: a check build with sanitizers +

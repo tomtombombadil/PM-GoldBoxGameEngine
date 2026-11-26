@@ -4,8 +4,10 @@
 #include "game/companion.h"
 #include "game/play.h"
 
+#include "shell.h"
 #include "video.h"
 
+#include <cstdio>
 #include <cstring>
 
 namespace panel {
@@ -227,6 +229,11 @@ void draw_side(uint32_t now_ms)
     const int pitch = n ? ((kH - 1) / n > 26 ? 26 : (kH - 1) / n) : 0;
     // (the map to its legend; a fight's field stands at its picture's foot - all of it)
     video::set_side_used(top == View::Map ? map_rows : kH, n ? 1 + n * pitch : 12);
+    // (the app lays the pictures out itself: what they hold - the map's rows, the party's members and their pitch,
+    // a fight's field - Tom, 2026-11-25 evening)
+    char comp[64];
+    snprintf(comp, sizeof comp, "comp\t%d\t%d\t%d\t%d", top == View::Map ? map_rows : kH, n, pitch, top == View::Map ? 0 : 1);
+    shell::text(shell::ChCompanion, comp);
     video::set_side(buf[0], buf[1]);
 }
 
