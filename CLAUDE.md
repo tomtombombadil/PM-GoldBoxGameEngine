@@ -504,7 +504,8 @@ and maintains it; it is the primary output of the Claude Project
   same brief he gave the CYD session; its CLAUDE.md "Play-throughs" /
   "Function checks" hold here too). This session's order: **Gateway
   first** (the CYD session has PoolRad - done - and Curse), then the
-  games it hasn't taken. **Gateway: done, 2026-11-17. Treasures next** (Tom,
+  games it hasn't taken. **Gateway: done, 2026-11-17. Treasures: done, 2026-11-26 (the ending reached, the
+  open list worked off - notes `claude/playtest_treasures_3.md`; what is left is in TODO).** Before it: Treasures next (Tom,
   2026-11-17: "Go ahead with testing Treasures") - the finished Gateway
   party brought over (Add Character - Gateway), scratch `/tmp/claude-0/tplay`,
   notes the Project's `claude/playtest_treasures.md`. A new party rolled up, then adventuring to the
@@ -548,6 +549,9 @@ and maintains it; it is the primary output of the Claude Project
   fixed in the CYD repo, then the pin moves. What only the port can show
   (buttons, screens) stays with newgame_test's walks. Progress and
   findings: the Project's `claude/playtest_gateway.md` and TODO.
+- `tools/lair_test.py <binary> <games copy> <n> <out> <steps>` (2026-11-26): a save's last stretch by buttons -
+  the steps walked, every fight on Quick, treasures shared, pages pressed through, until the exploring menu is
+  back (Treasures' lair and ending: two runs to the overland after it). A fight there takes 700 - 1,800 presses.
 - **A direction let go before its step was taken still steps** (v0.10.3:
   a fight waits 70 ms for a diagonal's second direction; shorter taps
   were lost) - `button()` in main.cpp; keep it when touching the D-pad.
