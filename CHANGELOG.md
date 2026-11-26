@@ -3,6 +3,17 @@
 Every version of Gold Box Game Engine for PortMaster. A release's notes are
 its part of this file.
 
+## [0.19.2] - 2026-11-26
+
+Built on the CYD engine 0.219.1.
+
+- **Quick Actions**: each member's weapon chosen by the damage it can be expected to do; flasks of oil are an item
+  to throw; holy water only at foes it hurts; the weapon and shield readied again after a Quick fight (engine
+  0.218.0 / 0.219.0).
+- **A fight's end**: the "fled" mark set only when the party fled (Treasures, Darkness); the Dark Queen's
+  fights set their end flags (engine 0.219.1).
+- **The Dark Queen's maps**: read the right way round (its GEO.GLB's header is height, then width; engine 0.219.1).
+
 ## [0.19.1] - 2026-11-26
 
 Built on the CYD engine 0.217.3.
