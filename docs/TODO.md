@@ -512,7 +512,11 @@ Tick off with the version that did it. Never ask Tom the same thing twice.
       Seen in the engine's test program; not through the port's buttons.
 - [x] **The Treasures play-through reached the ending** (2026-11-24; notes: the Project's
       `claude/playtest_treasures_2.md`). The lair's two fights were won with the test program's help, not by play.
-- [ ] Treasures' journal entries not yet fired in the play-through, each cited by a script: 17 (a city guardsman
-      at a locked gate), 26 (the gate guard at Leilon / Waterdeep), 39 (the tied man), 4 (an overland story); 47
-      and 59 belong to answers not taken. (Llorkh's 1, 3, 5, 10, 11 fired in the first run, 2026-11-17.) Walk
-      those four places from a backup and tick them.
+- [x] Treasures' journal ledger closed (2026-11-25): every entry a script cites has fired by play - 4 (the old
+      sage on the road), 26 (Waterdeep's gate before Leilon), 47 (the tour's lifeboat) and 59 (Wimeg before Froal)
+      played from earlier saves; 17 and 39 had fired (my hand list was wrong - now counted from the transcript).
+      No script names 6, 13, 14, 15, 82. Also done: the old tunnel at 54;10,8 (the Room of Three Doors, in and
+      out), Fireshear's mine pocket (under the shaft at 12,8). In the engine's test program; no engine fault found.
+- [ ] Treasures, left: each journal entry's wording read against its place; the other three tunnels and the
+      Crossroads; the "&7" line at Neverwinter in the original; a fight that loaded 4 monsters and showed 3
+      (Fireshear's pocket).
