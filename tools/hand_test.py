@@ -286,6 +286,17 @@ def hand_fight(r, steps_max=4000):
         r.do("b,wait:500")
         if "Yes" in fmw(p) and fgoto(p, "Yes"): r.do("a,wait:500")
         pt.back_out(r)
+    # WALK=up,up,right,on ... (env; on = A until the party can walk): the way to a known fight first (a save set before one, the cluebook's
+    # squares) - the two games whose saves start far from any fight (Secret, Darkness)
+    for k in [k for k in os.environ.get("WALK", "").split(",") if k]:
+        if p.st["fighting"] == "1": break
+        if k == "on":                         # (a place's pages: A until the party can walk again)
+            for i in range(8):
+                if p.st.get("walking") == "1" or p.st["fighting"] == "1": break
+                r.do("a,wait:700")
+            continue
+        r.do(k + ",wait:500")
+        r.note("   walk", k, "->", p.st.get("pos"), p.st.get("desc"))
     steps, squares = seek_fight(r, steps_max)
     if p.st["fighting"] != "1":
         return r.note(f"  no fight met in {steps} steps ({squares} squares)")

@@ -3,6 +3,21 @@
 Every version of Gold Box Game Engine for PortMaster. A release's notes are
 its part of this file.
 
+## [0.19.2] - 2026-11-26
+
+Built on the CYD engine 0.219.2.
+
+- **Treasures, Darkness: a fight the party won no longer counts as a flight when one member ran from it**
+  (engine 0.219.1). The originals count a flight only when nobody is left standing; here one NPC whose morale
+  broke was enough, and a script that asks (Treasures' lair, Llorkh, many of Darkness's fights) put the party
+  back a square with the fight to do again. Read from the three programs.
+- **The Dark Queen: its scripts now learn how a fight ended** (the same routine; 97 of its fights ask).
+- **Quick Actions** (engine 0.218.0 / 0.219.0, from the CYD): a Quick character's weapon is chosen by the damage
+  it can be expected to do; flasks of oil count as an item; holy water only at foes it hurts; the weapon and
+  shield readied again after a Quick fight.
+- Tests: `tools/demo_shots.py` (a game's Demo by buttons, its battlefield shot), `tools/hand_test.py` takes a
+  WALK= way to a known fight.
+
 ## [0.19.1] - 2026-11-26
 
 Built on the CYD engine 0.217.3.

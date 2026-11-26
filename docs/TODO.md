@@ -343,7 +343,7 @@ Tick off with the version that did it. Never ask Tom the same thing twice.
       app updates ports) and a word with them about Send Logs (a port
       that uploads logs) - ask in the testing thread; (5) the PR itself
       from Tom's fork of PortsMaster/PortMaster-New, branch `goldbox`.
-- [ ] Keep the `cyd` pin current (built on CYD 0.217.3). Tom, 2026-11-14:
+- [ ] Keep the `cyd` pin current (built on CYD 0.219.2). Tom, 2026-11-14:
       Companion map / party-info changes are in work in the CYD (small
       boards first; the party-info layout may be rearranged) - when they
       land, move the pin and bring `src/panel.*` along.
@@ -529,17 +529,36 @@ Tick off with the version that did it. Never ask Tom the same thing twice.
 - [x] **The lair and the ending through the port's buttons** (2026-11-26, the x86_64 build here, GOG files): two
       runs from the save before the lair to the overland after the ending, two more as far as the rewards - both
       fights by Quick, the party made well (seen as full hit points on the next screen; the page's own words not read by the test).
-- [ ] Treasures, one run unexplained: by buttons, on engine 0.217.0, the lair's first fight was won and the party
-      then stood one square back as if a member had run from it (the script's branch for that) - nobody had.
-      Four later runs with the same presses went on to the second fight and the rewards; not reproduced, cause not found.
+- [x] v0.19.2 (engine 0.219.1) **The unexplained Treasures run - explained and fixed**: the originals' fight end
+      says "fled" only when a member ran AND nobody is left okay; the engine said it when any one member had run
+      (an NPC's morale). Treasures, Darkness; the Dark Queen had no fight-end flags at all (97 fights ask). Read
+      from the three programs (Treasures GAME.OVR 0x5884 / 0x59D9, Darkness 0x4D97, DQK.EXE 0x4B67C); seen in the
+      engine's test program (the lair with Kriiador made to run: on to the ending). Not run in DOSBox; the first
+      run's own member-who-ran was never seen (its log was not kept) - the cause fits, it is not proved for it.
 - [ ] Treasures, small things left: the Steam scan's journal entry 42 lacks its heading line; the GOG journal's
       picture entries not looked at one by one; the Crossroads' four other fight cells; the tunnel rooms and the
       ending's healing not set against the original.
 - [x] v0.19.1: the pin at engine 0.217.3 (the other sessions' Death Knights and Dark Queen fixes with it).
 
-## Open after the play-throughs (review for Tom, 2026-11-26)
-- [ ] The unexplained Treasures run belongs with the CYD TODO's "does each original's fight end set the compare
-      flags" item (done for Treasures and Darkness only) - the same few lines of script.
-- [ ] Never played to an end by the port's buttons: Gateway's ending. Seen by buttons: Treasures' (above).
+## Worked through on 2026-11-26 (Tom away: "grind through as much of that list as you can")
+- [x] Fight-end flags in every game: an IF straight after a COMBAT only in Darkness (215 of 468), Treasures (63 of
+      272) and the Dark Queen (97 of 283) - the CYD sweep's new `combatif`; the other six have none.
+- [x] The rule checks that failed (Curse's halfling fighters, PoolRad's 9 training cases): the checks, not the engine -
+      they expected the originals' "level == limit"; the engine stops at or past it since 0.211.14 (the cheat off
+      again). The checks now expect that; SPEC 11 says it. Curse 6,004 pass (1 without its oracle file), PoolRad 430.
+- [x] The menu-check item (Save Which Game, Choose Spell) was the check's own false alarm, put right in 0.211.5; run
+      again on Curse and Darkness: 0.
+- [x] Treasures' overland clock with Search off, in the original (DOSBox): no minutes added either (13:07 -> 00:07 ->
+      12:07). Gateway's overland steps by its own routine (12 hours a step) - never the walking step's minutes.
+- [x] **Battlefields looked at through the port** (v0.19.2's build, GOG files, `tools/demo_shots.py`): the Demo's
+      fight in Curse (outdoors, trees), Secret, Champions, Knights, Darkness, the Dark Queen, Treasures (indoors),
+      Gateway (the sea) - each field right. PoolRad has no Demo (its fields seen before, v0.12.5). **Found: Secret's
+      demo party is three black figures** - the original (DOSBox) draws a wizard and two fighters; the engine's, in
+      the CYD TODO, not fixed (where the original takes those pictures from was not found).
+- [x] Speed test by buttons in Secret: a save set one step before a fight (the playsim), `WALK=up tools/hand_test.py
+      ... speed` - the menu, Exit and B back, all right; its indoor field looked at.
+- [ ] Speed test by buttons in Darkness: still no fight reached (2,292 steps in Phlan's two maps; the playsim's
+      teleport saves landed in a menu town). Its menu code is Treasures', which passed.
+- [ ] Never played to an end by the port's buttons: Gateway's ending. Seen by buttons: Treasures'.
 - [ ] The CYD TODO does not tick Death Knights' play-through as complete (its kit's notes reach Soth's floor) -
       the CYD session's to confirm.

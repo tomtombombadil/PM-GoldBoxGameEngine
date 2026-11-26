@@ -549,6 +549,12 @@ and maintains it; it is the primary output of the Claude Project
   fixed in the CYD repo, then the pin moves. What only the port can show
   (buttons, screens) stays with newgame_test's walks. Progress and
   findings: the Project's `claude/playtest_gateway.md` and TODO.
+- `tools/demo_shots.py <binary> <games dir> <n> <out> [WxH]` (2026-11-26): a game's Demo by the port's buttons, five
+  shots of its fight - the quick way to LOOK at a battlefield in every game but PoolRad (no Demo there); DEMOWAIT=240
+  for Darkness and the Dark Queen (their demos tell a story first). It found Secret's demo party drawn as black
+  figures (the engine's; CYD TODO). `tools/hand_test.py` takes WALK=up,up,on,... (env): the buttons to a known
+  fight before its own search ("on" = A until the party can walk) - for a save set one step before a fight by the
+  CYD playsim (TELE=x,y,dir SAVENOW=B), as Secret's Speed test was done.
 - `tools/lair_test.py <binary> <games copy> <n> <out> <steps>` (2026-11-26): a save's last stretch by buttons -
   the steps walked, every fight on Quick, treasures shared, pages pressed through, until the exploring menu is
   back (Treasures' lair and ending: two runs to the overland after it). A fight there takes 700 - 1,800 presses.
