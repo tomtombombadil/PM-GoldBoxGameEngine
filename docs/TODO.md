@@ -526,12 +526,12 @@ Tick off with the version that did it. Never ask Tom the same thing twice.
       deep!" by Yartar, Fireshear's pocket fight (4 loaded, 3 on the field).
 - [x] v0.19.1 (engine 0.217.2): **Treasures' overland step added ten minutes of its own** - the original adds none
       (DOSBox, the same save and steps). Not checked: Search off in the original; Gateway's overland.
-- [x] **The lair and the ending through the port's buttons** (2026-11-26, the x86_64 build here, GOG files): three
-      runs from the save before the lair to the overland after the ending - both fights by Quick, the rewards,
-      the party made well (seen as full hit points on the next screen; the page's own words not read by the test).
+- [x] **The lair and the ending through the port's buttons** (2026-11-26, the x86_64 build here, GOG files): two
+      runs from the save before the lair to the overland after the ending, two more as far as the rewards - both
+      fights by Quick, the party made well (seen as full hit points on the next screen; the page's own words not read by the test).
 - [ ] Treasures, one run unexplained: by buttons, on engine 0.217.0, the lair's first fight was won and the party
       then stood one square back as if a member had run from it (the script's branch for that) - nobody had.
-      Three later runs with the same presses went on to the ending; not reproduced, cause not found.
+      Four later runs with the same presses went on to the second fight and the rewards; not reproduced, cause not found.
 - [ ] Treasures, small things left: the Steam scan's journal entry 42 lacks its heading line; the GOG journal's
       picture entries not looked at one by one; the Crossroads' four other fight cells; the tunnel rooms and the
       ending's healing not set against the original.
