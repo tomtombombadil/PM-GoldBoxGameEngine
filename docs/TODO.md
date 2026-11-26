@@ -343,7 +343,7 @@ Tick off with the version that did it. Never ask Tom the same thing twice.
       app updates ports) and a word with them about Send Logs (a port
       that uploads logs) - ask in the testing thread; (5) the PR itself
       from Tom's fork of PortsMaster/PortMaster-New, branch `goldbox`.
-- [ ] Keep the `cyd` pin current (built on CYD 0.219.3). Tom, 2026-11-14:
+- [ ] Keep the `cyd` pin current (built on CYD 0.221.2). Tom, 2026-11-14:
       Companion map / party-info changes are in work in the CYD (small
       boards first; the party-info layout may be rearranged) - when they
       land, move the pin and bring `src/panel.*` along.
@@ -581,3 +581,12 @@ Tick off with the version that did it. Never ask Tom the same thing twice.
       the switch on 56 -> 64 hit points, with it turned off at Start - Game Play - Game Fixes - Curse 56 -> 40
       (the original's, as DOSBox showed). New characters' level and experience compared with DOSBox in Curse,
       Secret, Darkness, Gateway, Treasures, Champions, Knights - all the same now (the Dark Queen not compared).
+- [x] 2026-11-26: the engine's own checks run in all nine games on 0.221.2 (the CYD repo's behave suites - own,
+      matrix, levels, economy, features, rules4, toggles - and fightfuzz, campfuzz, navcheck): 0 failures once
+      the checks' missing oracle files were made again and three checks of their own were put right. This run is
+      what found Treasures' starting experience. Steam's and GOG's Treasures GAME.OVR are the same file.
+- [ ] Still open from the day's list: the Speed test by buttons in Darkness; Gateway's ending by buttons; Curse's
+      travel-map camp (does the original show the party list there?), its Scroll of Protection from Paralyzation
+      (what the original's does - not found in its code yet), its Dust of Disappearance in a fight; Poison Save
+      Bonus's effect by the port's buttons (saves aren't shown on any screen - only the engine's checks saw it);
+      the other Game Fixes' effects by buttons; the Dark Queen's new characters against DOSBox.
