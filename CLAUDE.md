@@ -555,6 +555,11 @@ and maintains it; it is the primary output of the Claude Project
   figures (the engine's; CYD TODO). `tools/hand_test.py` takes WALK=up,up,on,... (env): the buttons to a known
   fight before its own search ("on" = A until the party can walk) - for a save set one step before a fight by the
   CYD playsim (TELE=x,y,dir SAVENOW=B), as Secret's Speed test was done.
+- `tools/drive_steps.py <binary> <games copy> <out> steps...` (2026-11-26): the folder's first game to its party
+  menu, then steps by buttons (`line:Load_Saved`, `word:View`, `menu:Game_Fixes`, `show` prints the screen) - the
+  quick way to SEE a switch's effect in a game: Imported Hit Points was seen so (a PoolRad dwarf readies the Girdle:
+  64 hit points with it on, 40 with it turned off in the menu). In a party menu L2 / R2 don't pick the member -
+  Begin first, then L2 / R2 at the exploring menu.
 - `tools/lair_test.py <binary> <games copy> <n> <out> <steps>` (2026-11-26): a save's last stretch by buttons -
   the steps walked, every fight on Quick, treasures shared, pages pressed through, until the exploring menu is
   back (Treasures' lair and ending: two runs to the overland after it). A fight there takes 700 - 1,800 presses.

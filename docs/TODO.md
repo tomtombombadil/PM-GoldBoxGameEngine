@@ -576,3 +576,8 @@ Tick off with the version that did it. Never ask Tom the same thing twice.
       Treasures by the port's buttons: six made, added, modified, Begin, the Merchant, 41 steps, 0 "!!".
       Not compared with DOSBox: a new character's level in Darkness, Champions, Knights, Queen (Curse, Secret,
       Gateway, Treasures were).
+- [x] 2026-11-26: Imported Hit Points' EFFECT seen by the port's buttons (v0.19.6's program, Curse GOG, a save
+      with the PoolRad dwarf fighter and the Girdle unreadied; tools/drive_steps.py): View - Items - Ready - with
+      the switch on 56 -> 64 hit points, with it turned off at Start - Game Play - Game Fixes - Curse 56 -> 40
+      (the original's, as DOSBox showed). New characters' level and experience compared with DOSBox in Curse,
+      Secret, Darkness, Gateway, Treasures, Champions, Knights - all the same now (the Dark Queen not compared).
