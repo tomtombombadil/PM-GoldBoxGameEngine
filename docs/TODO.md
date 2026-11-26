@@ -86,7 +86,7 @@ Tick off with the version that did it. Never ask Tom the same thing twice.
       after the next start (the log's last lines say what the launch script did). Also the new menus: anything hard to
       find or read?
 ## Claude
-- [ ] **Treasures play-through** (Tom, 2026-11-17; scratch `/tmp/claude-0/tplay`,
+- [x] (done 2026-11-26, see v0.14.1's section) **Treasures play-through** (Tom, 2026-11-17; scratch `/tmp/claude-0/tplay`,
       the finished Gateway party brought over). Started: the party added
       from Gateway, the opening story, Llorkh's first fixed fight (the old
       tower's griffons and Lord's Men) won. Two engine faults found before
@@ -130,7 +130,7 @@ Tick off with the version that did it. Never ask Tom the same thing twice.
 - [ ] **Tom to try on a device (v0.12.6)**: Gateway's fight Speed (Faster stays lit; Exit / B bring the fight menu
       back); the Companion's magenta name and class when someone can train; Treasures: load a save made on the
       overland (the map must be there), a fight on the overland (grass, not river banks).
-- [ ] **Treasures play-through** (the Project's claude/playtest_treasures.md): Llorkh, Loudwater, Secomber, Leilon,
+- [x] (done 2026-11-26) **Treasures play-through** (the Project's claude/playtest_treasures.md): Llorkh, Loudwater, Secomber, Leilon,
       Waterdeep's caverns, Waterdeep Village's dragon done; Daggerford next. Open: the Leilon potion; ELWYN level-drained (to restore); loot not yet ID'd / sold.
 - [ ] **After v0.12.5: every game's battlefields looked at** - the fix was seen in Treasures, PoolRad (port) and Curse (engine
       test) only. To do: a fight indoors and one outdoors in each of the nine games through the port, the pictures looked
@@ -464,7 +464,7 @@ Tick off with the version that did it. Never ask Tom the same thing twice.
 - [x] v0.12.9: Game Fix Training Every Class (Curse, Gateway; engine 0.211.11). Its effect by the port's buttons: not played.
 - [x] v0.12.9: the training by the port's buttons (norace.py, Darkness). [ ] The Speed test by buttons in Secret /
       Darkness still open - Steam Secret's opening fight plays by itself (the save's party on Quick?): find out.
-- [ ] Treasures' play-through: Daggerford next; Elwyn's lost levels; the loot since Secomber; the Leilon potion.
+- [x] (done 2026-11-26; the Leilon potion never found among the loot) Treasures' play-through: Daggerford next; Elwyn's lost levels; the loot since Secomber; the Leilon potion.
 
 ## v0.12.10
 - [x] The level-limit cheat tested in use (Tom, 2026-11-21): engine 0.211.14's two fixes; `racecap.py` by buttons in
@@ -503,7 +503,7 @@ Tick off with the version that did it. Never ask Tom the same thing twice.
       (the cloak's plus) worse after loading; that is the original's figure.
 - [ ] Darkness's cloak rule seen in DOSBox (by its code so far); what the original's hall says to a member at the
       last level (nothing was seen; the engine: "Not Enough Experience").
-- [ ] Treasures play-through: Bjorn's Hold done (journals 2, 9, 78, 79; 69 only by running its script branch - a
+- [x] (done 2026-11-26) Treasures play-through: Bjorn's Hold done (journals 2, 9, 78, 79; 69 only by running its script branch - a
       5 % path encounter); Icewolf, the Ice Peak, Freezefire next. The two blackrobed fights were won with the test
       program's WINFIGHT (lost on 18 of 18 dice by Quick play).
 
@@ -536,3 +536,10 @@ Tick off with the version that did it. Never ask Tom the same thing twice.
       picture entries not looked at one by one; the Crossroads' four other fight cells; the tunnel rooms and the
       ending's healing not set against the original.
 - [x] v0.19.1: the pin at engine 0.217.3 (the other sessions' Death Knights and Dark Queen fixes with it).
+
+## Open after the play-throughs (review for Tom, 2026-11-26)
+- [ ] The unexplained Treasures run belongs with the CYD TODO's "does each original's fight end set the compare
+      flags" item (done for Treasures and Darkness only) - the same few lines of script.
+- [ ] Never played to an end by the port's buttons: Gateway's ending. Seen by buttons: Treasures' (above).
+- [ ] The CYD TODO does not tick Death Knights' play-through as complete (its kit's notes reach Soth's floor) -
+      the CYD session's to confirm.
