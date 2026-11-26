@@ -529,7 +529,7 @@ Tick off with the version that did it. Never ask Tom the same thing twice.
 - [x] **The lair and the ending through the port's buttons** (2026-11-26, the x86_64 build here, GOG files): two
       runs from the save before the lair to the overland after the ending, two more as far as the rewards - both
       fights by Quick, the party made well (seen as full hit points on the next screen; the page's own words not read by the test).
-- [x] v0.19.2 (engine 0.219.1) **The unexplained Treasures run - explained and fixed**: the originals' fight end
+- [x] v0.19.2 / v0.19.3 (engine 0.219.1) **The unexplained Treasures run - explained and fixed**: the originals' fight end
       says "fled" only when a member ran AND nobody is left okay; the engine said it when any one member had run
       (an NPC's morale). Treasures, Darkness; the Dark Queen had no fight-end flags at all (97 fights ask). Read
       from the three programs (Treasures GAME.OVR 0x5884 / 0x59D9, Darkness 0x4D97, DQK.EXE 0x4B67C); seen in the
@@ -550,7 +550,7 @@ Tick off with the version that did it. Never ask Tom the same thing twice.
       again on Curse and Darkness: 0.
 - [x] Treasures' overland clock with Search off, in the original (DOSBox): no minutes added either (13:07 -> 00:07 ->
       12:07). Gateway's overland steps by its own routine (12 hours a step) - never the walking step's minutes.
-- [x] **Battlefields looked at through the port** (v0.19.2's build, GOG files, `tools/demo_shots.py`): the Demo's
+- [x] **Battlefields looked at through the port** (v0.19.3's build, GOG files, `tools/demo_shots.py`): the Demo's
       fight in Curse (outdoors, trees), Secret, Champions, Knights, Darkness, the Dark Queen, Treasures (indoors),
       Gateway (the sea) - each field right. PoolRad has no Demo (its fields seen before, v0.12.5). **Found: Secret's
       demo party is three black figures** - the original (DOSBox) draws a wizard and two fighters; the engine's, in

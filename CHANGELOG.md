@@ -3,20 +3,28 @@
 Every version of Gold Box Game Engine for PortMaster. A release's notes are
 its part of this file.
 
-## [0.19.2] - 2026-11-26
+## [0.19.3] - 2026-11-26
 
 Built on the CYD engine 0.219.2.
 
-- **Treasures, Darkness: a fight the party won no longer counts as a flight when one member ran from it**
-  (engine 0.219.1). The originals count a flight only when nobody is left standing; here one NPC whose morale
-  broke was enough, and a script that asks (Treasures' lair, Llorkh, many of Darkness's fights) put the party
-  back a square with the fight to do again. Read from the three programs.
-- **The Dark Queen: its scripts now learn how a fight ended** (the same routine; 97 of its fights ask).
-- **Quick Actions** (engine 0.218.0 / 0.219.0, from the CYD): a Quick character's weapon is chosen by the damage
-  it can be expected to do; flasks of oil count as an item; holy water only at foes it hurts; the weapon and
-  shield readied again after a Quick fight.
-- Tests: `tools/demo_shots.py` (a game's Demo by buttons, its battlefield shot), `tools/hand_test.py` takes a
-  WALK= way to a known fight.
+- **The Dark Queen**: a script's move of the party keeps its place whole on the big maps (engine 0.219.2).
+- More on 0.19.2's fight-end fix: it came from a Treasures run by the port's buttons where a won fight put the
+  party back a square - one NPC's morale had broken. The originals count a flight only when nobody is left
+  standing (read from the three programs); 63 of Treasures' fights, 215 of Darkness's and 97 of the Dark Queen's
+  ask how the fight ended.
+- Tests: `tools/demo_shots.py` (a game's Demo by buttons, its battlefield shot - eight games looked at),
+  `tools/hand_test.py` takes a WALK= way to a known fight (Secret's Speed menu by buttons: right).
+
+## [0.19.2] - 2026-11-26
+
+Built on the CYD engine 0.219.1.
+
+- **Quick Actions**: each member's weapon chosen by the damage it can be expected to do; flasks of oil are an item
+  to throw; holy water only at foes it hurts; the weapon and shield readied again after a Quick fight (engine
+  0.218.0 / 0.219.0).
+- **A fight's end**: the "fled" mark set only when the party fled (Treasures, Darkness); the Dark Queen's
+  fights set their end flags (engine 0.219.1).
+- **The Dark Queen's maps**: read the right way round (its GEO.GLB's header is height, then width; engine 0.219.1).
 
 ## [0.19.1] - 2026-11-26
 
