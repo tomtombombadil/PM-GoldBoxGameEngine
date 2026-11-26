@@ -3,6 +3,19 @@
 Every version of Gold Box Game Engine for PortMaster. A release's notes are
 its part of this file.
 
+## [0.19.7] - 2026-11-26
+
+Built on the CYD engine 0.221.3.
+
+- **The Steam journals' text** (Tom: Treasures' Introduction read "th e pa rt}'1"): the Treasures journal's text
+  layer names Times-Roman without its widths - every letter was read as 0 wide, so each piece the OCR placed by
+  itself came out as a word. The engine now has the standard fonts' widths; Champions' and Death Knights' "ofthe"
+  read "of the" too. The OCR's own misreadings in the PDFs ("~i INTRODUCTION ~", "part}'1") stay - they are in
+  the files. **Every game's journal is made again at the next start** (the scan's tag "scan 6").
+- **The Android app's picture entries** (Tom: Treasures' entry 1, its map, showed nothing): the picture was saved
+  to the engine's card path (/GOLDBOX/...), which the app can't write - the device's path now. Every picture
+  entry was blank in the app since 0.19.0.
+
 ## [0.19.6] - 2026-11-26
 
 Built on the CYD engine 0.221.2.

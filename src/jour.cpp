@@ -7,6 +7,7 @@
 #include "platform/file.h"
 #include "platform/platform.h"
 
+#include "host.h"
 #include "shell.h"
 #include "video.h"
 
@@ -929,9 +930,11 @@ std::string app_entry(int font)
                     o[3] = 255;
                 }
             }
-            if (!ok || !shell::save_art("", rgba.data(), w, h, path)) continue;
+            // (the app's own file calls: the device's path, not the engine's card path - Tom, 2026-11-26: the
+            //  Steam Treasures map entry showed nothing, its picture never written)
+            if (!ok || !shell::save_art("", rgba.data(), w, h, pm::host_path(path.c_str()))) continue;
         }
-        out += "P\t" + path + "\t" + std::to_string(w) + "\t" + std::to_string(h) + "\n";
+        out += "P\t" + pm::host_path(path.c_str()) + "\t" + std::to_string(w) + "\t" + std::to_string(h) + "\n";
     }
     f.close();
     return out;
