@@ -343,7 +343,7 @@ Tick off with the version that did it. Never ask Tom the same thing twice.
       app updates ports) and a word with them about Send Logs (a port
       that uploads logs) - ask in the testing thread; (5) the PR itself
       from Tom's fork of PortsMaster/PortMaster-New, branch `goldbox`.
-- [ ] Keep the `cyd` pin current (built on CYD 0.219.2). Tom, 2026-11-14:
+- [ ] Keep the `cyd` pin current (built on CYD 0.219.3). Tom, 2026-11-14:
       Companion map / party-info changes are in work in the CYD (small
       boards first; the party-info layout may be rearranged) - when they
       land, move the pin and bring `src/panel.*` along.
@@ -562,3 +562,7 @@ Tick off with the version that did it. Never ask Tom the same thing twice.
 - [ ] Never played to an end by the port's buttons: Gateway's ending. Seen by buttons: Treasures'.
 - [ ] The CYD TODO does not tick Death Knights' play-through as complete (its kit's notes reach Soth's floor) -
       the CYD session's to confirm.
+- [x] v0.19.4 (engine 0.219.3): spell names cut at 23 letters (Treasures' grimoire) - fixed; the original (DOSBox)
+      and the port's screen after, the same names whole. Found while checking the old "RADIU" note.
+- [x] Gateway's menu line after a town is entered from the overland's Move ("Move (Use arrow keys): Exit" stays):
+      the original does the same (DOSBox, Port Llast from the overland) - no fault.

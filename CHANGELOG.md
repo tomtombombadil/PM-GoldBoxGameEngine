@@ -3,6 +3,13 @@
 Every version of Gold Box Game Engine for PortMaster. A release's notes are
 its part of this file.
 
+## [0.19.4] - 2026-11-26
+
+Built on the CYD engine 0.219.3.
+
+- **Spell names shown whole**: Treasures' grimoire read "Invisibility, 10' Radiu" and "Protection From Normal" -
+  names past 23 letters were cut (Darkness, the Krynn games too). Seen through the port, the original beside it.
+
 ## [0.19.3] - 2026-11-26
 
 Built on the CYD engine 0.219.2.
