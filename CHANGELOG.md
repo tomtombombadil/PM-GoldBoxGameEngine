@@ -3,6 +3,17 @@
 Every version of Gold Box Game Engine for PortMaster. A release's notes are
 its part of this file.
 
+## [0.19.1] - 2026-11-26
+
+Built on the CYD engine 0.217.3.
+
+- **Treasures: a step on the overland no longer takes ten minutes of the game's clock by itself** (engine 0.217.2;
+  the original's clock, read in DOSBox: only the map's own travel time counts).
+- **Death Knights**: a script's "step ahead" and "3D view again" calls (engine 0.217.1).
+- **The Dark Queen**: "This is recorded as journal entry n." is said and the entry offered; its saves with
+  imported characters load in the original; indoor fights past a map's 16th column / row get their field
+  (engine 0.217.2 / 0.217.3).
+
 ## [0.19.0] - 2026-11-25
 
 Built on the CYD engine 0.217.0. **Android only - nothing changes on a handheld.**

@@ -343,7 +343,7 @@ Tick off with the version that did it. Never ask Tom the same thing twice.
       app updates ports) and a word with them about Send Logs (a port
       that uploads logs) - ask in the testing thread; (5) the PR itself
       from Tom's fork of PortsMaster/PortMaster-New, branch `goldbox`.
-- [ ] Keep the `cyd` pin current (built on CYD 0.217.0). Tom, 2026-11-14:
+- [ ] Keep the `cyd` pin current (built on CYD 0.217.3). Tom, 2026-11-14:
       Companion map / party-info changes are in work in the CYD (small
       boards first; the party-info layout may be rearranged) - when they
       land, move the pin and bring `src/panel.*` along.
@@ -517,6 +517,22 @@ Tick off with the version that did it. Never ask Tom the same thing twice.
       played from earlier saves; 17 and 39 had fired (my hand list was wrong - now counted from the transcript).
       No script names 6, 13, 14, 15, 82. Also done: the old tunnel at 54;10,8 (the Room of Three Doors, in and
       out), Fireshear's mine pocket (under the shaft at 12,8). In the engine's test program; no engine fault found.
-- [ ] Treasures, left: each journal entry's wording read against its place; the other three tunnels and the
-      Crossroads; the "&7" line at Neverwinter in the original; a fight that loaded 4 monsters and showed 3
-      (Fireshear's pocket).
+- [x] Treasures' open list worked off (2026-11-26; notes: the Project's `claude/playtest_treasures_3.md`). In the
+      engine's test program on the GOG files unless said: every fired journal entry's wording read beside its
+      scene (the Steam scan's text) - each fits; the Crossroads (its centre, the portals, four of its eight
+      fights, the way out), the Hall of Ten Doors; the ending with Gauhok alone and with both NPCs; the lair
+      won by Quick play without help on 6 of 8 dice. In the original (DOSBox) beside the engine, the same in
+      both: the "&7" line, the training hall's "Not Enough Experience" at a class's last level, "The water is too
+      deep!" by Yartar, Fireshear's pocket fight (4 loaded, 3 on the field).
+- [x] v0.19.1 (engine 0.217.2): **Treasures' overland step added ten minutes of its own** - the original adds none
+      (DOSBox, the same save and steps). Not checked: Search off in the original; Gateway's overland.
+- [x] **The lair and the ending through the port's buttons** (2026-11-26, the x86_64 build here, GOG files): three
+      runs from the save before the lair to the overland after the ending - both fights by Quick, the rewards,
+      the party made well (seen as full hit points on the next screen; the page's own words not read by the test).
+- [ ] Treasures, one run unexplained: by buttons, on engine 0.217.0, the lair's first fight was won and the party
+      then stood one square back as if a member had run from it (the script's branch for that) - nobody had.
+      Three later runs with the same presses went on to the ending; not reproduced, cause not found.
+- [ ] Treasures, small things left: the Steam scan's journal entry 42 lacks its heading line; the GOG journal's
+      picture entries not looked at one by one; the Crossroads' four other fight cells; the tunnel rooms and the
+      ending's healing not set against the original.
+- [x] v0.19.1: the pin at engine 0.217.3 (the other sessions' Death Knights and Dark Queen fixes with it).
