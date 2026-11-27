@@ -585,8 +585,7 @@ Tick off with the version that did it. Never ask Tom the same thing twice.
       matrix, levels, economy, features, rules4, toggles - and fightfuzz, campfuzz, navcheck): 0 failures once
       the checks' missing oracle files were made again and three checks of their own were put right. This run is
       what found Treasures' starting experience. Steam's and GOG's Treasures GAME.OVR are the same file.
-- [ ] Still open from the day's list: Gateway's ending by buttons (the old winning run no longer replays - the
-      party falls in the arena's third fight without the test program's help); its Scroll of Protection from Paralyzation
+- [ ] Still open from the day's list: its Scroll of Protection from Paralyzation
       (what the original's does - not found in its code yet), its Dust of Disappearance in a fight; Poison Save
       Bonus's effect by the port's buttons (saves aren't shown on any screen - only the engine's checks saw it);
       the other Game Fixes' effects by buttons; the Dark Queen's new characters against DOSBox.
@@ -602,3 +601,13 @@ Tick off with the version that did it. Never ask Tom the same thing twice.
       Knights): Move by D-pad / two together / L1 R1 L2 R2 in all five; Aim and Aim - Manual in Gateway and
       Treasures; Cast in PoolRad and Treasures; Done's menu and Delay in PoolRad; PoolRad's treasure: Take, then B
       back at the treasure's menu. Champions' fight outlasted the test's 900 presses (the test's limit).
+- [x] 2026-11-27: **Gateway's ending by the port's buttons** (v0.19.13's program, GOG files): a save made by the playsim
+      at the arena's altar (the ending's script, ECL6 block 28; slot H of the play-through's party) loaded by buttons,
+      every page pressed through with A - the ending's pictures and words (Vaalgamon dragged down, the desert's
+      army, Krevish's ring) - to Yartar's exploring menu. The arena's four fights before it were played in the
+      engine's test program (2026-11-17), not by buttons.
+- [x] 2026-11-27: **the Dark Queen's new character set beside the original** (DOSBox): a human fighter - level 12,
+      1,000,001 experience, 200 steel, THAC0 10, the same sheet and form - the same through the port's buttons.
+- [x] 2026-11-27: Curse's Scroll of Prot. Paralyzation set beside the original (DOSBox): Used readied in camp it gives
+      effect 0x6D in both (the saves' .FX files the same); 0x6D stops paralysis given by spells, not a monster's
+      paralysing touch - in the original's code and the engine alike. Used unreadied: nothing, in both.
