@@ -101,6 +101,7 @@ std::vector<JRef> journal_queue;
 std::string       cur_cache;            // the game's folder in games/_CYD (a card path)
 bool              jlist_open = false;
 int               jlist_sel = 0;
+std::vector<jour::Document> jlist_docs;   // (Android: the game's PDFs, listed under its entries)
 
 // A message over everything, until a button (errors, journal mentions)
 std::string msg_title, msg_body;
@@ -243,6 +244,27 @@ void safe_check(Uint32 now)
 }
 
 #ifdef __ANDROID__
+// The Journal list's PDFs: the app's own viewer (Java, GoldBoxActivity.openPdf - a page at a time, a book's
+// spread split in two)
+void android_open_pdf(const std::string& path, const std::string& title)
+{
+    JNIEnv* env = static_cast<JNIEnv*>(SDL_AndroidGetJNIEnv());
+    jobject act = static_cast<jobject>(SDL_AndroidGetActivity());
+    if (!env || !act) return;
+    jclass c = env->GetObjectClass(act);
+    jmethodID m = env->GetMethodID(c, "openPdf", "(Ljava/lang/String;Ljava/lang/String;)V");
+    if (m) {
+        jstring p = env->NewStringUTF(path.c_str()), t = env->NewStringUTF(title.c_str());
+        env->CallVoidMethod(act, m, p, t);
+        env->DeleteLocalRef(p);
+        env->DeleteLocalRef(t);
+    } else {
+        env->ExceptionClear();
+    }
+    env->DeleteLocalRef(c);
+    env->DeleteLocalRef(act);
+}
+
 // Start - System - Games Folder: the app's folder screen (Java,
 // GoldBoxActivity.chooseFolder) opens; this program then ends
 void android_choose_folder()
@@ -2590,6 +2612,15 @@ void menu_press(int b)
         case MDevice: device_open = true; about_open = false; break;
         case MAbout: device_open = about_open = true; break;
         case MJournal:
+#ifdef __ANDROID__
+            // (the app's list: the entries, then the game's PDFs - Tom, 2026-11-27)
+            jlist_docs = jour::documents(games_found[game_sel]);
+            if (play::journal_seen_count() <= 0 && !jlist_docs.empty()) {
+                jlist_open = true;
+                jlist_sel = 0;
+                break;
+            }
+#endif
             if (play::journal_seen_count() <= 0) {
                 show_notice("Journal", "The game hasn't told you to read a journal entry yet. Each one it mentions is listed here.");
                 break;
@@ -2705,9 +2736,16 @@ void android_op(int op, int index, int value)
     }
     if (jlist_open) {
         const int n = play::journal_seen_count();
+        const int d0 = n + (n == 0 ? 1 : 0) + 1;         // (the first PDF's row: after the entries, a note, the heading)
         if (op == shell::MenuChoose && index >= 0 && index < n) {
             jlist_sel = index;
             jlist_press(BA);
+        } else if (op == shell::MenuChoose && !jlist_docs.empty() && index >= d0 &&
+                   index < d0 + static_cast<int>(jlist_docs.size())) {
+#ifdef __ANDROID__
+            const jour::Document& d = jlist_docs[static_cast<size_t>(index - d0)];
+            android_open_pdf(d.path, d.label);
+#endif
         } else if (op == shell::MenuBack) {
             jlist_press(BB);
         } else if (op == shell::MenuClose) {
@@ -2817,6 +2855,12 @@ std::string android_menu_text()
             if (!play::journal_seen(i, &kind, &number)) continue;
             journal::mention_name(kind, number, name, sizeof name);
             row(t, 'A', name, "", "Opens the entry.");
+        }
+        if (!jlist_docs.empty()) {
+            if (n == 0) row(t, 'L', "No entries yet: each one the game tells you to read is listed here.", "", "");
+            row(t, 'H', "Documents", "", "");
+            for (const jour::Document& d : jlist_docs)
+                row(t, 'A', d.label.c_str(), "", "Opens the PDF, a page at a time.");
         }
         return t;
     }

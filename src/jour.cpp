@@ -304,7 +304,68 @@ void make_from_text(const library::GameDir& g, const std::string& cache, const s
               ok ? "made" : have_book ? "no entries found in it" : "the PDF's text couldn't be read");
 }
 
+// What the menu calls a PDF: its file's name less ".pdf", the release's tags ("SNEG", "-ENG") and the game's
+// short name before " - " ("QUEEN SNEG - Journal-ENG" -> "Journal", "POOLRAD - Adventurers Journal" ->
+// "Adventurers Journal")
+std::string doc_label(std::string n)
+{
+    if (ends_with_nocase(n, ".pdf")) n.resize(n.size() - 4);
+    for (char& c : n)
+        if (c == '_') c = ' ';
+    const size_t dash = n.find(" - ");
+    if (dash != std::string::npos && dash + 3 < n.size()) n = n.substr(dash + 3);
+    for (const char* tag : {"SNEG", "-ENG", " ENG"}) {
+        const size_t at = [&] {
+            for (size_t i = 0; i + strlen(tag) <= n.size(); ++i)
+                if (strncasecmp(n.c_str() + i, tag, strlen(tag)) == 0) return i;
+            return std::string::npos;
+        }();
+        if (at != std::string::npos) n.erase(at, strlen(tag));
+    }
+    std::string out;
+    for (char c : n)
+        if (c != ' ' || (!out.empty() && out.back() != ' ')) out += c;
+    while (!out.empty() && (out.back() == ' ' || out.back() == '-')) out.pop_back();
+    while (!out.empty() && (out[0] == ' ' || out[0] == '-')) out.erase(0, 1);
+    return out.empty() ? n : out;
+}
+
+void add_pdfs(const std::string& rel, int depth, std::vector<Document>& out)
+{
+    plat::File d = plat::open(card(rel).c_str());
+    if (!d || !d.isDirectory()) return;
+    std::vector<std::string> subs;
+    for (plat::File f = d.openNextFile(); f; f = d.openNextFile()) {
+        const std::string name = f.name();
+        if (f.isDirectory()) {
+            if (depth > 0 && name[0] != '.' && name[0] != '_' && strcasecmp(name.c_str(), "GBC") != 0) subs.push_back(name);
+        } else if (ends_with_nocase(name, ".pdf")) {
+            const std::string path = pm::host_path(card(rel + "/" + name).c_str());   // (the device's path: the app opens it)
+            bool have = false;
+            for (const Document& x : out) have = have || x.path == path;
+            if (!have) out.push_back({doc_label(name), path});
+        }
+        f.close();
+    }
+    d.close();
+    for (const std::string& s : subs) add_pdfs(rel + "/" + s, depth - 1, out);
+}
+
 } // namespace
+
+std::vector<Document> documents(const library::GameDir& g)
+{
+    std::vector<Document> out;
+    add_pdfs(g.folder, 1, out);
+    if (g.data_dir != g.folder) add_pdfs(g.data_dir, 1, out);
+    // the journal first, the rest by name
+    std::stable_sort(out.begin(), out.end(), [](const Document& a, const Document& b) {
+        const bool ja = contains_nocase(a.label, "journal"), jb = contains_nocase(b.label, "journal");
+        if (ja != jb) return ja;
+        return strcasecmp(a.label.c_str(), b.label.c_str()) < 0;
+    });
+    return out;
+}
 
 void prepare(const library::GameDir& g, const std::string& cache, Say say)
 {

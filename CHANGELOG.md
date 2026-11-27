@@ -3,6 +3,17 @@
 Every version of Gold Box Game Engine for PortMaster. A release's notes are
 its part of this file.
 
+## [0.19.12] - 2026-11-27
+
+Built on the CYD engine 0.221.9.
+
+- **The Android app's Journal list: the game's PDFs** (Tom: "an option to view the journal PDF directly, single
+  page at a time ... the other game PDFs, like the manual, rules, cluebooks, etc. You can put that all in the
+  Journal menu"): under the entries, Documents - the journal PDF first, then the rest by name, each named from its
+  file ("QUEEN SNEG - Journal-ENG.pdf": Journal); from the game's folder and a level down (Steam's Documentation).
+  The list opens with no entries read yet when there are PDFs. A tap opens the app's own viewer
+  (`GoldBoxActivity.openPdf`). Android only: the handhelds' Journal list is as it was.
+
 ## [0.19.11] - 2026-11-27
 
 Built on the CYD engine 0.221.9.

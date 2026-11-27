@@ -18,6 +18,7 @@
 #pragma once
 
 #include <string>
+#include <vector>
 
 #include "engine/picture.h"
 
@@ -55,5 +56,13 @@ bool draw(pic::Canvas& game);
 // a line's end as \x1f) or a picture ("P", the file it is saved as - made once, beside JOURNAL.DAT - and its
 // size). font: the journal's typeface the app shows text in (Display - Journal Font)
 std::string app_entry(int font);
+
+// The game's PDFs - its journal first, then its manual, rules, cluebook ... (Tom, 2026-11-27: the Journal menu
+// opens them, "single page at a time"): what the menu calls each (from its file's name) and its path on the device (pm::host_path); from
+// the game's folder, its data folder and their folders a level down (Steam's Documentation)
+struct Document {
+    std::string label, path;
+};
+std::vector<Document> documents(const library::GameDir& g);
 
 } // namespace jour
