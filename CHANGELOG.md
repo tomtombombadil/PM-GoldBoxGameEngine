@@ -3,6 +3,11 @@
 Every version of Gold Box Game Engine for PortMaster. A release's notes are
 its part of this file.
 
+## [0.19.20] - 2026-11-27
+
+- **The start's times in the log** (Tom: the Android app's tiles are slow to appear): one line - SDL, video,
+  sound, the games found, the app's views, the games' files checked - to find where a slow start goes.
+
 ## [0.19.19] - 2026-11-27
 
 - **The Android Journal list's Documents named in title case** (Tom: "codewheel-pictures" should be "Codewheel

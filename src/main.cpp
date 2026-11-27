@@ -4029,6 +4029,7 @@ int main(int argc, char** argv)
         return 1;
     }
     shell::begin();
+    const Uint32 t_sdl = SDL_GetTicks();     // (the start's times, in the log: where a slow start goes)
     shell::set_menu(android_op);
     plat::log("[port] Gold Box Game Engine for PortMaster %s; games in %s\n", PM_VERSION, pm::games_root().c_str());
     settings_load(conf_dir, cfg);
@@ -4051,10 +4052,12 @@ int main(int argc, char** argv)
         return 1;
     }
     video::set_fit(static_cast<video::Fit>(cfg.fit));
+    const Uint32 t_video = SDL_GetTicks();
     video::set_wide(true);
     if (SDL_InitSubSystem(SDL_INIT_AUDIO) == 0) pm::audio_begin();
     else plat::log("[port] no sound: %s\n", SDL_GetError());
     open_pad();
+    const Uint32 t_sound = SDL_GetTicks();
     touchpad::set_emit(button);
     touch_last = pad == nullptr;
     pad_style_apply();
@@ -4062,6 +4065,7 @@ int main(int argc, char** argv)
     touch_pad_apply();
     rotation_apply();       // (after the window: SDL sets its own as it makes one)
     rescan();
+    const Uint32 t_scan = SDL_GetTicks();
     plat::log("[port] %d game folder(s) found\n", static_cast<int>(games_found.size()));
     for (const auto& g : games_found)
         plat::log("[port]   %s: %s (%d files in games/%s)%s\n", g.folder.c_str(), games::title(g.game), g.files,
@@ -4080,8 +4084,12 @@ int main(int argc, char** argv)
     }
     // (new games now; the pictures of games found before are checked by the
     // game list once the panel's shape has stood still - pictures_follow)
+    const Uint32 t_app = SDL_GetTicks();
     if (drive) fcntl(0, F_SETFL, fcntl(0, F_GETFL, 0) | O_NONBLOCK);
     discover(false, false);
+    plat::log("[port] start (ms): SDL %u, video %u, sound %u, the games found %u, the app's views %u, the games' files "
+              "checked %u\n", t_sdl, t_video - t_sdl, t_sound - t_video, t_scan - t_sound, t_app - t_scan,
+              SDL_GetTicks() - t_app);
     // (a game by its folder - a home-screen shortcut's: the game's start as Play's; gone, the game list)
     for (size_t g = 0; !auto_folder.empty() && g < games_found.size(); ++g)
         if (games_found[g].folder == auto_folder) auto_game = static_cast<int>(g) + 1;
