@@ -10,7 +10,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import play_test as pt
 pt.EXE, games, pt.OUT = sys.argv[1], sys.argv[2], sys.argv[3]
 steps = sys.argv[4:]
-r = pt.Run(games, 1, "sw"); p = r.p
+r = pt.Run(games, int(os.environ.get("GAME_N", "1")), "sw"); p = r.p   # (GAME_N=n: the folder's n-th game)
 def show(tag):
     print("==", tag, "|", r.bottom(), "|", p.st.get("desc"))
     for t in p.text[:24]:
