@@ -557,8 +557,8 @@ Tick off with the version that did it. Never ask Tom the same thing twice.
       the CYD TODO, not fixed (where the original takes those pictures from was not found).
 - [x] Speed test by buttons in Secret: a save set one step before a fight (the playsim), `WALK=up tools/hand_test.py
       ... speed` - the menu, Exit and B back, all right; its indoor field looked at.
-- [ ] Speed test by buttons in Darkness: still no fight reached (2,292 steps in Phlan's two maps; the playsim's
-      teleport saves landed in a menu town). Its menu code is Treasures', which passed.
+- [x] v0.19.8: Speed test by buttons in Darkness - passed (a save one step before the hill giants' room, made by
+      the playsim: AREA=1 BLOCK=20 TELE=2,1,0; `WALK=up tools/hand_test.py ... speed`). All nine games done.
 - [ ] Never played to an end by the port's buttons: Gateway's ending. Seen by buttons: Treasures'.
 - [ ] The CYD TODO does not tick Death Knights' play-through as complete (its kit's notes reach Soth's floor) -
       the CYD session's to confirm.
@@ -585,8 +585,15 @@ Tick off with the version that did it. Never ask Tom the same thing twice.
       matrix, levels, economy, features, rules4, toggles - and fightfuzz, campfuzz, navcheck): 0 failures once
       the checks' missing oracle files were made again and three checks of their own were put right. This run is
       what found Treasures' starting experience. Steam's and GOG's Treasures GAME.OVR are the same file.
-- [ ] Still open from the day's list: the Speed test by buttons in Darkness; Gateway's ending by buttons; Curse's
+- [ ] Still open from the day's list: Gateway's ending by buttons (the old winning run no longer replays - the
+      party falls in the arena's third fight without the test program's help); Curse's
       travel-map camp (does the original show the party list there?), its Scroll of Protection from Paralyzation
       (what the original's does - not found in its code yet), its Dust of Disappearance in a fight; Poison Save
       Bonus's effect by the port's buttons (saves aren't shown on any screen - only the engine's checks saw it);
       the other Game Fixes' effects by buttons; the Dark Queen's new characters against DOSBox.
+- [x] v0.19.8 (engine 0.221.4): Exit / B in a treasure's "Take: Money Items Exit" left the whole treasure in all
+      games but PoolRad - found by the Darkness Speed test's treasure step, the original seen in DOSBox (Treasures),
+      fixed in the engine; by buttons in Darkness: B back at the treasure's menu. Curse's fight by buttons after it:
+      its treasure (items only) unchanged. Not seen in DOSBox: Curse, Secret, Gateway, the Krynn games.
+- [x] 2026-11-26: Treasures' new characters' hit points are rolled in the original too (three rerolls in DOSBox:
+      50, 34, 40 for an elf fighter 5) - no difference.

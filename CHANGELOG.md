@@ -3,6 +3,18 @@
 Every version of Gold Box Game Engine for PortMaster. A release's notes are
 its part of this file.
 
+## [0.19.8] - 2026-11-26
+
+Built on the CYD engine 0.221.4.
+
+- **A treasure's Take menu: Exit and B go back to the treasure's menu.** With both money and items lying there the
+  game asks "Take: Money Items Exit"; Exit (and so B) left the whole treasure from there - "There is still treasure
+  left" - in every game but PoolRad. The original goes back to View Take Pool Share Exit (seen in DOSBox in
+  Treasures: the old tower's fight won, Take, Exit). Through the port's buttons in Darkness: Take, B - the
+  treasure's menu again.
+- **The Speed test by buttons passes in Darkness** too now (a save set one step before a fight): the fight's
+  Speed menu, Exit and B back - all nine games done.
+
 ## [0.19.7] - 2026-11-26
 
 Built on the CYD engine 0.221.3.
