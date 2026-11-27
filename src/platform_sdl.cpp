@@ -13,6 +13,8 @@
 #include <cstring>
 #include <ctime>
 #include <dirent.h>
+#include <mutex>
+#include <unordered_map>
 #include <strings.h>
 #include <sys/stat.h>
 #include <unistd.h>
@@ -50,13 +52,36 @@ std::string step(const std::string& dir, const std::string& name)
 std::string host_path(const char* p)
 {
     if (strncmp(p, "/GOLDBOX", 8) != 0 || (p[8] != '/' && p[8] != 0)) return p;
+    // (the folders on the way, once found, remembered: each look a slow step through Android's shared storage,
+    // and the scan opens the same folders again and again - only a folder, never the last part, which may be a
+    // file about to be made)
+    static std::mutex m;
+    static std::unordered_map<std::string, std::string> found;
     std::string out = games_root();
     const char* s = p + 8;
     while (*s) {
         while (*s == '/') ++s;
         const char* e = s;
         while (*e && *e != '/') ++e;
-        if (e > s) out = step(out, std::string(s, e));
+        if (e > s) {
+            const bool last = *e == 0 || (*e == '/' && e[1] == 0);
+            const std::string key = out + "/" + std::string(s, e);
+            if (last) {
+                out = step(out, std::string(s, e));
+            } else {
+                std::unique_lock<std::mutex> lock(m);
+                auto it = found.find(key);
+                if (it != found.end()) {
+                    out = it->second;
+                } else {
+                    lock.unlock();
+                    const std::string got = step(out, std::string(s, e));
+                    lock.lock();
+                    found[key] = got;
+                    out = got;
+                }
+            }
+        }
         s = e;
     }
     return out;
