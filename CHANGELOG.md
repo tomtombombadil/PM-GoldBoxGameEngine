@@ -3,6 +3,16 @@
 Every version of Gold Box Game Engine for PortMaster. A release's notes are
 its part of this file.
 
+## [0.19.13] - 2026-11-27
+
+Built on the CYD engine 0.221.11.
+
+- **Curse: a camp on the travel map** ("Enter city Journey on Camp" - Camp) showed the camp's words under the map.
+  Now as the original (seen in DOSBox at the edge of Tilverton): the camp's own screen - its picture in the view's
+  yellow frame, the party, "CAMPING" - and the map back as it was when the camp breaks. Through the port's buttons:
+  Load, Begin, Camp, Exit - both screens looked at.
+- The engine's 0.221.10: the Dark Queen's damage lines get their words (the other session's).
+
 ## [0.19.12] - 2026-11-27
 
 Built on the CYD engine 0.221.9.

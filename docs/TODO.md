@@ -586,8 +586,7 @@ Tick off with the version that did it. Never ask Tom the same thing twice.
       the checks' missing oracle files were made again and three checks of their own were put right. This run is
       what found Treasures' starting experience. Steam's and GOG's Treasures GAME.OVR are the same file.
 - [ ] Still open from the day's list: Gateway's ending by buttons (the old winning run no longer replays - the
-      party falls in the arena's third fight without the test program's help); Curse's
-      travel-map camp (does the original show the party list there?), its Scroll of Protection from Paralyzation
+      party falls in the arena's third fight without the test program's help); its Scroll of Protection from Paralyzation
       (what the original's does - not found in its code yet), its Dust of Disappearance in a fight; Poison Save
       Bonus's effect by the port's buttons (saves aren't shown on any screen - only the engine's checks saw it);
       the other Game Fixes' effects by buttons; the Dark Queen's new characters against DOSBox.
@@ -597,3 +596,9 @@ Tick off with the version that did it. Never ask Tom the same thing twice.
       its treasure (items only) unchanged. Not seen in DOSBox: Curse, Secret, Gateway, the Krynn games.
 - [x] 2026-11-26: Treasures' new characters' hit points are rolled in the original too (three rerolls in DOSBox:
       50, 34, 40 for an elf fighter 5) - no difference.
+- [x] v0.19.13 (engine 0.221.11): Curse's camp on the travel map - the camp's own screen and the map back after it,
+      as the original (DOSBox, the edge of Tilverton). Seen by the port's buttons (drive_steps, a save at the map).
+- [x] 2026-11-27: hand_test `fight` again on v0.19.8 by buttons (GOG; PoolRad, Gateway, Treasures, Champions,
+      Knights): Move by D-pad / two together / L1 R1 L2 R2 in all five; Aim and Aim - Manual in Gateway and
+      Treasures; Cast in PoolRad and Treasures; Done's menu and Delay in PoolRad; PoolRad's treasure: Take, then B
+      back at the treasure's menu. Champions' fight outlasted the test's 900 presses (the test's limit).
