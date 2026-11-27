@@ -2857,7 +2857,7 @@ std::string android_menu_text()
             row(t, 'A', name, "", "Opens the entry.");
         }
         if (!jlist_docs.empty()) {
-            if (n == 0) row(t, 'L', "No entries yet: each one the game tells you to read is listed here.", "", "");
+            if (n == 0) row(t, 'H', "No entries yet: each one the game tells you to read is listed here.", "", "");
             row(t, 'H', "Documents", "", "");
             for (const jour::Document& d : jlist_docs)
                 row(t, 'A', d.label.c_str(), "", "Opens the PDF, a page at a time.");
