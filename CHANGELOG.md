@@ -3,6 +3,15 @@
 Every version of Gold Box Game Engine for PortMaster. A release's notes are
 its part of this file.
 
+## [0.19.22] - 2026-11-27
+
+- **No scanning at a start** (Tom: "the whole purpose of the 'Scan the SD Card' phase of the application is to be
+  run ONCE and not needed again unless the user adds or deletes a game's files"): what a scan finds - each game
+  folder's game and where its files are - is kept in games/_CYD/GAMES.TXT, and a start reads it back. A start
+  looks only at the names of the games folder's own folders (one listing) and that each game's files' folder is
+  still there; a folder added or taken away, or a game's files gone, and the games are looked for again. Rescan
+  looks afresh as ever. Handhelds and the Android app alike.
+
 ## [0.19.21] - 2026-11-27
 
 - **The start much quicker on Android** (Tom: the tiles slow to appear): a folder's listing no longer opens every

@@ -2426,9 +2426,9 @@ void menu_change(int step)
     settings_save(conf_dir, cfg);
 }
 
-void rescan()
+void rescan(bool kept = false)
 {
-    have_root = library::scan(games_found);
+    have_root = kept ? library::scan_kept(games_found) : library::scan(games_found);
 #ifdef __ANDROID__
     // (the app's chooser by series, Tom 2026-11-24: the Forgotten Realms four, the Savage Frontier two, then
     // Krynn's three - a tablet's grid has Krynn as its whole last row)
@@ -4064,7 +4064,7 @@ int main(int argc, char** argv)
     touchpad::set_hidden(cfg.pad_hidden);
     touch_pad_apply();
     rotation_apply();       // (after the window: SDL sets its own as it makes one)
-    rescan();
+    rescan(true);       // (what the last scan found - Tom, 2026-11-27: no scanning when the app opens)
     const Uint32 t_scan = SDL_GetTicks();
     plat::log("[port] %d game folder(s) found\n", static_cast<int>(games_found.size()));
     for (const auto& g : games_found)

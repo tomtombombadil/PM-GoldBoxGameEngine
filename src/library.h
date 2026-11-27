@@ -28,6 +28,9 @@ constexpr const char* kCacheDir = "_CYD";
 // The game folders, in the engine's library order. False: there is no
 // games folder at all.
 bool scan(std::vector<GameDir>& out);
+// A start's: what the last scan found (games/_CYD/GAMES.TXT), when the games folder's own folders are the ones it
+// saw and each game's files are still there - else a scan
+bool scan_kept(std::vector<GameDir>& out);
 
 // "/GOLDBOX/_CYD/<folder>" (made if missing)
 std::string cache_dir(const GameDir& g);
