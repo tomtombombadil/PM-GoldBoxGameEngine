@@ -111,6 +111,14 @@ void draw_map(int zx, int zy, int zw, int zh, bool square)
                     if (across) put(lx, ly, cw + 1, 1, video::kCream);
                     else put(lx, ly, 1, ch + 1, video::kCream);
                     if (!door) continue;
+                    if (play::map_arch(x, y, d)) {
+                        // An archway (the engine's play::map_arch - its wall's picture see-through; Tom,
+                        // 2026-11-27): an opening in the wall line, its middle half away
+                        const int q = (across ? cw : ch) / 4;
+                        if (across) put(lx + q, ly, cw - 2 * q + 1, 1, video::kBlack);
+                        else put(lx, ly + q, 1, ch - 2 * q + 1, video::kBlack);
+                        continue;
+                    }
                     if (door == 1 && (plain >> w & 1)) {
                         // Drawn as the area's wall: a secret door only where the game lets the party through
                         // (the engine's play::map_secret, 0.214.2 - before it is found; the rest is wall)

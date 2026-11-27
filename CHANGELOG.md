@@ -3,6 +3,13 @@
 Every version of Gold Box Game Engine for PortMaster. A release's notes are
 its part of this file.
 
+## [0.19.23] - 2026-11-27
+
+Built on the CYD engine 0.222.2.
+
+- **Archways on the Companion's map** (Tom: they were drawn as doors): a side the engine finds is an archway - its
+  wall's picture see-through in the middle (`play::map_arch`) - is drawn as an opening in the wall line.
+
 ## [0.19.22] - 2026-11-27
 
 - **No scanning at a start** (Tom: "the whole purpose of the 'Scan the SD Card' phase of the application is to be
