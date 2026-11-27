@@ -3,19 +3,19 @@
 Tick off with the version that did it. Never ask Tom the same thing twice.
 
 ## Tom
-- [ ] v0.13.0 **Tom: Clean Up Game Files** (Start menu, beside Rescan): run it on a handheld with GOG and Steam
+- [x] (Tom, 2026-11-27: done) v0.13.0 **Tom: Clean Up Game Files** (Start menu, beside Rescan): run it on a handheld with GOG and Steam
       folders, then play a game of each; the report is games/_CYD/CLEANUP.TXT (also sent by Send Logs).
 - [x] Handhelds' Picture: Tom, 2026-11-23 - the Companion choices are Android's; the handhelds' three back (v0.12.20).
-- [ ] v0.12.17 (app 0.1.3) on the Tab S2 and the Pixel: the game larger, the buttons over it; the arrow at the top
+- [x] (Tom, 2026-11-27: done) v0.12.17 (app 0.1.3) on the Tab S2 and the Pixel: the game larger, the buttons over it; the arrow at the top
       left; Controls - Button Size / Opacity; Display - Picture's two new choices, landscape and portrait.
-- [ ] v0.12.16 (app 0.1.2) on your phone: a fight - move a fighter diagonally with the on-screen D-Pad's corners;
+- [x] (Tom, 2026-11-27: done) v0.12.16 (app 0.1.2) on your phone: a fight - move a fighter diagonally with the on-screen D-Pad's corners;
       after the fight (Curse's Fire Knives) the 3D view is back at once. The buttons read MENU and MOUSE.
-- [ ] v0.12.14 (app 0.1.1) on your phone: tap Modify Character in the party menu - the highlight goes there;
+- [x] (Tom, 2026-11-27: done) v0.12.14 (app 0.1.1) on your phone: tap Modify Character in the party menu - the highlight goes there;
       the Start menu chooses on one tap; turn the phone (Auto) and try Display - Screen Rotation.
 - [ ] The Android app (APK-GoldBoxGameEngine) on your phone: the folder screen (default folder, then Choose
       Folder on one of your own), a game copied in over USB, the scan, then play by touch alone (On-Screen
       Buttons Auto), then with a Bluetooth controller (the buttons go away; a touch brings them back).
-- [ ] The X55's red rclone line at Quit (ROCKNIX nightly; Tom: not after other ports): ROCKNIX's cloud backup
+- [ ] The X55's red rclone line at Quit (ROCKNIX nightly; Tom: not after other ports): (Tom, 2026-11-27, v0.19.x: still there) ROCKNIX's cloud backup
       after a game (CLAUDE.md has where). To settle why only here: quit this port with Wi-Fi off (no line
       expected), and another port with Wi-Fi on (the line expected). To be rid of it: ROCKNIX's cloud backup
       setting off, or rclone set up.
@@ -496,7 +496,7 @@ Tick off with the version that did it. Never ask Tom the same thing twice.
 - [x] The pin at the engine's newest commit (eb8cf7a: Clean Up's report names each folder removed). v0.12.13 - v0.13.0
       were the Android app's session's (touch, the on-screen buttons, Clean Up Game Files); the handhelds' side of
       them looked at here by the play test (PoolRad) and shots at 640 x 480 and 1280 x 720 only.
-- [ ] Tom, on a handheld: Start - Clean Up Game Files on a card with a whole GOG / Steam copy (it deletes - the games
+- [x] (Tom, 2026-11-27: done) Tom, on a handheld: Start - Clean Up Game Files on a card with a whole GOG / Steam copy (it deletes - the games
       still start after? the report: games/_CYD/CLEANUP.TXT).
 
 ## v0.13.2
