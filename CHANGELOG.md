@@ -3,6 +3,15 @@
 Every version of Gold Box Game Engine for PortMaster. A release's notes are
 its part of this file.
 
+## [0.19.24] - 2026-11-27
+
+Built on the CYD engine 0.222.3.
+
+- **The Companion's map, refined** (Tom, from mock-ups): doors stop short of the corners so a little wall shows at
+  each end; archways get a serif where each piece of wall ends; the secret door's S is turned on walls running up
+  and down; **one-way doors** are drawn as half a door on the side they open from and an arrow pointing out on the
+  other side (legend "One-way"); the party's arrow sits evenly in its square whichever way it faces.
+
 ## [0.19.23] - 2026-11-27
 
 Built on the CYD engine 0.222.2.

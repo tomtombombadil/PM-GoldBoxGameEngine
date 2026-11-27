@@ -74,7 +74,7 @@ constexpr uint32_t kPlace = 0xFFFF8C00;       // (the CYD's style::kPlace)
 View first() { return play::fighting() ? View::Battle : View::Map; }
 
 // The auto-map: walls a pixel wide, doors a band on the wall line (gold;
-// red: locked), a secret door a cyan S, the party a green arrow (the CYD's
+// red: locked; a one-way door half of one and an arrow), a secret door a cyan S, the party a green arrow (the CYD's
 // colours and legend - Tom, 2026-11-14: no heading, the words alone).
 // In the zone zx, zy, zw x zh. square: the buffer's pixels are square
 // (under the game; the legend to the map's right) - else squares 12 x 10,
@@ -111,27 +111,77 @@ void draw_map(int zx, int zy, int zw, int zh, bool square)
                     if (across) put(lx, ly, cw + 1, 1, video::kCream);
                     else put(lx, ly, 1, ch + 1, video::kCream);
                     if (!door) continue;
+                    // (the map look, Tom 2026-11-27: every door leaves a little wall at each end; L the side's
+                    // length, P the square's depth across it)
+                    const int L = across ? cw : ch, P = across ? ch : cw, q = L / 4, n = L - 2 * q + 1;
                     if (play::map_arch(x, y, d)) {
-                        // An archway (the engine's play::map_arch - its wall's picture see-through; Tom,
-                        // 2026-11-27): an opening in the wall line, its middle half away
-                        const int q = (across ? cw : ch) / 4;
-                        if (across) put(lx + q, ly, cw - 2 * q + 1, 1, video::kBlack);
-                        else put(lx, ly + q, 1, ch - 2 * q + 1, video::kBlack);
+                        // An archway (the engine's play::map_arch - its wall's picture see-through): an opening,
+                        // a serif across the line where each piece of wall ends, a pixel of wall clear of the
+                        // corner (Tom, 2026-11-27); too small for that, a plain opening
+                        const int a = (L + 3) / 4, g = L - 2 * a + 1;
+                        if (a < 3 || g < 2) {
+                            if (across) put(lx + q, ly, n, 1, video::kBlack);
+                            else put(lx, ly + q, 1, n, video::kBlack);
+                        } else if (across) {
+                            put(lx + a, ly, g, 1, video::kBlack);
+                            put(lx + a - 1, ly - 1, 1, 3, video::kCream);
+                            put(lx + a + g, ly - 1, 1, 3, video::kCream);
+                        } else {
+                            put(lx, ly + a, 1, g, video::kBlack);
+                            put(lx - 1, ly + a - 1, 3, 1, video::kCream);
+                            put(lx - 1, ly + a + g, 3, 1, video::kCream);
+                        }
                         continue;
                     }
+                    // A one-way door (Tom, 2026-11-27): passable from this square, the same wall solid from the
+                    // next - half a door on this side, an arrow into the next square pointing away from the wall
+                    const int nx = x + geo::dx(d), ny = y + geo::dy(d), back = (d + 4) & 7;
+                    const bool oneway = nx >= 0 && ny >= 0 && nx < m->w && ny < m->h && geo::wall(*m, nx, ny, back) &&
+                                        !geo::door(*m, nx, ny, back);
+                    // (which side of the line this square is: +1 below / right of it, -1 above / left)
+                    const int here = d == 0 || d == 6 ? 1 : -1;
+                    auto arrow = [&]() {
+                        if (!oneway || P < 7) return;
+                        const int len = P / 2 > 3 ? P / 2 : 3, mid = L / 2, out = -here;
+                        for (int k = 0; k < len; ++k) {
+                            const int t = 2 + k;
+                            if (across) put(lx + mid, ly + out * t, 1, 1, video::kGold);
+                            else put(lx + out * t, ly + mid, 1, 1, video::kGold);
+                        }
+                        for (int k = 1; k <= 2; ++k) {
+                            const int t = 1 + len - k;
+                            if (across) {
+                                put(lx + mid - k, ly + out * t, 1, 1, video::kGold);
+                                put(lx + mid + k, ly + out * t, 1, 1, video::kGold);
+                            } else {
+                                put(lx + out * t, ly + mid - k, 1, 1, video::kGold);
+                                put(lx + out * t, ly + mid + k, 1, 1, video::kGold);
+                            }
+                        }
+                    };
                     if (door == 1 && (plain >> w & 1)) {
                         // Drawn as the area's wall: a secret door only where the game lets the party through
-                        // (the engine's play::map_secret, 0.214.2 - before it is found; the rest is wall)
+                        // (the engine's play::map_secret, 0.214.2 - before it is found; the rest is wall). The
+                        // S turned on a wall running up and down (Tom, 2026-11-27)
                         if (!play::map_secret(x, y, d) || cw < 8) continue;
-                        const int ox = across ? lx + cw / 2 - 2 : lx - 2, oy = across ? ly - 3 : ly + ch / 2 - 3;
                         for (int r = 0; r < 7; ++r)
                             for (int c = 0; c < 5; ++c)
-                                if (kS[r] >> (4 - c) & 1) put(ox + c, oy + r, 1, 1, video::kCyan);
+                                if (kS[r] >> (4 - c) & 1) {
+                                    if (across) put(lx + cw / 2 - 2 + c, ly - 3 + r, 1, 1, video::kCyan);
+                                    else put(lx - 3 + (6 - r), ly + ch / 2 - 2 + c, 1, 1, video::kCyan);
+                                }
+                        arrow();
                         continue;
                     }
+                    // A door: 3 pixels across the wall line, a little wall left at each end (locked: red - codes
+                    // 2 and 3 alike, Tom); a one-way door the half on this square's side
                     const uint32_t col = door == 1 ? video::kGold : video::kWarn;
-                    if (across) put(lx + 1, ly - 1, cw - 1, 3, col);
-                    else put(lx - 1, ly + 1, 3, ch - 1, col);
+                    if (oneway) {
+                        if (across) put(lx + q, here > 0 ? ly : ly - 1, n, 2, col);
+                        else put(here > 0 ? lx : lx - 1, ly + q, 2, n, col);
+                        arrow();
+                    } else if (across) put(lx + q, ly - 1, n, 3, col);
+                    else put(lx - 1, ly + q, 3, n, col);
                 }
             }
     // The places (PoolRad's wilderness, engine 0.213.0: where its scripts have something): an orange square
@@ -143,14 +193,21 @@ void draw_map(int zx, int zy, int zw, int zh, bool square)
                 put(mx + x * cw + (cw - pw + 1) / 2, my + y * ch + (ch - ph + 1) / 2, pw, ph, kPlace);
                 places = true;
             }
-    // The party: an arrowhead the way it faces
-    const int cx = mx + play::pos_x() * cw + cw / 2, cy = my + play::pos_y() * ch + ch / 2;
-    const int dir = play::dir(), fx = geo::dx(dir), fy = geo::dy(dir);
-    const int len = (fx ? cw : ch) / 2 - 1;
-    for (int k = -len; k <= len; ++k) {
-        // (k along the facing; the head narrows to the front)
-        const int half = (len - k) / 2;
-        for (int s = -half; s <= half; ++s) put(cx + fx * k + (fx ? 0 : s), cy + fy * k + (fy ? 0 : s), 1, 1, 0xFF28FF28u);
+    // The party: an arrowhead the way it faces, fitted between the square's walls a pixel clear of each (Tom,
+    // 2026-11-27: balanced every way round) - its tip two pixels wide where the room across is even
+    {
+        const int sx = mx + play::pos_x() * cw, sy = my + play::pos_y() * ch;
+        const int dir = play::dir(), fx = geo::dx(dir), fy = geo::dy(dir);
+        const int na = (fx ? cw : ch) - 1, np = (fx ? ch : cw) - 1, len = na - 2;
+        const int base = np % 2 == 0 ? 2 : 1;
+        for (int i = 0; i < len; ++i) {
+            int wd = base + 2 * (i / 2);
+            if (wd > np - 2) wd = np - 2;
+            if (wd < 1) wd = 1;
+            const int a = 1 + (np - wd) / 2, along = (fx > 0 || fy > 0) ? na - 1 - i : 2 + i;
+            if (fx) put(sx + along, sy + a, 1, wd, 0xFF28FF28u);
+            else put(sx + a, sy + along, wd, 1, 0xFF28FF28u);
+        }
     }
     if (square) {
         const int lx = mx + m->w * cw + 10;
@@ -158,6 +215,7 @@ void draw_map(int zx, int zy, int zw, int zh, bool square)
         else {
             letters(lx, my, "Locked", video::kWarn);
             letters(lx, my + 12, "Secret", video::kCyan);
+            letters(lx, my + 24, "One-way", video::kGold);
         }
     } else {
         const int ly = my + m->h * ch + 6;
@@ -166,6 +224,7 @@ void draw_map(int zx, int zy, int zw, int zh, bool square)
         else {
             letters(zx + 4, ly, "Locked", video::kWarn);
             letters(zx + 68, ly, "Secret", video::kCyan);
+            letters(zx + 132, ly, "One-way", video::kGold);
         }
     }
 }
