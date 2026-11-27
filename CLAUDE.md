@@ -368,7 +368,8 @@ and maintains it; it is the primary output of the Claude Project
   40 x 25 text cells in the engine's Clear font), scaled to the panel:
   Original 4:3 (default), Square Pixels, Stretch. Layout always from the
   panel's size - never assume a resolution.
-- `src/library.*` - finds the games (the CYD scan's rules on `plat::`).
+- `src/library.*` - finds the games: the engine's `cyd/src/game/game_find.h` (the boards' scan uses it too -
+  a rule changes there, in the CYD repo).
 - `src/art.*` (the game list's pictures: made by the scan into
   `_CYD/<folder>/ART.BIN`, only read by the list), `src/panel.*` (the Companion),
   `src/jour.*` (the journal: made and shown), `src/task.*` (the helper

@@ -1,6 +1,6 @@
 // The player's games: the folders under games/ (the engine's /GOLDBOX)
 // holding a Gold Box game's original DOS files. The same rules as the CYD
-// engine's card scan (cyd/src/app/library.cpp), on the platform layer.
+// engine's card scan: cyd/src/game/game_find.h, shared with the boards.
 #pragma once
 
 #include <string>

@@ -77,10 +77,12 @@ Tick off with the version that did it. Never ask Tom the same thing twice.
       download links; keep the Buck Rogers name out of the port's title.
 - [ ] Other handhelds / firmwares you can test on, when it matters (a
       PortMaster submission wants several).
-- [ ] `cyd/src/app/library.cpp` (the game scan) is tied to Arduino's
+- [x] `cyd/src/app/library.cpp` (the game scan) is tied to Arduino's
       files, so the port has its own copy of its rules (`src/library.cpp`).
       Moving the CYD's onto the platform layer would let both share it -
-      not a bug fix; your OK needed.
+      not a bug fix; your OK needed. (Tom, 2026-11-27: OK. v0.19.18, engine 0.221.20: it hadn't been done - both
+      scans now call the engine's `cyd/src/game/game_find.h`; the same 19 folders found, the boards' scan checked
+      in QEMU.)
 
 - [ ] Tom, v0.12.1 on the RG40XX V (Knulli): does Quit come back to EmulationStation now? If it hangs again, Send Logs
       after the next start (the log's last lines say what the launch script did). Also the new menus: anything hard to

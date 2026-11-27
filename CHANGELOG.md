@@ -3,6 +3,15 @@
 Every version of Gold Box Game Engine for PortMaster. A release's notes are
 its part of this file.
 
+## [0.19.18] - 2026-11-27
+
+Built on the CYD engine 0.221.20.
+
+- **The game scan's rules are the engine's own** - where a folder's game files are (GOG's, Steam's GAME/<SHORT>,
+  the Dark Queen's DISK1-3) is now decided by the same code on the handhelds and the CYD boards, instead of a
+  copy of it here. Nothing changes for the player: the old and the new scan found the same games in the same
+  places in all nineteen GOG and Steam folders.
+
 ## [0.19.17] - 2026-11-27
 
 Built on the CYD engine 0.221.19.
