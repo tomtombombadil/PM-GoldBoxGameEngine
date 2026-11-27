@@ -3,6 +3,16 @@
 Every version of Gold Box Game Engine for PortMaster. A release's notes are
 its part of this file.
 
+## [0.19.14] - 2026-11-27
+
+Built on the CYD engine 0.221.12.
+
+- **A fight's own-side spells and items are aimed, as the originals do** - Bless, Haste, Invisibility 10' Radius,
+  the Dust of Disappearance were cast on the whole party with no aim. Seen in DOSBox (Curse's tavern fight): the
+  original asks "Aim:" starting on the caster; the Dust takes four picks and only those four turn invisible; Bless
+  takes an area and blesses those of the party in it not next to an enemy. The Dark Queen is as it was.
+- Also from the engine: the Android app's Journal list's note line (the other session's 0.19.12 change, merged).
+
 ## [0.19.13] - 2026-11-27
 
 Built on the CYD engine 0.221.11.
