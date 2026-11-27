@@ -3,6 +3,22 @@
 Every version of Gold Box Game Engine for PortMaster. A release's notes are
 its part of this file.
 
+## [0.19.17] - 2026-11-27
+
+Built on the CYD engine 0.221.19.
+
+- **Champions: the towns' screens drawn right again** (Tom's RG40XX H: Throtl's Armoury and Inn). An outpost (a town
+  on the overland - Throtl, Gargath ...) was drawn as the overland: after Buy's Exit the party list and the divider
+  went, the Inn showed the overland map, and back at the town's menu the world map stayed behind the town's
+  picture. Now each is the town's picture, the party at the right and the divider, as the original - Armoury Buy /
+  Exit / Exit, the Inn's camp and its Exit, the Hall, the Commandant, Next, the Temple and the overland's own camp
+  compared with the original in DOSBox side by side, and Armoury and Inn checked by the port's buttons.
+- **Champions: the camp shows its own picture** (the original's), not a black square.
+- **Champions: a save made in the Inn's camp loads back into the town** - its menu came back as Move / Encamp. By
+  the port's buttons: the save loaded, Inn, Exit - the town's menu.
+- From the engine's other session: the Dark Queen's maps wrap round at their edges (the palace's spy passage), and
+  its saves keep an NPC (Grunschka) so they load again.
+
 ## [0.19.16] - 2026-11-27
 
 Built on the CYD engine 0.221.15.

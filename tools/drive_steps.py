@@ -3,7 +3,7 @@
 The first game of the folder to its party menu, then the steps by the port's buttons, the screen's text
 printed at each "show" and at the end - for a quick look at one thing (a switch's effect, a list, a sheet).
 Steps: a --script step (a, r2,wait:300, start, menu:Game_Play ...), line:<a menu line's start> /
-word:<a menu word> (_ for a space) to put the highlight there, show. Needs real game files: scratch only.
+word:<a menu word> (_ for a space) to put the highlight there, show, log (the port's log lines since the last). Needs real game files: scratch only.
    e.g. line:Load_Saved a,wait:800 a,wait:1500 line:BEGIN a,wait:1500 r2,wait:300 word:View a,wait:800 show"""
 import sys, os, re
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -21,5 +21,7 @@ for s in steps:
     if s.startswith("line:"): print("goto_line", s[5:], pt.goto_line(p, s[5:].replace("_", " ")))
     elif s.startswith("word:"): print("goto_word", s[5:], pt.goto_word(p, s[5:].replace("_", " ")))
     elif s == "show": show("")
+    elif s == "log":                    # (the port's own lines since the last "log" - the engine's [play] log)
+        print("".join("   log: " + l for l in p.log)); p.log.clear()
     else: r.do(s)
 show("end")
