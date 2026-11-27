@@ -21,7 +21,8 @@ and maintains it; it is the primary output of the Claude Project
 - **The task list**: `docs/TODO.md` - Tom's and Claude's open items
   (questions for Tom, checks Claude wants, follow-ups). Add things as they
   come up, tick them off with the version that did it, never ask Tom the
-  same thing twice. Sync SPEC and TODO to the Project (`claude/SPEC.md`,
+  same thing twice. **Tom's section holds only open items** (Tom, 2026-11-27: ticked lines left there
+  looked as if nothing had been done): an item done or ticked by him moves to Done in the same edit. Sync SPEC and TODO to the Project (`claude/SPEC.md`,
   `claude/TODO.md`) with every push.
 - Game names to Tom (as in the CYD repo): PoolRad, Curse, Secret, Darkness,
   Gateway, Treasures, Champions, Knights, Queen - never "Pool" alone.

@@ -1,17 +1,9 @@
 # TODO - Tom's and Claude's open items
 
-Tick off with the version that did it. Never ask Tom the same thing twice.
+Tick off with the version that did it. Never ask Tom the same thing twice. Tom's section holds only open items:
+a finished one moves to Done.
 
 ## Tom
-- [x] (Tom, 2026-11-27: done) v0.13.0 **Tom: Clean Up Game Files** (Start menu, beside Rescan): run it on a handheld with GOG and Steam
-      folders, then play a game of each; the report is games/_CYD/CLEANUP.TXT (also sent by Send Logs).
-- [x] Handhelds' Picture: Tom, 2026-11-23 - the Companion choices are Android's; the handhelds' three back (v0.12.20).
-- [x] (Tom, 2026-11-27: done) v0.12.17 (app 0.1.3) on the Tab S2 and the Pixel: the game larger, the buttons over it; the arrow at the top
-      left; Controls - Button Size / Opacity; Display - Picture's two new choices, landscape and portrait.
-- [x] (Tom, 2026-11-27: done) v0.12.16 (app 0.1.2) on your phone: a fight - move a fighter diagonally with the on-screen D-Pad's corners;
-      after the fight (Curse's Fire Knives) the 3D view is back at once. The buttons read MENU and MOUSE.
-- [x] (Tom, 2026-11-27: done) v0.12.14 (app 0.1.1) on your phone: tap Modify Character in the party menu - the highlight goes there;
-      the Start menu chooses on one tap; turn the phone (Auto) and try Display - Screen Rotation.
 - [ ] The Android app (APK-GoldBoxGameEngine) on your phone: the folder screen (default folder, then Choose
       Folder on one of your own), a game copied in over USB, the scan, then play by touch alone (On-Screen
       Buttons Auto), then with a Bluetooth controller (the buttons go away; a touch brings them back).
@@ -77,13 +69,6 @@ Tick off with the version that did it. Never ask Tom the same thing twice.
       download links; keep the Buck Rogers name out of the port's title.
 - [ ] Other handhelds / firmwares you can test on, when it matters (a
       PortMaster submission wants several).
-- [x] `cyd/src/app/library.cpp` (the game scan) is tied to Arduino's
-      files, so the port has its own copy of its rules (`src/library.cpp`).
-      Moving the CYD's onto the platform layer would let both share it -
-      not a bug fix; your OK needed. (Tom, 2026-11-27: OK. v0.19.18, engine 0.221.20: it hadn't been done - both
-      scans now call the engine's `cyd/src/game/game_find.h`; the same 19 folders found, the boards' scan checked
-      in QEMU.)
-
 - [ ] Tom, v0.12.1 on the RG40XX V (Knulli): does Quit come back to EmulationStation now? If it hangs again, Send Logs
       after the next start (the log's last lines say what the launch script did). Also the new menus: anything hard to
       find or read?
@@ -351,6 +336,21 @@ Tick off with the version that did it. Never ask Tom the same thing twice.
       land, move the pin and bring `src/panel.*` along.
 
 ## Done
+- [x] (Tom, 2026-11-27: done) v0.13.0 **Tom: Clean Up Game Files** (Start menu, beside Rescan): run it on a handheld with GOG and Steam
+      folders, then play a game of each; the report is games/_CYD/CLEANUP.TXT (also sent by Send Logs).
+- [x] Handhelds' Picture: Tom, 2026-11-23 - the Companion choices are Android's; the handhelds' three back (v0.12.20).
+- [x] (Tom, 2026-11-27: done) v0.12.17 (app 0.1.3) on the Tab S2 and the Pixel: the game larger, the buttons over it; the arrow at the top
+      left; Controls - Button Size / Opacity; Display - Picture's two new choices, landscape and portrait.
+- [x] (Tom, 2026-11-27: done) v0.12.16 (app 0.1.2) on your phone: a fight - move a fighter diagonally with the on-screen D-Pad's corners;
+      after the fight (Curse's Fire Knives) the 3D view is back at once. The buttons read MENU and MOUSE.
+- [x] (Tom, 2026-11-27: done) v0.12.14 (app 0.1.1) on your phone: tap Modify Character in the party menu - the highlight goes there;
+      the Start menu chooses on one tap; turn the phone (Auto) and try Display - Screen Rotation.
+- [x] `cyd/src/app/library.cpp` (the game scan) is tied to Arduino's
+      files, so the port has its own copy of its rules (`src/library.cpp`).
+      Moving the CYD's onto the platform layer would let both share it -
+      not a bug fix; your OK needed. (Tom, 2026-11-27: OK. v0.19.18, engine 0.221.20: it hadn't been done - both
+      scans now call the engine's `cyd/src/game/game_find.h`; the same 19 folders found, the boards' scan checked
+      in QEMU.)
 - [x] v0.12.7 (Tom, 2026-11-20: "fix the faults you found during testing"; engine 0.211.5): B inside a treasure's Take menu left the
       treasure - fixed, seen by buttons in PoolRad; Treasures' lucky papers' plural; navcheck's two false alarms (all nine games clean).
 - [x] v0.12.6 (Tom, 2026-11-20; engine 0.211.4): a fight's Speed menu (the highlight stays on Faster / Slower; Exit and B bring the
