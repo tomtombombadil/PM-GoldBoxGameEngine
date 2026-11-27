@@ -624,3 +624,11 @@ Tick off with the version that did it. Never ask Tom the same thing twice.
 - [x] 2026-11-27: Curse's Scroll of Prot. Paralyzation set beside the original (DOSBox): Used readied in camp it gives
       effect 0x6D in both (the saves' .FX files the same); 0x6D stops paralysis given by spells, not a monster's
       paralysing touch - in the original's code and the engine alike. Used unreadied: nothing, in both.
+- [x] v0.19.16 (engine 0.221.15): Add Character - every list by name and the added marked "* " (DOSBox, Treasures from
+      Gateway); seen by the port's buttons in Treasures. "Cannot use <item>" at the transfer still not seen in the
+      original (none of the six Gateway characters tried had an item Treasures drops).
+- [x] 2026-11-27: PROGRAM 8 (an ending) is called only by PoolRad's, Curse's and Gateway's scripts (the CYD sweep's
+      OPSCAN) - the other games' endings go other ways; nothing left to check there.
+- [x] 2026-11-27: PoolRad's aims in DOSBox (the slums' kobolds from an engine save): a weapon's Aim, Sleep and Bless
+      (aimed as it goes off after "Begins Casting") open on the caster - as the engine since 0.221.14.
+

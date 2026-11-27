@@ -3,6 +3,16 @@
 Every version of Gold Box Game Engine for PortMaster. A release's notes are
 its part of this file.
 
+## [0.19.16] - 2026-11-27
+
+Built on the CYD engine 0.221.15.
+
+- **Add Character: the list by name, and "* " before each one added** - as the originals (seen in DOSBox: Treasures
+  adding Gateway's characters lists them by name and marks the added "* BRON"). The earlier game's characters came
+  in the folder's order, and Death Knights, Darkness and Treasures showed no mark. Through the port's buttons:
+  Treasures - Add Character - Gateway, the names in order, "* BRON" after Add, six added, the party menu back on
+  Drop Character as the original's.
+
 ## [0.19.15] - 2026-11-27
 
 Built on the CYD engine 0.221.14.
