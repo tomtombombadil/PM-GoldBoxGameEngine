@@ -345,7 +345,7 @@ Tick off with the version that did it. Never ask Tom the same thing twice.
       app updates ports) and a word with them about Send Logs (a port
       that uploads logs) - ask in the testing thread; (5) the PR itself
       from Tom's fork of PortsMaster/PortMaster-New, branch `goldbox`.
-- [ ] Keep the `cyd` pin current (built on CYD 0.221.15). Tom, 2026-11-14:
+- [ ] Keep the `cyd` pin current (built on CYD 0.221.20). Tom, 2026-11-14:
       Companion map / party-info changes are in work in the CYD (small
       boards first; the party-info layout may be rearranged) - when they
       land, move the pin and bring `src/panel.*` along.
@@ -633,4 +633,11 @@ Tick off with the version that did it. Never ask Tom the same thing twice.
       OPSCAN) - the other games' endings go other ways; nothing left to check there.
 - [x] 2026-11-27: PoolRad's aims in DOSBox (the slums' kobolds from an engine save): a weapon's Aim, Sleep and Bless
       (aimed as it goes off after "Begins Casting") open on the caster - as the engine since 0.221.14.
-
+- [x] v0.19.17 (Tom, 2026-11-27, RG40XX H: "the graphics are all messed up in Champions"; engines 0.221.18 / .19):
+      Champions' outposts drawn as the overland (Throtl's Armoury after Buy / Exit, the Inn, the map behind the town)
+      - set beside the original in DOSBox screen by screen (Armoury Buy / Exit / Exit, the Inn's camp and Exit, Hall,
+      Commandant, Next, Temple, the overland's camp); the camp's own picture; a save made in the Inn's camp loads
+      into the town. By the port's buttons: the Inn save loaded, Inn, Exit, Armoury, Buy, Exit, Exit - the town's
+      picture, the divider and the party each time (shots looked at). Left as is: after the Inn's camp the original's
+      place line says "CAMPING" until the town is entered again; the engine's doesn't. Tom asked whether Clean Up
+      Game Files caused it: no - the engine drew every outpost so, from a fresh copy as well.
