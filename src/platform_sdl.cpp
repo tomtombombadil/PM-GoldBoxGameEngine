@@ -94,23 +94,35 @@ namespace {
 class HostFile : public FileImpl {
 public:
     explicit HostFile(FILE* f) : f_(f) {}
-    HostFile(DIR* d, const std::string& path) : d_(d), path_(path) {}
+    HostFile(DIR* d, const std::string& path) : d_(d), path_(path), dir_(true) {}
+    // A folder's entry, listed: opened only when it is used (Tom, 2026-11-27: the Android app slow to its tiles -
+    // the listing had opened every file and folder in it, each a slow step through Android's shared storage, and
+    // the engine's scan lists the folders it looks in again and again)
+    static std::shared_ptr<HostFile> entry(const std::string& path, bool dir)
+    {
+        auto r = std::make_shared<HostFile>(static_cast<FILE*>(nullptr));
+        r->path_ = path;
+        r->dir_ = dir;
+        r->lazy_ = true;
+        return r;
+    }
     ~HostFile() override { close(); }
-    bool ok() const override { return f_ || d_; }
+    bool ok() const override { return f_ || d_ || lazy_; }
     size_t size() override
     {
-        if (!f_) return 0;
+        if (!file()) return 0;
         const long c = ftell(f_);
         fseek(f_, 0, SEEK_END);
         const long s = ftell(f_);
         fseek(f_, c, SEEK_SET);
         return static_cast<size_t>(s);
     }
-    bool seek(uint32_t p) override { return f_ && fseek(f_, p, SEEK_SET) == 0; }
-    int read(uint8_t* b, size_t n) override { return f_ ? static_cast<int>(fread(b, 1, n, f_)) : 0; }
+    bool seek(uint32_t p) override { return file() && fseek(f_, p, SEEK_SET) == 0; }
+    int read(uint8_t* b, size_t n) override { return file() ? static_cast<int>(fread(b, 1, n, f_)) : 0; }
     size_t write(const uint8_t* b, size_t n) override { return f_ ? fwrite(b, 1, n, f_) : 0; }
     void close() override
     {
+        lazy_ = false;
         if (f_) {
             fclose(f_);
             f_ = nullptr;
@@ -120,26 +132,22 @@ public:
             d_ = nullptr;
         }
     }
-    bool is_dir() const override { return d_ != nullptr; }
+    bool is_dir() const override { return dir_ && (d_ || lazy_); }
     const char* name() const override { return name_.c_str(); }
     std::shared_ptr<FileImpl> next() override
     {
-        if (!d_) return nullptr;
+        if (!folder()) return nullptr;
         while (dirent* e = readdir(d_)) {
             if (e->d_name[0] == '.') continue;
             const std::string p = path_ + "/" + e->d_name;
-            struct stat st;
-            if (stat(p.c_str(), &st) != 0) continue;
-            std::shared_ptr<HostFile> r;
-            if (S_ISDIR(st.st_mode)) {
-                DIR* d = opendir(p.c_str());
-                if (!d) continue;
-                r = std::make_shared<HostFile>(d, p);
-            } else {
-                FILE* f = fopen(p.c_str(), "rb");
-                if (!f) continue;
-                r = std::make_shared<HostFile>(f);
+            // (what it is from the folder's own listing; only when that doesn't say, a look at it)
+            bool dir = e->d_type == DT_DIR, reg = e->d_type == DT_REG;
+            if (!dir && !reg) {
+                struct stat st;
+                if (stat(p.c_str(), &st) != 0) continue;
+                dir = S_ISDIR(st.st_mode);
             }
+            auto r = entry(p, dir);
             r->name_ = e->d_name;
             return r;
         }
@@ -147,9 +155,28 @@ public:
     }
 
 private:
+    // (an entry listed: opened at its first use)
+    bool file()
+    {
+        if (!f_ && lazy_ && !dir_) {
+            lazy_ = false;
+            f_ = fopen(path_.c_str(), "rb");
+        }
+        return f_ != nullptr;
+    }
+    bool folder()
+    {
+        if (!d_ && lazy_ && dir_) {
+            lazy_ = false;
+            d_ = opendir(path_.c_str());
+        }
+        return d_ != nullptr;
+    }
+
     FILE*       f_ = nullptr;
     DIR*        d_ = nullptr;
     std::string path_, name_;
+    bool        dir_ = false, lazy_ = false;
 };
 
 } // namespace

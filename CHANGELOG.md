@@ -3,6 +3,13 @@
 Every version of Gold Box Game Engine for PortMaster. A release's notes are
 its part of this file.
 
+## [0.19.21] - 2026-11-27
+
+- **The start much quicker on Android** (Tom: the tiles slow to appear): a folder's listing no longer opens every
+  file and folder in it - what each is comes from the listing itself, and an entry is opened only when it is read.
+  Through Android's shared storage each open is slow, and the engine's game scan lists the folders it looks in
+  again and again (the boards' way): on the emulator the games' scan had taken 20 s of the start for one game.
+
 ## [0.19.20] - 2026-11-27
 
 - **The start's times in the log** (Tom: the Android app's tiles are slow to appear): one line - SDL, video,
