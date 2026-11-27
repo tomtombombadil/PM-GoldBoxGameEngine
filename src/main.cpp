@@ -1695,7 +1695,7 @@ void apply_options()
 // lists what it does and stays until Continue.
 unsigned shape_seen = ~0u;      // (the picture shape the game list's pictures were last checked for: pictures_follow)
 constexpr char kScanMark[] = "PMSCAN.TXT";      // in the game's _CYD folder: found and its files made
-constexpr char kScanTag[] = "scan 6";       // (2: engine 0.198.1 - journals read anew, music 16-bit; 3: 0.199 - Queen's and Champions' music; 4: 0.200.4 - journal sections read anew; 5: 0.200.6 / 0.201.0 - the Steam Treasures journal, GOG Secret entry 45: journals made anew; 6: 0.221.3 - the Steam journals' text: standard fonts' widths, word gaps)
+constexpr char kScanTag[] = "scan 7";       // (2: engine 0.198.1 - journals read anew, music 16-bit; 3: 0.199 - Queen's and Champions' music; 4: 0.200.4 - journal sections read anew; 5: 0.200.6 / 0.201.0 - the Steam Treasures journal, GOG Secret entry 45: journals made anew; 6: 0.221.3 - the Steam journals' text: standard fonts' widths, word gaps; 7: 0.221.6 - the Steam journals' text corrected)
 std::vector<std::string> scan_log;
 bool                     scan_done = false, scan_progress = false;
 const char*              scan_title = "Looking for Games";     // (Clean Up Game Files: its own)
@@ -3934,6 +3934,7 @@ void usage()
 int main(int argc, char** argv)
 {
     int win_w = 0, win_h = 0, auto_game = 0;
+    std::string auto_folder;
     for (int i = 1; i < argc; ++i) {
         const std::string a = argv[i];
         const char* v = i + 1 < argc ? argv[i + 1] : nullptr;
@@ -3943,6 +3944,7 @@ int main(int argc, char** argv)
         else if (a == "--tools" && v) tools_dir = argv[++i];
         else if (a == "--window" && v) sscanf(argv[++i], "%dx%d", &win_w, &win_h);
         else if (a == "--game" && v) auto_game = atoi(argv[++i]);
+        else if (a == "--game-folder" && v) auto_folder = argv[++i];  // (the Android app's home-screen shortcut)
         else if (a == "--drive") drive = true;
         else if (a == "--ab-reversed") ab_reversed = true;
         else if (a == "--touchpad") touch_ui = true;
@@ -4034,6 +4036,9 @@ int main(int argc, char** argv)
     // game list once the panel's shape has stood still - pictures_follow)
     if (drive) fcntl(0, F_SETFL, fcntl(0, F_GETFL, 0) | O_NONBLOCK);
     discover(false, false);
+    // (a game by its folder - a home-screen shortcut's: the game's start as Play's; gone, the game list)
+    for (size_t g = 0; !auto_folder.empty() && g < games_found.size(); ++g)
+        if (games_found[g].folder == auto_folder) auto_game = static_cast<int>(g) + 1;
     if (auto_game >= 1 && auto_game <= static_cast<int>(games_found.size())) {
         screen = Screen::Games;         // (--game: straight in, the scan's list not waited at)
         game_sel = auto_game - 1;

@@ -3,6 +3,22 @@
 Every version of Gold Box Game Engine for PortMaster. A release's notes are
 its part of this file.
 
+## [0.19.9] - 2026-11-26
+
+Built on the CYD engine 0.221.6.
+
+- **The Steam journals' text corrected** (Tom: "That's important!"): the Gold Box Companion's typed text had its
+  typists' slips ("My names is Jarbarkas", "beleive", "Zhentarium") and apostrophes typed as spaces ("I ll",
+  "didn t"); the parts taken from the Steam PDFs were the scans' OCR ("~i INTRODUCTION ~", "part}'1", "Uorkh" for
+  Llorkh, a tavern tale's ornament read as "0 "). 188 fixes across the nine journals, each checked against the
+  printed page; the printed journal's own spellings are kept. Every game's journal is made again at the next start
+  (the scan's tag "scan 7"). Still wrong: the Dark Queen's Introduction letter (printed over a picture - its scan's
+  text is two broken lines).
+- **`--game-folder <folder>`**: opens that game straight away, as Play does (the Android app's home-screen
+  shortcuts); a folder not found - the game list.
+- Also the engine's 0.221.5: the Dark Queen's doors drawn over their wall, WHAT MENU's question, a hurt member's
+  HP in cyan.
+
 ## [0.19.8] - 2026-11-26
 
 Built on the CYD engine 0.221.4.
