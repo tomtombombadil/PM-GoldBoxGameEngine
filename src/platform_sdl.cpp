@@ -15,6 +15,7 @@
 #include <dirent.h>
 #include <mutex>
 #include <unordered_map>
+#include <vector>
 #include <strings.h>
 #include <sys/stat.h>
 #include <unistd.h>
@@ -120,6 +121,9 @@ class HostFile : public FileImpl {
 public:
     explicit HostFile(FILE* f) : f_(f) {}
     HostFile(DIR* d, const std::string& path) : d_(d), path_(path), dir_(true) {}
+    // A folder from its remembered listing (listing(): names and kinds, no folder opened)
+    using Entries = std::vector<std::pair<std::string, bool>>;
+    HostFile(std::shared_ptr<const Entries> list, const std::string& path) : path_(path), dir_(true), list_(std::move(list)) {}
     // A folder's entry, listed: opened only when it is used (Tom, 2026-11-27: the Android app slow to its tiles -
     // the listing had opened every file and folder in it, each a slow step through Android's shared storage, and
     // the engine's scan lists the folders it looks in again and again)
@@ -132,7 +136,7 @@ public:
         return r;
     }
     ~HostFile() override { close(); }
-    bool ok() const override { return f_ || d_ || lazy_; }
+    bool ok() const override { return f_ || d_ || lazy_ || list_; }
     size_t size() override
     {
         if (!file()) return 0;
@@ -148,6 +152,7 @@ public:
     void close() override
     {
         lazy_ = false;
+        list_.reset();
         if (f_) {
             fclose(f_);
             f_ = nullptr;
@@ -157,10 +162,17 @@ public:
             d_ = nullptr;
         }
     }
-    bool is_dir() const override { return dir_ && (d_ || lazy_); }
+    bool is_dir() const override { return dir_ && (d_ || lazy_ || list_); }
     const char* name() const override { return name_.c_str(); }
     std::shared_ptr<FileImpl> next() override
     {
+        if (list_) {
+            if (at_ >= list_->size()) return nullptr;
+            const auto& e = (*list_)[at_++];
+            auto r = entry(path_ + "/" + e.first, e.second);
+            r->name_ = e.first;
+            return r;
+        }
         if (!folder()) return nullptr;
         while (dirent* e = readdir(d_)) {
             if (e->d_name[0] == '.') continue;
@@ -202,7 +214,48 @@ private:
     DIR*        d_ = nullptr;
     std::string path_, name_;
     bool        dir_ = false, lazy_ = false;
+    std::shared_ptr<const Entries> list_;
+    size_t      at_ = 0;
 };
+
+// A folder's listing, read once and remembered a moment (Tom, 2026-11-27: the Android start - the engine's scan
+// lists the folders it looks in again and again, the boards' way, each listing a slow step through Android's
+// shared storage); forgotten after 3 s, and all of them whenever anything is written, made or taken away
+std::mutex listings_m;
+std::unordered_map<std::string, std::pair<Uint32, std::shared_ptr<const HostFile::Entries>>> listings;
+
+void listings_forget()
+{
+    std::lock_guard<std::mutex> lock(listings_m);
+    listings.clear();
+}
+
+std::shared_ptr<const HostFile::Entries> listing(const std::string& path)
+{
+    const Uint32 now = SDL_GetTicks();
+    {
+        std::lock_guard<std::mutex> lock(listings_m);
+        auto it = listings.find(path);
+        if (it != listings.end() && now - it->second.first < 3000) return it->second.second;
+    }
+    DIR* d = opendir(path.c_str());
+    if (!d) return nullptr;
+    auto list = std::make_shared<HostFile::Entries>();
+    while (dirent* e = readdir(d)) {
+        if (e->d_name[0] == '.') continue;
+        bool dir = e->d_type == DT_DIR, reg = e->d_type == DT_REG;
+        if (!dir && !reg) {
+            struct stat st;
+            if (stat((path + "/" + e->d_name).c_str(), &st) != 0) continue;
+            dir = S_ISDIR(st.st_mode);
+        }
+        list->emplace_back(e->d_name, dir);
+    }
+    closedir(d);
+    std::lock_guard<std::mutex> lock(listings_m);
+    listings[path] = {now, list};
+    return list;
+}
 
 } // namespace
 
@@ -218,9 +271,10 @@ File open(const char* card_path, const char* mode)
     const bool writing = mode && (mode[0] == 'w' || mode[0] == 'a');
     struct stat st;
     if (!writing && stat(hp.c_str(), &st) == 0 && S_ISDIR(st.st_mode)) {
-        DIR* d = opendir(hp.c_str());
-        return d ? File(std::make_shared<HostFile>(d, hp)) : File();
+        auto list = listing(hp);
+        return list ? File(std::make_shared<HostFile>(list, hp)) : File();
     }
+    if (writing) listings_forget();
     FILE* f = fopen(hp.c_str(), mode && mode[0] == 'w' ? "wb" : mode && mode[0] == 'a' ? "ab" : "rb");
     if (!f) return File();
     return File(std::make_shared<HostFile>(f));
@@ -231,7 +285,11 @@ bool exists(const char* path)
     struct stat st;
     return stat(pm::host_path(path).c_str(), &st) == 0;
 }
-bool remove(const char* path) { return ::remove(pm::host_path(path).c_str()) == 0; }
+bool remove(const char* path)
+{
+    listings_forget();
+    return ::remove(pm::host_path(path).c_str()) == 0;
+}
 // When the file was last written, as the player reads a date - the engine's
 // Save Slot Info shows it beside each save ("Nov 17 2026 9:41 PM", the
 // device's local time; the handhelds have a clock, the boards none)
@@ -268,11 +326,17 @@ bool rename(const char* from, const char* to)
 {
     if (!exists(from)) return false;
     if (exists(to) && !remove(to)) return false;
+    listings_forget();
     return ::rename(pm::host_path(from).c_str(), pm::host_path(to).c_str()) == 0;
 }
-bool rmdir(const char* path) { return ::rmdir(pm::host_path(path).c_str()) == 0; }
+bool rmdir(const char* path)
+{
+    listings_forget();
+    return ::rmdir(pm::host_path(path).c_str()) == 0;
+}
 bool mkdir(const char* path)
 {
+    listings_forget();
     ::mkdir(pm::host_path(path).c_str(), 0755);
     return exists(path);
 }

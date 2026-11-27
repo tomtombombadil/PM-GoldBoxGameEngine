@@ -9,6 +9,8 @@ its part of this file.
   file and folder in it - what each is comes from the listing itself, and an entry is opened only when it is read.
   Through Android's shared storage each open is slow, and the engine's game scan lists the folders it looks in
   again and again (the boards' way): on the emulator the games' scan had taken 20 s of the start for one game.
+  The folders on a path, once found, are remembered, and a folder's listing is kept a moment (3 s, forgotten
+  whenever anything is written, made or taken away) - the scan's own rules unchanged.
 
 ## [0.19.20] - 2026-11-27
 
