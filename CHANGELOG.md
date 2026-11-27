@@ -3,6 +3,13 @@
 Every version of Gold Box Game Engine for PortMaster. A release's notes are
 its part of this file.
 
+## [0.19.10] - 2026-11-26
+
+Built on the CYD engine 0.221.6.
+
+- **The Android app's chooser: each game's folder** (the chooser's text, its line's last field) - the app's "Add to
+  Home Screen" makes a shortcut that opens it (`--game-folder`, 0.19.9).
+
 ## [0.19.9] - 2026-11-26
 
 Built on the CYD engine 0.221.6.

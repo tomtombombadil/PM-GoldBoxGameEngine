@@ -200,6 +200,10 @@ controller". All three, any mix; nothing is touch's alone (the rule above stands
   gets it at the next start, "Preparing the picture for ..."); the chooser only reads them. They don't follow
   the screen's shape (no picture remade on a turn). Controls - Button Size sizes the app's pad (Button Opacity is
   the overlay's only). The start waits up to 1.5 s for the app's layout so the first scan's page is the app's.
+  **A game's home-screen shortcut** (Tom, 2026-11-26: "a menu option to add a game to the home screen" - never made
+  by itself): the chooser's text carries each game's folder (its line's last field, v0.19.10); the app's shortcut
+  starts the front end with `--game-folder <folder>` (v0.19.9) - that game opened as Play does (a folder not found:
+  the game list).
   **Continue** (v0.17.0; engine 0.217.0's `play::newest_save` / `continue_game`): the chooser's op 13 opens the
   game and goes straight into its newest saved game (past the titles and the party menu); the chooser shows it for
   a game with a saved game - noted in `_CYD/<folder>/CONTINUE.TXT` whenever a game opens and is left

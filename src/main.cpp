@@ -2929,6 +2929,8 @@ std::string android_chooser_text()
         t += "\t" + std::to_string(kind) + "\t";
         field(t, release_name(g));
         t += plat::exists((library::cache_dir(g) + "/CONTINUE.TXT").c_str()) ? "\t1" : "\t0";
+        t += '\t';
+        field(t, g.folder.c_str());     // (its folder: the app's home-screen shortcut opens it - --game-folder)
     }
     return t;
 }
