@@ -3,6 +3,19 @@
 Every version of Gold Box Game Engine for PortMaster. A release's notes are
 its part of this file.
 
+## [0.19.15] - 2026-11-27
+
+Built on the CYD engine 0.221.14.
+
+- **A fight's Aim opens on the fighter itself**, as the originals ("Range = 0") - every spell, item and weapon; after
+  each pick of a several-target spell it comes back to the caster. Seen in DOSBox (Curse): Bless, the Dust of
+  Disappearance, Cause Light Wounds, Magic Missile and a weapon's Aim. The port's buttons: in Curse's first fight
+  Aim opens on the fighter with no Target word, Next goes on to the others.
+- **Gateway: a fled fight in Ascore's arena keeps its fallen in the party** (the original's code; the others' fled
+  fights still leave them behind).
+- From the engine's other session: a step after a step script that moved or turned the party goes the way the
+  script left it (the Dark Queen's Kristophan gate).
+
 ## [0.19.14] - 2026-11-27
 
 Built on the CYD engine 0.221.12.

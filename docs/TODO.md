@@ -597,6 +597,17 @@ Tick off with the version that did it. Never ask Tom the same thing twice.
       50, 34, 40 for an elf fighter 5) - no difference.
 - [x] v0.19.13 (engine 0.221.11): Curse's camp on the travel map - the camp's own screen and the map back after it,
       as the original (DOSBox, the edge of Tilverton). Seen by the port's buttons (drive_steps, a save at the map).
+- [x] v0.19.14 / v0.19.15 (engines 0.221.12 / 0.221.14): **a fight's own-side spells and items are aimed** (Bless,
+      Haste, Invisibility 10' Radius, the Dust - were cast on the whole party), and **every Aim opens on the fighter
+      itself** and comes back to it after each pick. DOSBox, Curse's tavern fight (the engine's save): the Dust's
+      four picks, then the game saved - the four picked invisible, the other two not; the engine now makes the same
+      four. Bless, Cause Light Wounds, Magic Missile and a weapon's Aim open on the caster. By buttons (hand_test
+      fight, Curse): Aim opens on the fighter, no Target word - as the original's screen. Gateway: a fled maze fight
+      keeps its fallen (by the code only). Not seen in DOSBox: the other games' spell aims (their target routine
+      reads the same aim byte - by the code).
+- [ ] The original Curse's lists open on their LAST line (the fight's spell list, the camp's Memorize list -
+      DOSBox, 2026-11-27); the engine opens them on the first. Tom's highlight rule ("a menu starts on its first
+      word") decides - left as it is unless Tom says otherwise.
 - [x] 2026-11-27: hand_test `fight` again on v0.19.8 by buttons (GOG; PoolRad, Gateway, Treasures, Champions,
       Knights): Move by D-pad / two together / L1 R1 L2 R2 in all five; Aim and Aim - Manual in Gateway and
       Treasures; Cast in PoolRad and Treasures; Done's menu and Delay in PoolRad; PoolRad's treasure: Take, then B
