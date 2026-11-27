@@ -3,6 +3,12 @@
 Every version of Gold Box Game Engine for PortMaster. A release's notes are
 its part of this file.
 
+## [0.19.19] - 2026-11-27
+
+- **The Android Journal list's Documents named in title case** (Tom: "codewheel-pictures" should be "Codewheel
+  Pictures"): a hyphen between words a space, each word's first letter a capital ("of", "the" and the like small
+  but first; a word in capitals as it is).
+
 ## [0.19.18] - 2026-11-27
 
 Built on the CYD engine 0.221.20.

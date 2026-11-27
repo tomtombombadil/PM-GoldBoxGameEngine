@@ -12,6 +12,7 @@
 #include "video.h"
 
 #include <algorithm>
+#include <cctype>
 #include <cstdio>
 #include <cstring>
 #include <memory>
@@ -322,11 +323,26 @@ std::string doc_label(std::string n)
         }();
         if (at != std::string::npos) n.erase(at, strlen(tag));
     }
+    // (a hyphen between words a space; then title case - "codewheel-pictures" -> "Codewheel Pictures", Tom,
+    // 2026-11-27 - a word in capitals as it is, "of", "the" and the like small but first)
+    for (size_t i = 1; i + 1 < n.size(); ++i)
+        if (n[i] == '-' && n[i - 1] != ' ' && n[i + 1] != ' ') n[i] = ' ';
     std::string out;
     for (char c : n)
         if (c != ' ' || (!out.empty() && out.back() != ' ')) out += c;
     while (!out.empty() && (out.back() == ' ' || out.back() == '-')) out.pop_back();
     while (!out.empty() && (out[0] == ' ' || out[0] == '-')) out.erase(0, 1);
+    static const char* const kSmall[] = {"a", "an", "and", "at", "by", "for", "in", "of", "on", "or", "the", "to"};
+    for (size_t i = 0; i < out.size();) {
+        size_t j = out.find(' ', i);
+        if (j == std::string::npos) j = out.size();
+        const std::string w = out.substr(i, j - i);
+        bool small = false;
+        for (const char* k : kSmall) small = small || (i > 0 && strcasecmp(w.c_str(), k) == 0);
+        if (!w.empty() && std::islower(static_cast<unsigned char>(w[0])) && !small)
+            out[i] = static_cast<char>(std::toupper(static_cast<unsigned char>(w[0])));
+        i = j + 1;
+    }
     return out.empty() ? n : out;
 }
 
