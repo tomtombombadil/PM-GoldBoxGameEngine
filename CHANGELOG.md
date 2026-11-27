@@ -3,6 +3,16 @@
 Every version of Gold Box Game Engine for PortMaster. A release's notes are
 its part of this file.
 
+## [0.19.11] - 2026-11-27
+
+Built on the CYD engine 0.221.9.
+
+- **The Dark Queen's Steam journal: its Introduction is the page's picture** (Tom: "use a picture/image of the
+  letter/page, handling it just like we handle the GOG journals") - the General's letter is printed over a
+  parchment, so the PDF's text for it was two broken lines; now the letter itself, as a GOG journal's entries are.
+  Journals are made again at the next start (scan 8, id gbc8).
+- The engine's 0.221.8: the Dark Queen's treasures (script rewards read from ITEM.DAT, its treasure menu).
+
 ## [0.19.10] - 2026-11-26
 
 Built on the CYD engine 0.221.6.

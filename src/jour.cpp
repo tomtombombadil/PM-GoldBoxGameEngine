@@ -113,7 +113,11 @@ struct SectText : journal::ExtraText {
     std::string                        path;
     plat::File                         f;
     std::unique_ptr<plat::FileSource>  src;
-    ~SectText() override { close(); }
+    ~SectText() override
+    {
+        close();
+        close_pdf();
+    }
     dax::ByteSource* open() override
     {
         close();
@@ -126,6 +130,24 @@ struct SectText : journal::ExtraText {
     {
         src.reset();
         if (f) f.close();
+    }
+    // The PDF (a section the engine shows as its page's picture - the Dark Queen's letter)
+    std::string                        pdf;
+    plat::File                         pf;
+    std::unique_ptr<plat::FileSource>  psrc;
+    dax::ByteSource* open_pdf() override
+    {
+        close_pdf();
+        if (pdf.empty()) return nullptr;
+        pf = plat::open(pdf.c_str());
+        if (!pf) return nullptr;
+        psrc.reset(new plat::FileSource(pf));
+        return psrc.get();
+    }
+    void close_pdf() override
+    {
+        psrc.reset();
+        if (pf) pf.close();
     }
 };
 
@@ -215,7 +237,7 @@ void make_from_gbc(const library::GameDir& g, const std::string& cache, const st
     const char* title = games::title(g.game);
     const std::string dat = card(gbc + "/Game.dat"), out_path = cache + "/JOURNAL.DAT";
     char id[48];
-    snprintf(id, sizeof id, "gbc7:%u:%u", file_size(dat), pdf.empty() ? 0u : file_size(card(pdf)));
+    snprintf(id, sizeof id, "gbc8:%u:%u", file_size(dat), pdf.empty() ? 0u : file_size(card(pdf)));
     if (made_id(out_path) == id && (pdf.empty() || book_ready(cache))) return;
     Prog pr{say, title, "Processing"};
     std::vector<journal::Section> secs(pdf.empty() ? 0 : journal::kMaxSections);
@@ -225,6 +247,7 @@ void make_from_gbc(const library::GameDir& g, const std::string& cache, const st
     if (!pdf.empty()) {
         have_book = read_book(pdf, cache, secs.data(), binfo, pr);
         sect.path = cache + "/SECT.TMP";
+        sect.pdf = card(pdf);
         sect.items = secs.data();
         sect.n = have_book ? binfo.sections : 0;
     }
@@ -264,6 +287,7 @@ void make_from_text(const library::GameDir& g, const std::string& cache, const s
     if (ok) {
         SectText sect;
         sect.path = cache + "/SECT.TMP";
+        sect.pdf = card(pdf);
         sect.items = secs.data();
         sect.n = binfo.sections;
         FileOut out;
