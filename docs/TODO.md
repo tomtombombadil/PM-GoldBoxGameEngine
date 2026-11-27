@@ -343,7 +343,7 @@ Tick off with the version that did it. Never ask Tom the same thing twice.
       app updates ports) and a word with them about Send Logs (a port
       that uploads logs) - ask in the testing thread; (5) the PR itself
       from Tom's fork of PortsMaster/PortMaster-New, branch `goldbox`.
-- [ ] Keep the `cyd` pin current (built on CYD 0.221.2). Tom, 2026-11-14:
+- [ ] Keep the `cyd` pin current (built on CYD 0.221.14). Tom, 2026-11-14:
       Companion map / party-info changes are in work in the CYD (small
       boards first; the party-info layout may be rearranged) - when they
       land, move the pin and bring `src/panel.*` along.
@@ -487,7 +487,10 @@ Tick off with the version that did it. Never ask Tom the same thing twice.
 - [ ] Tom, on a handheld: PoolRad's wilderness (leave Phlan by boat) - walk all four ways, the Companion's map there;
       Champions' overland - Move, then Left / Right (west / east) and L1 / R1 (the diagonals).
 - [ ] Not tried by buttons: the Dark Queen's overland; Champions' step itself (the test's square ran into a fight).
-- [ ] Curse / PoolRad shops: do their goods stay on the item list after the shop? (the CYD's TODO has it.)
+- [ ] Curse / PoolRad shops: do their goods stay on the item list after the shop? (the CYD's TODO has it.) 2026-11-27:
+      the engine's every-block run (sweep `events`, a probe) met 23,078 shop openings in Curse and 13 in PoolRad and no
+      COMBAT after one without CLEARMONSTERS - but the run stays in each shop ("out of time"), so scripts after a shop
+      were not reached; still open.
 
 ## v0.13.1
 - [x] The pin at the engine's newest commit (eb8cf7a: Clean Up's report names each folder removed). v0.12.13 - v0.13.0
@@ -559,7 +562,7 @@ Tick off with the version that did it. Never ask Tom the same thing twice.
       ... speed` - the menu, Exit and B back, all right; its indoor field looked at.
 - [x] v0.19.8: Speed test by buttons in Darkness - passed (a save one step before the hill giants' room, made by
       the playsim: AREA=1 BLOCK=20 TELE=2,1,0; `WALK=up tools/hand_test.py ... speed`). All nine games done.
-- [ ] Never played to an end by the port's buttons: Gateway's ending. Seen by buttons: Treasures'.
+- [x] Played to an end by the port's buttons: Treasures' (2026-11-26) and Gateway's (2026-11-27, below).
 - [ ] The CYD TODO does not tick Death Knights' play-through as complete (its kit's notes reach Soth's floor) -
       the CYD session's to confirm.
 - [x] v0.19.4 (engine 0.219.3): spell names cut at 23 letters (Treasures' grimoire) - fixed; the original (DOSBox)
@@ -585,10 +588,9 @@ Tick off with the version that did it. Never ask Tom the same thing twice.
       matrix, levels, economy, features, rules4, toggles - and fightfuzz, campfuzz, navcheck): 0 failures once
       the checks' missing oracle files were made again and three checks of their own were put right. This run is
       what found Treasures' starting experience. Steam's and GOG's Treasures GAME.OVR are the same file.
-- [ ] Still open from the day's list: its Scroll of Protection from Paralyzation
-      (what the original's does - not found in its code yet), its Dust of Disappearance in a fight; Poison Save
-      Bonus's effect by the port's buttons (saves aren't shown on any screen - only the engine's checks saw it);
-      the other Game Fixes' effects by buttons; the Dark Queen's new characters against DOSBox.
+- [ ] Still open from the day's list: Poison Save Bonus's effect by the port's buttons (saves aren't shown on any
+      screen - only the engine's checks saw it); the other Game Fixes' effects by buttons. (Curse's scroll, its
+      Dust in a fight and the Dark Queen's new characters: done 2026-11-27, below.)
 - [x] v0.19.8 (engine 0.221.4): Exit / B in a treasure's "Take: Money Items Exit" left the whole treasure in all
       games but PoolRad - found by the Darkness Speed test's treasure step, the original seen in DOSBox (Treasures),
       fixed in the engine; by buttons in Darkness: B back at the treasure's menu. Curse's fight by buttons after it:
