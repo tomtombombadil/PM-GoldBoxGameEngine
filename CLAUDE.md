@@ -662,14 +662,18 @@ and maintains it; it is the primary output of the Claude Project
     version - Tom wants all four in every log; `device.txt` has the same.
   - Tom reads the emails and passes the zips to Claude. When asking Tom
     for a log, ask for Send Logs - not for files fetched off the card.
-  - **The Android app has it too** (Tom, 2026-11-28: "somehow the send
-    logs function is missing from the menus!" - it had been left out on
-    Android since v0.12.13, sendlogs.sh can't run there): the app's
-    LogSender (Java, APK repo) posts the same fields and files to the same
-    relay and writes sendlogs.sh's answer to conf/sendlogs.result, which
-    job_tick reads; the Reply Address is Android's own box (ReplyDialog ->
-    nativeText, ops 16 / 17). **Every menu line the handhelds have, the app
-    has, unless Tom has said otherwise** - check the Android menu when
+  - **The Android app: Report a Problem instead** (Tom, 2026-11-28 - 0.21.1's relay sender there was
+    replaced the same day: "we should have discussed how best to do it"; **ask before choosing a way when
+    the platform offers several**). Android only, the handhelds unchanged (Tom: "Leave the handheld port
+    as-is"): the menu's line reads Report a Problem (`MSendLogs`), no Reply Address; `android_report`
+    fills in the app's dialog (the game, the area's name and square, the games found, the versions) and,
+    a game in play, makes **a save of the game as it is** - the engine's `play::snapshot` into
+    games/_CYD/_REPORT/SAVE, never a save slot (Tom: "wouldn't take any of their save slots or overwrite
+    anything"); the app (APK repo: ReportDialog, Report) zips it with the logs if ticked and opens the
+    player's email app. The chooser's hold menu asks for it too (op 18). Script step `snapshot` makes
+    that save anywhere (checked: PoolRad, the save loads where it was made; no file of the game's
+    changed). **Title Case for button text and menu item names** (Tom, 2026-11-28). **Every menu line
+    the handhelds have, the app has, unless Tom has said otherwise** - check the Android menu when
     adding or #ifdef-ing one out.
 - Submitting to PortMaster's own catalogue (a PR to PortsMaster/PortMaster-New)
   is Tom's call and needs things only he can supply (TODO).

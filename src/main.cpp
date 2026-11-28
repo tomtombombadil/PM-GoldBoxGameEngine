@@ -22,6 +22,7 @@
 #include <string>
 #include <vector>
 
+#include "engine/geo.h"
 #include "engine/journal.h"
 #include "game/music_make.h"
 #include "engine/profile.h"
@@ -266,38 +267,20 @@ void android_open_pdf(const std::string& path, const std::string& title)
     env->DeleteLocalRef(act);
 }
 
-// Send Logs (Tom, 2026-11-28: it was missing from the app's menu): the app posts the logs to the relay as
-// tools/sendlogs.sh does (Java, LogSender) and writes its answer to conf/sendlogs.result, which job_tick reads
-void android_send_logs(const std::string& reply)
+// Report a Problem (Tom, 2026-11-28 - the Android app's alone; the handhelds keep Send Logs): the app's dialog
+// (Java, GoldBoxActivity.reportProblem -> ReportDialog) asks what happened, then the player's own email app opens
+// with the answers and one zip - the log, settings, the engine's notes, the device's details and, if ticked, a save
+// of the game as it was (play::snapshot, made here first). `info`: "key\tvalue" lines (android_report)
+void android_report_call(const std::string& info)
 {
     JNIEnv* env = static_cast<JNIEnv*>(SDL_AndroidGetJNIEnv());
     jobject act = static_cast<jobject>(SDL_AndroidGetActivity());
     if (!env || !act) return;
     jclass c = env->GetObjectClass(act);
-    jmethodID m = env->GetMethodID(c, "sendLogs", "(Ljava/lang/String;Ljava/lang/String;)V");
+    jmethodID m = env->GetMethodID(c, "reportProblem", "(Ljava/lang/String;)V");
     if (m) {
-        jstring r = env->NewStringUTF(reply.c_str()), v = env->NewStringUTF(PM_VERSION);
-        env->CallVoidMethod(act, m, r, v);
-        env->DeleteLocalRef(r);
-        env->DeleteLocalRef(v);
-    }
-    if (env->ExceptionCheck()) env->ExceptionClear();
-    env->DeleteLocalRef(c);
-    env->DeleteLocalRef(act);
-}
-
-// The Reply Address: Android's own box and keyboard (Java, GoldBoxActivity.askReply); its words come back by
-// nativeText with kOpReply / kOpReplySend
-void android_ask_reply(const std::string& now, bool then_send)
-{
-    JNIEnv* env = static_cast<JNIEnv*>(SDL_AndroidGetJNIEnv());
-    jobject act = static_cast<jobject>(SDL_AndroidGetActivity());
-    if (!env || !act) return;
-    jclass c = env->GetObjectClass(act);
-    jmethodID m = env->GetMethodID(c, "askReply", "(Ljava/lang/String;Z)V");
-    if (m) {
-        jstring t = env->NewStringUTF(now.c_str());
-        env->CallVoidMethod(act, m, t, static_cast<jboolean>(then_send));
+        jstring t = env->NewStringUTF(info.c_str());
+        env->CallVoidMethod(act, m, t);
         env->DeleteLocalRef(t);
     }
     if (env->ExceptionCheck()) env->ExceptionClear();
@@ -616,15 +599,6 @@ void prompt_begin(bool then_send);
 
 void send_logs_now()
 {
-#ifdef __ANDROID__
-    menu_open = false;
-    fflush(stdout);
-    remove((conf_dir + "/sendlogs.result").c_str());
-    job = Job::Logs;
-    show_notice("Send Logs", "Sending the logs to the developer...", nullptr, nullptr, nullptr);
-    android_send_logs(cfg.reply_email);
-    return;
-#endif
     if (!tools_ready("sendlogs.sh")) return;
     menu_open = false;
     fflush(stdout);
@@ -654,22 +628,6 @@ void job_tick()
 {
     std::string out;
     int code = 0;
-#ifdef __ANDROID__
-    // (the app's LogSender: its answer in conf/sendlogs.result)
-    if (job == Job::Logs) {
-        const std::string res = conf_dir + "/sendlogs.result";
-        FILE* f = fopen(res.c_str(), "rb");
-        if (!f) return;
-        char buf[512] = "";
-        const size_t n = fread(buf, 1, sizeof buf - 1, f);
-        fclose(f);
-        remove(res.c_str());
-        buf[n] = 0;
-        out = buf;
-        plat::log("[port] send logs: %s", out.c_str());
-        out += "\n";       // (in sendlogs.sh's words: "SENT <n> [thanks]" or "ERROR <what to tell the player>")
-    } else
-#endif
     if (job == Job::None || !task::finished(out, code)) return;
     const Job was = job;
     job = Job::None;
@@ -956,8 +914,10 @@ void menu_build()
 #ifdef __ANDROID__
         add(MAbout);
 #endif
-        add(MSendLogs);         // (the app's too since 0.21.1 - Android's LogSender; it had been left out)
+        add(MSendLogs);         // (the app's: Report a Problem - its dialog and the player's email; no reply address)
+#ifndef __ANDROID__
         add(MReplyAddr);
+#endif
         break;
     }
     if (menu_page != Page::Top) add(MBack);
@@ -1056,7 +1016,11 @@ void menu_label(const MItem& it, char* out, size_t cap)
         break;
     }
     case MUpdate: snprintf(out, cap, "%s", update_staged.empty() ? "Check for Updates" : "Restart to Update"); break;
+#ifdef __ANDROID__
+    case MSendLogs: snprintf(out, cap, "Report a Problem"); break;
+#else
     case MSendLogs: snprintf(out, cap, "Send Logs"); break;
+#endif
     case MReplyAddr: snprintf(out, cap, "Reply Address: %.14s", cfg.reply_email.empty() ? "Not Set" : cfg.reply_email.c_str()); break;
     case MLeaveGame: snprintf(out, cap, "Exit Game"); break;
     case MExit: snprintf(out, cap, "Quit"); break;
@@ -1175,7 +1139,12 @@ const char* menu_help(const MItem& it)
         return "The type the journal's text is shown in: Journal - like the printed Adventurer's Journal's hand; Book - "
                "an italic book face; Serif - like Times; Plain - the app's own.";
     case MUpdate: return "Looks for a newer version of the port and installs it (needs Wi-Fi).";
+#ifdef __ANDROID__
+    case MSendLogs: return "Tell the developer what went wrong: your email app opens with your answers and the logs - "
+                           "no personal information.";
+#else
     case MSendLogs: return "Sends the port's logs to the developer by the internet (needs Wi-Fi).";
+#endif
     case MHealer: return "The game's temple, wherever you are: cures, all free.";
     case MMerchant: return "All the game's shops' goods in one shop; Id free.";
     case MSanctuary: return "The game's camp: rests are never interrupted.";
@@ -1510,11 +1479,6 @@ const char* prompt_note = nullptr;
 
 void prompt_begin(bool then_send)
 {
-#ifdef __ANDROID__
-    // (Android's own box and keyboard - the app's views, never SDL's; its words come back as kOpReply / kOpReplySend)
-    android_ask_reply(cfg.reply_email, then_send);
-    return;
-#endif
     keys.clear();
     key_sel = 0;
     static const char* const kRows[4] = {"abcdefghij", "klmnopqrst", "uvwxyz.@_-", "0123456789"};
@@ -2750,7 +2714,11 @@ void menu_press(int b)
             quit = true;
 #endif
             break;
+#ifdef __ANDROID__
+        case MSendLogs: android_report(-1); break;
+#else
         case MSendLogs: send_logs(); break;
+#endif
         case MReplyAddr: prompt_begin(false); break;
         case MLeaveGame: leave_game(); break;
         case MExit: quit = true; break;
@@ -2775,8 +2743,68 @@ void menu_press(int b)
 // The screens stay this front end's: a controller still drives each.
 
 constexpr int kOpChooserPlay = 10, kOpLookAgain = 11, kOpChooserSelect = 12, kOpChooserContinue = 13,
-              kOpChooserMode = 14, kOpJournalClose = 15, kOpReply = 16, kOpReplySend = 17;
+              kOpChooserMode = 14, kOpJournalClose = 15, kOpReport = 18;
 void press(int b);
+
+#ifdef __ANDROID__
+// Report a Problem: what the app's dialog fills in for the player - the game (the one open, else `game`, the
+// chooser's; -1 none), where in it, the games found (its list), the versions - and, a game in play, a save of it as
+// it is (play::snapshot into games/_CYD/_REPORT/SAVE, nothing of the game's own touched; the app zips it if the
+// player ticks it, then empties the folder)
+void android_report(int game)
+{
+    std::string t = "report\n";
+    auto line = [&t](const char* k, const std::string& v) {
+        t += k;
+        t += '\t';
+        for (char ch : v) t += ch == '\n' || ch == '\t' ? ' ' : ch;
+        t += '\n';
+    };
+    auto title = [](const library::GameDir& g) {
+        return std::string(g.game == games::Game::Unknown ? g.folder.c_str() : games::title(g.game));
+    };
+    const int n = static_cast<int>(games_found.size());
+    if (playing && game_sel >= 0 && game_sel < n) game = game_sel;
+    line("game", game >= 0 && game < n ? title(games_found[game]) : "");
+    std::string games;
+    for (const auto& g : games_found) games += (games.empty() ? "" : "\x1f") + title(g);
+    line("games", games);
+    std::string area, square, snap;
+    const std::string report = std::string(games::kRootDir) + "/" + library::kCacheDir + "/_REPORT";
+    if (playing) {
+        if (play::titles()) area = "The game's title screens";
+        else if (play::map()) {
+            char file[16] = "";
+            const int block = play::map_source(file, sizeof file);
+            if (block >= 0) {
+                area = cluemaps::name(cur_cache, file, block);
+                if (area.empty()) area = std::string(file) + " map " + std::to_string(block);
+            }
+            char sq[48];
+            snprintf(sq, sizeof sq, "%d, %d facing %s", play::pos_x(), play::pos_y(), geo::dir_name(play::dir()));
+            square = sq;
+        }
+        // (a save of the game as it is, only for the report - an earlier report's left there goes first)
+        mkdir(pm::host_path(report.c_str()).c_str(), 0755);
+        const std::string host = pm::host_path((report + "/SAVE").c_str());
+        if (DIR* dir = opendir(host.c_str())) {
+            while (dirent* e = readdir(dir))
+                if (e->d_name[0] != '.') remove((host + "/" + e->d_name).c_str());
+            closedir(dir);
+        }
+        if (play::snapshot((report + "/SAVE").c_str())) snap = pm::host_path((report + "/SAVE").c_str());
+    } else {
+        area = screen == Screen::Games ? "The game chooser" : "";
+    }
+    line("area", area);
+    line("square", square);
+    line("save", snap);
+    line("front", PM_VERSION);
+    line("engine", CYD_VERSION);
+    fflush(stdout);         // (the log as it is now)
+    android_report_call(t);
+}
+#endif
 
 void android_op(int op, int index, int value)
 {
@@ -2813,18 +2841,11 @@ void android_op(int op, int index, int value)
         if (jour::active()) journal_press(BB);
         return;
     }
-    if (op == kOpReply || op == kOpReplySend) {
-        // (the app's Reply Address box: its words - none: No Thanks / Clear - then, Send Logs' first time, the logs)
-        std::string t = shell::typed();
-        for (char& ch : t) ch = static_cast<char>(tolower(static_cast<unsigned char>(ch)));
-        if (!t.empty() && !email_like(t)) {
-            show_notice("Reply Address", "That isn't an email address.");
-            return;
-        }
-        cfg.reply_email = t;
-        cfg.reply_asked = true;
-        settings_save(conf_dir, cfg);
-        if (op == kOpReplySend) send_logs_now();
+    if (op == kOpReport) {
+        // (the chooser's hold menu: Report a Problem about that game)
+#ifdef __ANDROID__
+        if (index >= 0 && index < static_cast<int>(games_found.size())) android_report(index);
+#endif
         return;
     }
     if (op == kOpChooserSelect) {
@@ -3965,6 +3986,11 @@ void script_tick(Uint32 now)
     } else if (t.compare(0, 5, "shot:") == 0) {
         draw_frame();
         if (!video::save_bmp(t.c_str() + 5)) plat::log("[script] couldn't write %s\n", t.c_str() + 5);
+    } else if (t == "snapshot") {
+        // (the Android app's Report a Problem's save, checked anywhere: into games/_CYD/_REPORT/SAVE)
+        const std::string dir = std::string(games::kRootDir) + "/" + library::kCacheDir + "/_REPORT/SAVE";
+        mkdir(pm::host_path((std::string(games::kRootDir) + "/" + library::kCacheDir + "/_REPORT").c_str()).c_str(), 0755);
+        plat::log("[script] snapshot: %s\n", playing && play::snapshot(dir.c_str()) ? "made" : "none");
     } else if (t.compare(0, 4, "tap:") == 0) {
         int x = 0, y = 0;
         if (sscanf(t.c_str() + 4, "%d:%d", &x, &y) == 2) pointer_tap(x, y);

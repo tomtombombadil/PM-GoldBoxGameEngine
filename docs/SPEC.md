@@ -479,10 +479,13 @@ hotkey.
   - Sent: log.txt, log.prev.txt, device.txt, update.log, settings.cfg,
     the engine's `_CYD/*.TXT` logs - never BOOK.TXT (a journal's text),
     game files or saves.
-  - **Android**: the app posts the same (its LogSender - firmware "Android
-    <release> (API n)", portmaster "none (the Android app)", version "app
-    <x> (front end <y>)"); its answer, in sendlogs.sh's words, in
-    conf/sendlogs.result. The Reply Address there is Android's own box.
+  - **Android: Report a Problem** (v0.22.0; Tom, 2026-11-28) in its place - no relay, no Reply Address:
+    `android_report` sends the app (Java `reportProblem`) "key\tvalue" lines - game, games (0x1F between),
+    area (the cluebook's name, else "GEO3.DAX map 80"), square ("14, 4 facing N"), save (the host folder of
+    a save made just then by `play::snapshot` into games/_CYD/_REPORT/SAVE - a game in play only), front,
+    engine. The app's dialog asks what happened and opens the player's email app with the answers and a
+    zip (the log, settings, the engine's notes, DEVICE.TXT, REPORT.TXT, the save if ticked). The chooser's
+    hold menu: op 18 with the game's index.
 - The helper scripts run on a thread (`src/task.*`); the screen shows a
   notice until they end. Buttons only: all of it from the Start menu.
 

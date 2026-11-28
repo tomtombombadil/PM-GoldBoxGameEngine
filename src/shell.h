@@ -58,8 +58,5 @@ void text(int channel, const std::string& t);
 // by Android (jpeg: its path; "" none), else rgba (w x h) - saved as `out`
 bool save_art(const std::string& jpeg, const uint8_t* rgba, int w, int h, const std::string& out);
 
-// Words typed in one of the app's own boxes (the Reply Address's - Android's keyboard): the last ones it sent
-// (with an op for the menu's fn, which reads them here)
-std::string typed();
 
 } // namespace shell

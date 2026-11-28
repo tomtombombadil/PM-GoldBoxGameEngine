@@ -3,6 +3,17 @@
 Every version of Gold Box Game Engine for PortMaster. A release's notes are
 its part of this file.
 
+## [0.22.0] - 2026-11-28
+
+Built on the CYD engine 0.226.5.
+
+- **The Android app: Start - System - Report a Problem** in place of 0.21.1's Send Logs there (Tom: the player's
+  own email instead of the relay - no Internet permission, no Reply Address). The front end fills in the app's
+  dialog - the game, where in it, the games found, the versions - and, with a game in play, makes a save of the
+  game as it is for the report alone (the engine's new `play::snapshot`: never a save slot, nothing of the game's
+  touched). The chooser's hold menu asks for it too. The handhelds are unchanged.
+- Script step `snapshot` (the report's save, for tests).
+
 ## [0.21.1] - 2026-11-28
 
 Built on the CYD engine 0.226.0.

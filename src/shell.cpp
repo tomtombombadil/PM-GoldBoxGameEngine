@@ -27,8 +27,6 @@ bool       lay_new = false;
 // The Companion's pictures as the app places them (view 4): up to 4 of (which, x, y, w, h, source top, rows)
 int        pics[28] = {};
 int        pics_n = 0;
-// The words of the app's last typed box (nativeText)
-std::string typed_text;
 
 enum : Sint32 { kButton = 1, kLayout = 2, kMenu = 3 };
 
@@ -189,12 +187,6 @@ bool save_art(const std::string& jpeg, const uint8_t* rgba, int w, int h, const 
     return ok;
 }
 
-std::string typed()
-{
-    std::lock_guard<std::mutex> g(lay_mu);
-    return typed_text;
-}
-
 } // namespace shell
 
 // ---- The app's calls (GoldBoxActivity's static natives; Android's UI thread)
@@ -243,24 +235,6 @@ JNIEXPORT void JNICALL Java_io_github_tomtombombadil_goldbox_GoldBoxActivity_nat
     shell::push(shell::kMenu, op, (static_cast<intptr_t>(index) << 16) | (static_cast<intptr_t>(value) & 0xFFFF));
 }
 
-// A box of the app's typed in (the Reply Address): its words kept, then the op for the menu's fn
-JNIEXPORT void JNICALL Java_io_github_tomtombombadil_goldbox_GoldBoxActivity_nativeText(JNIEnv* env, jclass, jint op,
-                                                                                       jstring text)
-{
-    {
-        std::lock_guard<std::mutex> g(shell::lay_mu);
-        shell::typed_text.clear();
-        if (text) {
-            const char* c = env->GetStringUTFChars(text, nullptr);
-            if (c) {
-                shell::typed_text = c;
-                env->ReleaseStringUTFChars(text, c);
-            }
-        }
-    }
-    shell::push(shell::kMenu, op, 0);
-}
-
 } // extern "C"
 
 #else // not Android: nothing
@@ -276,7 +250,6 @@ void set_menu(void (*)(int, int, int)) {}
 void pad_style(int, int) {}
 void text(int, const std::string&) {}
 bool save_art(const std::string&, const uint8_t*, int, int, const std::string&) { return false; }
-std::string typed() { return std::string(); }
 } // namespace shell
 
 #endif
