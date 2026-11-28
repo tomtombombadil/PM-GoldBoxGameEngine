@@ -3,6 +3,15 @@
 Every version of Gold Box Game Engine for PortMaster. A release's notes are
 its part of this file.
 
+## [0.23.2] - 2026-11-28
+
+Built on the CYD engine 0.226.5. The Android app's (Tom):
+
+- Game Sound's list: Off, PC Speaker, Tandy, Gateway, Treasures, Darkness - a game's recordings greyed when that
+  game isn't there. Game Font's: Original, Clear, Clear CAPS, Darkness (greyed without Darkness). A pick goes to that
+  value whatever the list's order.
+- Game Fixes: the games' full names.
+
 ## [0.23.1] - 2026-11-28
 
 Built on the CYD engine 0.226.5.

@@ -804,6 +804,10 @@ constexpr games::Game kFixGameList[] = {
     games::Game::DarkQueenOfKrynn};
 const char* fix_game_name(int g)
 {
+#ifdef __ANDROID__
+    // (the app's Game Fixes: the games' full names, wrapped - Tom, 2026-11-28)
+    if (g) return games::title(static_cast<games::Game>(g));
+#endif
     switch (static_cast<games::Game>(g)) {
     case games::Game::PoolOfRadiance: return "PoolRad";
     case games::Game::CurseOfTheAzureBonds: return "Curse";
@@ -972,7 +976,11 @@ uint16_t adnd_on() { return static_cast<uint16_t>(rules::kAdndAll & ~cfg.rules_o
 
 void menu_label(const MItem& it, char* out, size_t cap)
 {
+#ifdef __ANDROID__
+    static const char* const kFont[] = {"Original", "Clear", "Darkness", "Clear CAPS"};     // (Tom's spelling)
+#else
     static const char* const kFont[] = {"Original", "Clear", "Darkness", "Clear Caps"};
+#endif
     const MenuItem m = it.m;
     if (const uint16_t bit = comfort_bit(m)) {
         const char* name = m == MRolls     ? "Show Rolls"
@@ -3135,63 +3143,107 @@ void row(std::string& t, char kind, const char* name, const char* value, const c
     field(t, help);
 }
 
-// A choice line's values, in the order Right steps through them from the first (Small ... Huge) (the app's list - Tom,
-// 2026-11-28: "a drop-down list ... not tapping right and left"); 0x1F between. Worked out in cfg alone (menu_dry)
-std::string menu_choices(int i)
+// A choice line's value as its line shows it ("Picture: Original 4:3" -> "Original 4:3")
+std::string menu_value(int i)
 {
-    if (i < 0 || i >= static_cast<int>(menu_items.size())) return "";
+    char l[160];
+    menu_label(menu_items[i], l, sizeof l);
+    const std::string n = l;
+    const size_t c = n.rfind(": ");
+    return c == std::string::npos ? n : n.substr(c + 2);
+}
+
+// A choice line's values for the app's list (Tom, 2026-11-28: "a drop-down list ... not tapping right and left"),
+// each with whether it can be chosen here: Game Sound and Game Font in Tom's order (Off, PC Speaker, Tandy, Gateway,
+// Treasures, Darkness - a recording greyed without its game; Original, Clear, Clear CAPS, Darkness), the others in
+// their values' own order (Small ... Huge) - worked out by stepping in cfg alone (menu_dry: nothing applied or saved)
+std::vector<std::pair<std::string, bool>> menu_choice_list(int i)
+{
+    std::vector<std::pair<std::string, bool>> out;
+    if (i < 0 || i >= static_cast<int>(menu_items.size())) return out;
+    const MenuItem m = menu_items[i].m;
+    if (m == MSound && !own_sound(sound_game())) {
+        for (uint8_t v : {kSndOff, kSndPc, kSndTandy, kSndGateway, kSndTreasures, kSndDarkness})
+            out.push_back({sound_name(v), sound_ok(v)});
+        return out;
+    }
+    if (m == MFont) {
+        bool dark = false;
+        for (const auto& g : games_found)
+            if (g.game == games::Game::PoolsOfDarkness && !g.hlib) dark = true;
+        for (const char* v : {"Original", "Clear", "Clear CAPS", "Darkness"})
+            out.push_back({v, strcmp(v, "Darkness") != 0 || dark});
+        return out;
+    }
     const int keep = menu_sel;
     const Settings was = cfg;
     menu_sel = i;
     menu_dry = true;
-    auto value = [&]() {
-        char l[160];
-        menu_label(menu_items[i], l, sizeof l);
-        const std::string n = l;
-        const size_t c = n.rfind(": ");      // (as the line's own split: "Picture: Original 4:3")
-        return c == std::string::npos ? n : n.substr(c + 2);
-    };
-    // (the list in the values' own order - Small, Medium, Large, Huge - not from the one set now: Tom, 2026-11-28;
-    // the setting put at its first value for the count, in cfg alone)
-    switch (menu_items[i].m) {
+    switch (m) {
     case MPadSize: cfg.pad_size = 0; break;
     case MPadAlpha: cfg.pad_alpha = 0; break;
-    case MFont: cfg.font = 0; break;
     case MRotation: cfg.rotation = 0; break;
     case MChooser: cfg.chooser = 0; break;
     case MJFont: cfg.journal_font = 0; break;
     case MTouchPad: cfg.touch_pad = 0; break;
-    case MSound: cfg.sound = kSndTandy; break;
     case MDisplay: cfg.fit = 0; break;
     case MClueDark: cfg.clue_dark = true; break;
     default: break;
     }
-    std::vector<std::string> seen{value()};
+    out.push_back({menu_value(i), true});
     for (int k = 0; k < 12; ++k) {
         menu_change(1);
-        const std::string v = value();
-        if (v == seen[0]) break;
-        seen.push_back(v);
+        const std::string v = menu_value(i);
+        if (v == out[0].first) break;
+        out.push_back({v, true});
     }
     menu_dry = false;
     cfg = was;
     menu_sel = keep;
+    return out;
+}
+
+// The list's text: 0x1F between, a value that can't be chosen here after a 0x02
+std::string menu_choices(int i)
+{
     std::string t;
-    for (size_t k = 0; k < seen.size(); ++k) {
-        if (k) t += '\x1f';
-        field(t, seen[k].c_str());
+    bool first = true;
+    for (const auto& c : menu_choice_list(i)) {
+        if (!first) t += '\x1f';
+        first = false;
+        if (!c.second) t += '\x02';
+        field(t, c.first.c_str());
     }
     return t;
 }
 
-// The app's list chose the value `k` places on from the one set now (Right's order): the steps in cfg alone
-// but the last, which applies and saves as a tap on > does
+// The app's list chose the value `k` places on from the one set now, in the list's order: the line stepped Right
+// to it - in cfg alone but the last step, which applies and saves as a tap on > does
 void menu_pick(int i, int k)
 {
-    if (i < 0 || i >= static_cast<int>(menu_items.size()) || k <= 0) return;
+    const auto list = menu_choice_list(i);
+    const int n = static_cast<int>(list.size());
+    if (n == 0 || k <= 0) return;
+    const std::string now = menu_value(i);
+    int cur = 0;
+    for (int j = 0; j < n; ++j)
+        if (list[j].first == now) cur = j;
+    const auto& want = list[(cur + k) % n];
+    if (!want.second) return;
     menu_sel = i;
+    const Settings was = cfg;
     menu_dry = true;
-    for (int n = 1; n < k; ++n) menu_change(1);
+    int steps = 0;
+    for (int s = 1; s <= 12 && !steps; ++s) {
+        menu_change(1);
+        if (menu_value(i) == want.first) steps = s;
+    }
+    cfg = was;
+    if (!steps) {
+        menu_dry = false;
+        return;
+    }
+    for (int s = 1; s < steps; ++s) menu_change(1);
     menu_dry = false;
     menu_change(1);
 }
