@@ -1165,7 +1165,11 @@ const char* menu_help(const MItem& it)
     case MClean:
         return "Frees space: takes out of each game's folder what the engine never reads (DOSBox, installers, the "
                "Steam launcher's files). Game files, saves and every PDF stay. A report: games/_CYD/CLEANUP.TXT.";
+#ifdef __ANDROID__
+    case MDevice: return "The versions, this device, and each game: its version and what the scan made of its art, journal, cluebook and music.";
+#else
     case MDevice: return "This port's version, the device, and each game found with its release (Steam or GOG).";
+#endif
     case MAbout: return "The app's, the front end's and the engine's versions, where they are made, the licence and credits.";
     case MJFont:
         return "The type the journal's text is shown in: Journal - like the printed Adventurer's Journal's hand; Book - "
@@ -1211,10 +1215,13 @@ std::string android_device_info();
 #define PM_FRONT_VERSION PM_VERSION
 #endif
 #endif
+std::vector<std::pair<std::string, std::string>> device_lines_cache;     // (Android: Device Info's, while open)
+std::string app_art_path(const library::GameDir& g);
 std::vector<std::pair<std::string, std::string>> device_lines()
 {
     std::vector<std::pair<std::string, std::string>> out;
 #ifdef __ANDROID__
+    if (!device_lines_cache.empty()) return device_lines_cache;
     // The app's Device Info (Tom, 2026-11-28): the versions, each with its v; what the app sees of the device - the
     // same as a report's DEVICE.TXT (GoldBoxActivity.deviceInfo); each of the nine games: its version or Not Present
     out.push_back({"Version", "App v" PM_VERSION ", front end v" PM_FRONT_VERSION ", engine v" CYD_VERSION});
@@ -1242,6 +1249,17 @@ std::vector<std::pair<std::string, std::string>> device_lines()
         out.push_back({std::string("\x01") + title, ""});
         out.push_back({"Version", r == "Steam" ? "Steam Version" : r == "GOG" ? "GOG Version" : "Unknown Version"});
         const std::string cache = library::cache_dir(g);
+        // (its picture on the chooser: Steam's box art from the Launcher folder, else the game's own logo - the
+        // scan's APPART.IMG; empty: none to be had - Tom, 2026-11-28 11:22)
+        {
+            struct stat st;
+            std::string box;
+            const bool made = stat(pm::host_path(app_art_path(g).c_str()).c_str(), &st) == 0;
+            out.push_back({"Art", !made          ? "Not processed yet - Rescan Game Files"
+                                  : st.st_size == 0 ? "Not found (no box art or logo)"
+                                  : art::box_file(g, box) ? "Box art found and processed (Steam's launcher)"
+                                                          : "Logo found and processed (the game's icon)"});
+        }
         bool book = false;
         for (const jour::Document& d : jour::documents(g)) {
             std::string l = d.label;
@@ -1304,6 +1322,7 @@ std::vector<std::pair<std::string, std::string>> device_lines()
     }
     for (const library::GameDir& g : games_found)
         if (g.game == G::Unknown || g.game == G::UnlimitedAdventures) game_lines(g, g.folder.c_str());
+    device_lines_cache = out;
     return out;
 #endif
     out.push_back({"Version", "App v" PM_VERSION ", engine " CYD_VERSION});
@@ -2808,7 +2827,11 @@ void menu_press(int b)
         switch (it.m) {
         case MResume: menu_open = false; break;
         case MControls: help_open = true; break;
-        case MDevice: device_open = true; about_open = false; break;
+        case MDevice:
+            device_open = true;
+            about_open = false;
+            device_lines_cache.clear();     // (worked out anew each time it opens - not each frame)
+            break;
         case MAbout: device_open = about_open = true; break;
         case MJournal:
 #ifdef __ANDROID__
@@ -3112,7 +3135,7 @@ void row(std::string& t, char kind, const char* name, const char* value, const c
     field(t, help);
 }
 
-// A choice line's values, in the order Right steps through them (from the one set when first asked, this run) (the app's list - Tom,
+// A choice line's values, in the order Right steps through them from the first (Small ... Huge) (the app's list - Tom,
 // 2026-11-28: "a drop-down list ... not tapping right and left"); 0x1F between. Worked out in cfg alone (menu_dry)
 std::string menu_choices(int i)
 {
@@ -3128,6 +3151,21 @@ std::string menu_choices(int i)
         const size_t c = n.rfind(": ");      // (as the line's own split: "Picture: Original 4:3")
         return c == std::string::npos ? n : n.substr(c + 2);
     };
+    // (the list in the values' own order - Small, Medium, Large, Huge - not from the one set now: Tom, 2026-11-28;
+    // the setting put at its first value for the count, in cfg alone)
+    switch (menu_items[i].m) {
+    case MPadSize: cfg.pad_size = 0; break;
+    case MPadAlpha: cfg.pad_alpha = 0; break;
+    case MFont: cfg.font = 0; break;
+    case MRotation: cfg.rotation = 0; break;
+    case MChooser: cfg.chooser = 0; break;
+    case MJFont: cfg.journal_font = 0; break;
+    case MTouchPad: cfg.touch_pad = 0; break;
+    case MSound: cfg.sound = kSndTandy; break;
+    case MDisplay: cfg.fit = 0; break;
+    case MClueDark: cfg.clue_dark = true; break;
+    default: break;
+    }
     std::vector<std::string> seen{value()};
     for (int k = 0; k < 12; ++k) {
         menu_change(1);
@@ -3138,19 +3176,6 @@ std::string menu_choices(int i)
     menu_dry = false;
     cfg = was;
     menu_sel = keep;
-    // (a steady order: the list as first seen this run, whatever is set now - the app works out how far on a pick is)
-    static std::vector<std::pair<int, std::string>> first;
-    const int key = menu_items[i].m * 1000 + menu_items[i].arg;
-    std::string head;
-    for (const auto& f : first)
-        if (f.first == key) head = f.second;
-    if (head.empty()) first.push_back({key, seen[0]});
-    else
-        for (size_t k = 0; k < seen.size(); ++k)
-            if (seen[k] == head) {
-                std::rotate(seen.begin(), seen.begin() + static_cast<long>(k), seen.end());
-                break;
-            }
     std::string t;
     for (size_t k = 0; k < seen.size(); ++k) {
         if (k) t += '\x1f';

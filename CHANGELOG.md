@@ -3,6 +3,15 @@
 Every version of Gold Box Game Engine for PortMaster. A release's notes are
 its part of this file.
 
+## [0.23.1] - 2026-11-28
+
+Built on the CYD engine 0.226.5.
+
+- The Android app's Device Info: each game's art too - Steam's box art or the game's logo, found and processed or
+  not (Tom). Device Info's lines are worked out once when it opens, not every frame.
+- A choice's list in the values' own order (Button Size: Small, Medium, Large, Huge - Small had come last).
+- Device Info's help line says what the app's page shows now.
+
 ## [0.23.0] - 2026-11-28
 
 Built on the CYD engine 0.226.5. The Android app's alone (Tom's notes from 0.12.0 on his Pixel 10a); the handhelds
