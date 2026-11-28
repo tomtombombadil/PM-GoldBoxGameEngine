@@ -271,6 +271,32 @@ void android_open_pdf(const std::string& path, const std::string& title)
 // (Java, GoldBoxActivity.reportProblem -> ReportDialog) asks what happened, then the player's own email app opens
 // with the answers and one zip - the log, settings, the engine's notes, the device's details and, if ticked, a save
 // of the game as it was (play::snapshot, made here first). `info`: "key\tvalue" lines (android_report)
+// Device Info's lines of the device (Java, GoldBoxActivity.deviceInfo - Report's own, as DEVICE.TXT): "name\tvalue"
+std::string android_device_info()
+{
+    JNIEnv* env = static_cast<JNIEnv*>(SDL_AndroidGetJNIEnv());
+    jobject act = static_cast<jobject>(SDL_AndroidGetActivity());
+    if (!env || !act) return "";
+    std::string out;
+    jclass c = env->GetObjectClass(act);
+    jmethodID m = env->GetMethodID(c, "deviceInfo", "()Ljava/lang/String;");
+    if (m) {
+        jstring r = static_cast<jstring>(env->CallObjectMethod(act, m));
+        if (r && !env->ExceptionCheck()) {
+            const char* p = env->GetStringUTFChars(r, nullptr);
+            if (p) {
+                out = p;
+                env->ReleaseStringUTFChars(r, p);
+            }
+        }
+        if (r) env->DeleteLocalRef(r);
+    }
+    if (env->ExceptionCheck()) env->ExceptionClear();
+    env->DeleteLocalRef(c);
+    env->DeleteLocalRef(act);
+    return out;
+}
+
 void android_report(int game);     // (below, beside android_op: it reads the screens' state)
 
 void android_report_call(const std::string& info)
@@ -1047,7 +1073,11 @@ const char* menu_help(const MItem& it)
     case MCheats: return playing ? "Healer, Merchant, Sanctuary, Trainer, Max Hit Points, Race Level Limits." : "Max Hit Points, Race Level Limits. The other cheats are here while a game is played.";
     case MQuickPg: return "What Quick may do for each member of the party in a fight.";
     case MControlsPg: return "What each button does, and the buttons' settings.";
+#ifdef __ANDROID__
+    case MSystemPg: return "The games folder, Rescan and Clean Up, Device Info, About, Report a Problem.";
+#else
     case MSystemPg: return "Device Info, Send Logs and its reply address.";
+#endif
     case MLeaveGame: return "Back to the list of games. Save in the game first.";
     case MExit: return "Leaves the port.";
     case MOriginal:
@@ -1175,9 +1205,107 @@ const char* release_name(const library::GameDir& g)
 
 // Device Info's lines for the Android app's drawer (name, value): what draw_device shows
 const char* release_name(const library::GameDir& g);
+#ifdef __ANDROID__
+std::string android_device_info();
+#ifndef PM_FRONT_VERSION
+#define PM_FRONT_VERSION PM_VERSION
+#endif
+#endif
 std::vector<std::pair<std::string, std::string>> device_lines()
 {
     std::vector<std::pair<std::string, std::string>> out;
+#ifdef __ANDROID__
+    // The app's Device Info (Tom, 2026-11-28): the versions, each with its v; what the app sees of the device - the
+    // same as a report's DEVICE.TXT (GoldBoxActivity.deviceInfo); each of the nine games: its version or Not Present
+    out.push_back({"Version", "App v" PM_VERSION ", front end v" PM_FRONT_VERSION ", engine v" CYD_VERSION});
+    out.push_back({"\x01This Device", ""});
+    {
+        const std::string info = android_device_info();
+        size_t p = 0;
+        while (p < info.size()) {
+            size_t e = info.find('\n', p);
+            if (e == std::string::npos) e = info.size();
+            const std::string l = info.substr(p, e - p);
+            const size_t t = l.find('\t');
+            if (t != std::string::npos) out.push_back({l.substr(0, t), l.substr(t + 1)});
+            p = e + 1;
+        }
+    }
+    using G = games::Game;
+    static const G kSeries[] = {G::PoolOfRadiance,   G::CurseOfTheAzureBonds,       G::SecretOfTheSilverBlades,
+                                G::PoolsOfDarkness,  G::GatewayToTheSavageFrontier, G::TreasuresOfTheSavageFrontier,
+                                G::ChampionsOfKrynn, G::DeathKnightsOfKrynn,        G::DarkQueenOfKrynn};
+    // (each game a heading - "\x01" before a name makes it one - its version, then what the scan made of its journal,
+    // its cluebook and, where the game has it, its music: Tom, 2026-11-28 10:56)
+    auto game_lines = [&out](const library::GameDir& g, const char* title) {
+        const std::string r = release_name(g);
+        out.push_back({std::string("\x01") + title, ""});
+        out.push_back({"Version", r == "Steam" ? "Steam Version" : r == "GOG" ? "GOG Version" : "Unknown Version"});
+        const std::string cache = library::cache_dir(g);
+        bool book = false;
+        for (const jour::Document& d : jour::documents(g)) {
+            std::string l = d.label;
+            for (char& ch : l) ch = static_cast<char>(tolower(static_cast<unsigned char>(ch)));
+            if (l.find("journal") != std::string::npos) book = true;
+        }
+        out.push_back({"Journal", plat::exists((cache + "/JOURNAL.DAT").c_str()) ? "Found, recognised and processed"
+                                  : book ? "Found, but not processed - Rescan Game Files, or Report a Problem"
+                                         : "Not found (its PDF isn't in the game's folder)"});
+        // (the cluebook: CLUEMAPS.TXT - "maps 3" and a line a map, or "none 3<tab>why")
+        std::string clue = "Not found";
+        if (FILE* f = fopen(pm::host_path((cache + "/CLUEMAPS.TXT").c_str()).c_str(), "r")) {
+            char l[256];
+            int maps = -1;
+            std::string why;
+            while (fgets(l, sizeof l, f)) {
+                l[strcspn(l, "\r\n")] = 0;
+                if (maps < 0 && !strncmp(l, "maps", 4)) maps = 0;
+                else if (maps < 0 && !strncmp(l, "none", 4)) {
+                    const char* t = strchr(l, '\t');
+                    why = t ? t + 1 : "";
+                    break;
+                } else if (maps >= 0 && l[0]) ++maps;
+            }
+            fclose(f);
+            if (maps > 0) clue = "Found, recognised and processed (" + std::to_string(maps) + " maps)";
+            else if (why == "unknown edition") clue = "Found, but this edition isn't recognised yet";
+            else if (why == "not made") clue = "Found and recognised, but its maps couldn't be made";
+            else if (!cluemaps::find(g).empty()) clue = "Found, not processed yet - Rescan Game Files";
+        } else if (!cluemaps::find(g).empty()) {
+            clue = "Found, not processed yet - Rescan Game Files";
+        }
+        out.push_back({"Cluebook", clue});
+        const profile::Profile* prof = profile::first(g.game);
+        const bool has = g.game == G::PoolsOfDarkness || g.game == G::ChampionsOfKrynn ||
+                         g.game == G::DeathKnightsOfKrynn || g.game == G::DarkQueenOfKrynn ||
+                         g.game == G::GatewayToTheSavageFrontier || g.game == G::TreasuresOfTheSavageFrontier;
+        const uint32_t songs = musicfiles::songs(g.data_dir.c_str(), prof);
+        if (songs) {
+            int n = 0;
+            for (uint32_t m = songs; m; m &= m - 1) ++n;
+            out.push_back({"Music", musicfiles::ready(g.data_dir.c_str(), cache.c_str(), prof)
+                                        ? "Found and processed (" + std::to_string(n) + " songs)"
+                                        : "Found, not processed yet - Rescan Game Files"});
+        } else if (has) {
+            out.push_back({"Music", "Not found (its music files aren't in the folder)"});
+        }
+    };
+    for (G k : kSeries) {
+        bool any = false;
+        for (const library::GameDir& g : games_found)
+            if (g.game == k) {
+                game_lines(g, games::title(k));
+                any = true;
+            }
+        if (!any) {
+            out.push_back({std::string("\x01") + games::title(k), ""});
+            out.push_back({"Version", "Not Present"});
+        }
+    }
+    for (const library::GameDir& g : games_found)
+        if (g.game == G::Unknown || g.game == G::UnlimitedAdventures) game_lines(g, g.folder.c_str());
+    return out;
+#endif
     out.push_back({"Version", "App v" PM_VERSION ", engine " CYD_VERSION});
     if (FILE* f = fopen((port_dir() + "/device.txt").c_str(), "r")) {
         char l[200];
@@ -1207,7 +1335,7 @@ std::vector<std::pair<std::string, std::string>> device_lines()
 std::vector<std::pair<std::string, std::string>> about_lines()
 {
     return {
-        {"Gold Box Game Engine", "An engine for SSI's Gold Box AD&D games - play your own GOG or Steam copies."},
+        {"Gold Box\x1fGame Engine", "An engine for SSI's Gold Box AD&D games - play your own GOG or Steam copies."},
         {"App", "v" + (app_version.empty() ? std::string("?") : app_version) +
                     " - github.com/tomtombombadil/APK-GoldBoxGameEngine"},
         {"Front end", "v" PM_FRONT_VERSION " - github.com/tomtombombadil/PM-GoldBoxGameEngine"},
@@ -1764,7 +1892,13 @@ constexpr char kScanMark[] = "PMSCAN.TXT";      // in the game's _CYD folder: fo
 constexpr char kScanTag[] = "scan 8";       // (2: engine 0.198.1 - journals read anew, music 16-bit; 3: 0.199 - Queen's and Champions' music; 4: 0.200.4 - journal sections read anew; 5: 0.200.6 / 0.201.0 - the Steam Treasures journal, GOG Secret entry 45: journals made anew; 6: 0.221.3 - the Steam journals' text: standard fonts' widths, word gaps; 7: 0.221.6 - the Steam journals' text corrected; 8: 0.221.7 - the Dark Queen's letter a picture)
 std::vector<std::string> scan_log;
 bool                     scan_done = false, scan_progress = false;
-const char*              scan_title = "Looking for Games";     // (Clean Up Game Files: its own)
+bool                     scan_from_menu = false;  // (the Android app: Rescan / Clean Up - Continue back to the menu)
+#ifdef __ANDROID__
+#define SCAN_TITLE "Processing Game Files"      // (the app's - Tom, 2026-11-28; the handhelds keep theirs)
+#else
+#define SCAN_TITLE "Looking for Games"
+#endif
+const char*              scan_title = SCAN_TITLE;     // (Clean Up Game Files: its own)
 
 // The scan's page: its lines in the smaller letters (12 x 12 on the
 // backdrop's sharper picture), as many across as the panel has room for
@@ -1808,6 +1942,7 @@ void draw_scan()
 }
 
 std::string android_scan_text();
+std::string android_menu_text();
 
 // A line onto the scan's list (replace: over the last one), shown at once
 void scan_put(const char* line, bool replace)
@@ -1816,7 +1951,9 @@ void scan_put(const char* line, bool replace)
     else scan_log.push_back(line);
     plat::log("[scan] %s\n", line);
     if (shell::on()) {
-        // (the Android app's page: its lines go to it)
+        // (the Android app's page: its lines go to it - and the drawer told it is out of the way: the scan runs
+        // here without the frame loop, so a menu left open over it stayed, its taps unheard - Tom, 2026-11-28)
+        shell::text(shell::ChDrawer, android_menu_text());
         shell::text(shell::ChScan, android_scan_text());
         video::clear(video::kBlack);
         video::set_backdrop(nullptr);
@@ -1904,7 +2041,7 @@ void scan_begin(bool& any)
 {
     if (any) return;
     any = true;
-    scan_title = "Looking for Games";
+    scan_title = SCAN_TITLE;
     scan_log.clear();
     scan_done = scan_progress = false;
     screen = Screen::Scan;
@@ -2381,6 +2518,9 @@ void toggle_original()
     }
 }
 
+// (menu_dry: the value changed in cfg alone - nothing applied or saved; menu_choices works the list out so)
+bool menu_dry = false;
+
 void menu_change(int step)
 {
     const MItem it = menu_items[menu_sel];
@@ -2405,7 +2545,7 @@ void menu_change(int step)
         if (shell::on()) {
             const int at = cfg.fit > 2 ? 0 : cfg.fit;
             cfg.fit = static_cast<uint8_t>((at + (step < 0 ? 2 : 1)) % 3);
-            video::set_fit(static_cast<video::Fit>(cfg.fit));
+            if (!menu_dry) video::set_fit(static_cast<video::Fit>(cfg.fit));
             break;
         }
         // (Android: 4:3, 4:3 + Companion Right, 4:3 + Companion Below, Square Pixels, Stretch)
@@ -2419,12 +2559,12 @@ void menu_change(int step)
         // Android's, "The Port is working and displaying great")
         cfg.fit = static_cast<uint8_t>((cfg.fit + (step < 0 ? 2 : 1)) % 3);
 #endif
-        video::set_fit(static_cast<video::Fit>(cfg.fit));
+        if (!menu_dry) video::set_fit(static_cast<video::Fit>(cfg.fit));
         // (the game list's pictures follow the shape: pictures_follow)
         break;
     case MSound:
         sound_cycle(step);
-        if (playing) apply_sound();
+        if (playing && !menu_dry) apply_sound();
         break;
     case MMusic:
         cfg.music = !cfg.music;
@@ -2439,26 +2579,26 @@ void menu_change(int step)
     }
     case MFont:
         cfg.font = static_cast<uint8_t>((cfg.font + (step < 0 ? 3 : 1)) % 4);
-        if (playing) apply_options();
+        if (playing && !menu_dry) apply_options();
         break;
     case MPadMoves: cfg.pad_moves = !cfg.pad_moves; break;
     case MRotation:
         cfg.rotation = static_cast<uint8_t>((cfg.rotation + (step < 0 ? 2 : 1)) % 3);
-        rotation_apply();
+        if (!menu_dry) rotation_apply();
         break;
     case MChooser: cfg.chooser = static_cast<uint8_t>((cfg.chooser + (step < 0 ? 2 : 1)) % 3); break;
     case MJFont: cfg.journal_font = static_cast<uint8_t>((cfg.journal_font + (step < 0 ? 3 : 1)) % 4); break;
     case MTouchPad:
         cfg.touch_pad = static_cast<uint8_t>((cfg.touch_pad + (step < 0 ? 2 : 1)) % 3);
-        touch_pad_apply();
+        if (!menu_dry) touch_pad_apply();
         break;
     case MPadSize:
         cfg.pad_size = static_cast<uint8_t>((cfg.pad_size + (step < 0 ? 3 : 1)) % 4);
-        pad_style_apply();
+        if (!menu_dry) pad_style_apply();
         break;
     case MPadAlpha:
         cfg.pad_alpha = static_cast<uint8_t>((cfg.pad_alpha + (step < 0 ? 4 : 1)) % 5);
-        pad_style_apply();
+        if (!menu_dry) pad_style_apply();
         break;
     case MSwap: cfg.swap_ab = !cfg.swap_ab; cfg.ab_set = true; break;
     case MMaxHp:
@@ -2479,7 +2619,7 @@ void menu_change(int step)
         }
         return;
     }
-    settings_save(conf_dir, cfg);
+    if (!menu_dry) settings_save(conf_dir, cfg);
 }
 
 void rescan(bool kept = false)
@@ -2700,12 +2840,22 @@ void menu_press(int b)
         case MRescan:
             if (playing) leave_game();          // (in a game: leaves it first - the CYD's)
             menu_open = false;
+#ifdef __ANDROID__
+            scan_from_menu = true;              // (its Continue back to the menu - Tom, 2026-11-28)
+#endif
             rescan();
-            if (!discover(true)) screen = Screen::Games;
+            if (!discover(true)) {
+                screen = Screen::Games;
+                if (scan_from_menu) menu_open = true;
+                scan_from_menu = false;
+            }
             break;
         case MClean:
             if (playing) leave_game();          // (in a game: leaves it first - its files are gone through)
             menu_open = false;
+#ifdef __ANDROID__
+            scan_from_menu = true;
+#endif
             clean_up();
             break;
         case MUpdate: update_check(); break;
@@ -2745,7 +2895,8 @@ void menu_press(int b)
 // The screens stay this front end's: a controller still drives each.
 
 constexpr int kOpChooserPlay = 10, kOpLookAgain = 11, kOpChooserSelect = 12, kOpChooserContinue = 13,
-              kOpChooserMode = 14, kOpJournalClose = 15, kOpReport = 18;
+              kOpChooserMode = 14, kOpJournalClose = 15, kOpReport = 18, kOpPick = 19;
+void menu_pick(int i, int k);
 void press(int b);
 
 #ifdef __ANDROID__
@@ -2801,7 +2952,7 @@ void android_report(int game)
     line("area", area);
     line("square", square);
     line("save", snap);
-    line("front", PM_VERSION);
+    line("front", PM_FRONT_VERSION);       // (the app builds PM_VERSION as its own)
     line("engine", CYD_VERSION);
     fflush(stdout);         // (the log as it is now)
     android_report_call(t);
@@ -2861,7 +3012,12 @@ void android_op(int op, int index, int value)
     if (notice.open || prompt_open) return;
     // Device Info, the Button Guide (over the menu): Back or close
     if (menu_open && (help_open || device_open)) {
-        if (op == shell::MenuBack || op == shell::MenuClose) menu_press(BB);
+        // (Back a page; the X closes the menu - back to the game: Tom, 2026-11-28)
+        if (op == shell::MenuBack) menu_press(BB);
+        else if (op == shell::MenuClose) {
+            help_open = device_open = about_open = false;
+            menu_open = false;
+        }
         return;
     }
     if (jlist_open) {
@@ -2894,6 +3050,9 @@ void android_op(int op, int index, int value)
             quick_press(BA);
         } else if (op == shell::MenuChange && index == 1) {
             quick_press(value < 0 ? BLeft : BRight);
+        } else if (op == kOpPick && index == 1) {
+            // (the member list: value - how many members on from the one shown)
+            if (q_rows > 0) q_row = (q_row + value) % q_rows;
         } else if (op == shell::MenuBack) {
             quick_press(BB);                // (back to the menu - Tom, 2026-11-28)
         } else if (op == shell::MenuClose) {
@@ -2904,6 +3063,11 @@ void android_op(int op, int index, int value)
     if (!menu_open) return;
     const int n = static_cast<int>(menu_items.size());
     const bool line = index >= 0 && index < n;
+    if (op == kOpPick) {
+        // (a choice line's list: value - how many places on from the value set now)
+        if (line) menu_pick(index, value);
+        return;
+    }
     switch (op) {
     case shell::MenuClose: menu_open = false; break;
     case shell::MenuBack: menu_press(BB); break;
@@ -2948,11 +3112,71 @@ void row(std::string& t, char kind, const char* name, const char* value, const c
     field(t, help);
 }
 
+// A choice line's values, in the order Right steps through them (from the one set when first asked, this run) (the app's list - Tom,
+// 2026-11-28: "a drop-down list ... not tapping right and left"); 0x1F between. Worked out in cfg alone (menu_dry)
+std::string menu_choices(int i)
+{
+    if (i < 0 || i >= static_cast<int>(menu_items.size())) return "";
+    const int keep = menu_sel;
+    const Settings was = cfg;
+    menu_sel = i;
+    menu_dry = true;
+    auto value = [&]() {
+        char l[160];
+        menu_label(menu_items[i], l, sizeof l);
+        const std::string n = l;
+        const size_t c = n.rfind(": ");      // (as the line's own split: "Picture: Original 4:3")
+        return c == std::string::npos ? n : n.substr(c + 2);
+    };
+    std::vector<std::string> seen{value()};
+    for (int k = 0; k < 12; ++k) {
+        menu_change(1);
+        const std::string v = value();
+        if (v == seen[0]) break;
+        seen.push_back(v);
+    }
+    menu_dry = false;
+    cfg = was;
+    menu_sel = keep;
+    // (a steady order: the list as first seen this run, whatever is set now - the app works out how far on a pick is)
+    static std::vector<std::pair<int, std::string>> first;
+    const int key = menu_items[i].m * 1000 + menu_items[i].arg;
+    std::string head;
+    for (const auto& f : first)
+        if (f.first == key) head = f.second;
+    if (head.empty()) first.push_back({key, seen[0]});
+    else
+        for (size_t k = 0; k < seen.size(); ++k)
+            if (seen[k] == head) {
+                std::rotate(seen.begin(), seen.begin() + static_cast<long>(k), seen.end());
+                break;
+            }
+    std::string t;
+    for (size_t k = 0; k < seen.size(); ++k) {
+        if (k) t += '\x1f';
+        field(t, seen[k].c_str());
+    }
+    return t;
+}
+
+// The app's list chose the value `k` places on from the one set now (Right's order): the steps in cfg alone
+// but the last, which applies and saves as a tap on > does
+void menu_pick(int i, int k)
+{
+    if (i < 0 || i >= static_cast<int>(menu_items.size()) || k <= 0) return;
+    menu_sel = i;
+    menu_dry = true;
+    for (int n = 1; n < k; ++n) menu_change(1);
+    menu_dry = false;
+    menu_change(1);
+}
+
 // The drawer's page: a head line - open / busy (the port's own screen is over
 // it: the drawer steps aside) / closed, the title, the highlighted line, a
 // page above it (1 / 0) - then a line each: kind (P a page or screen, S a
 // switch, C a choice - its < and >, L a level 0 - 100, A an action, T a line of
-// text only (a name and its words), H a heading, X none of the drawer's), its name, its value, its words. Tab-separated.
+// text only (a name and its words), H a heading, G a group's title (Device Info's games: T lines under it
+// indented), X none of the drawer's), its name, its value, its words. Tab-separated.
 std::string android_menu_text()
 {
     std::string t;
@@ -2964,7 +3188,7 @@ std::string android_menu_text()
     };
     if (quick_open) {
         const bool on = !(cfg.comforts_off & kOffQuick);
-        head("Quick Actions", q_col < 0 ? 0 : q_col + 2, false);
+        head("Quick Actions", q_col < 0 ? 0 : q_col + 2, true);      // (its back arrow - Tom, 2026-11-28)
         row(t, 'S', "Quick Actions", on ? "On" : "Off",
             "On: each member's own Quick Actions, set below. Off: Quick plays every member as the original games do.");
         if (on && q_rows > 0) {
@@ -2972,6 +3196,14 @@ std::string android_menu_text()
             if (!play::quick_name(q_row, nm, sizeof nm)) nm[0] = 0;
             snprintf(who, sizeof who, "%s%s", nm, play::quick_npc(q_row) ? " (NPC)" : "");
             row(t, 'C', "Member", who, "Whose Quick Actions the switches below are.");
+            t += '\t';
+            for (int r = 0; r < q_rows; ++r) {
+                char m[32] = "";
+                if (!play::quick_name(r, m, sizeof m)) m[0] = 0;
+                if (r) t += '\x1f';
+                field(t, m);
+                if (play::quick_npc(r)) t += " (NPC)";
+            }
             const uint8_t mask = play::quick_get(q_row);
             for (int k = 0; k < quickacts::kCols; ++k)
                 row(t, 'S', quickacts::kName[k], mask >> k & 1 ? "On" : "Off", quickacts::kDesc[k]);
@@ -3016,7 +3248,12 @@ std::string android_menu_text()
     }
     if (device_open) {
         head("Device Info", -1, true);
-        for (const auto& l : device_lines()) row(t, 'T', l.first.c_str(), l.second.c_str(), "");
+        for (const auto& l : device_lines()) {
+            // (a game's title - or This Device - across the drawer in gold, its lines indented under it: kind G; Tom,
+            // 2026-11-28)
+            if (!l.first.empty() && l.first[0] == '\x01') row(t, 'G', l.first.c_str() + 1, "", "");
+            else row(t, 'T', l.first.c_str(), l.second.c_str(), "");
+        }
         return t;
     }
     char title[48];
@@ -3046,6 +3283,7 @@ std::string android_menu_text()
             kind = value == "On" || value == "Off" ? 'S' : 'C';
         }
         row(t, kind, name.c_str(), value.c_str(), menu_help(it));
+        if (kind == 'C') t += "\t" + menu_choices(static_cast<int>(&it - menu_items.data()));
     }
     return t;
 }
@@ -3164,7 +3402,15 @@ void press(int b)
         return;
     }
     if (screen == Screen::Scan) {
-        if (scan_done && (b == BA || b == BB || b == BStart)) screen = Screen::Games;
+        if (scan_done && (b == BA || b == BB || b == BStart)) {
+            screen = Screen::Games;
+            // (the Android app: Rescan / Clean Up came from the menu - back to it, on the page it was on)
+            if (scan_from_menu) {
+                menu_open = true;
+                menu_build();
+            }
+            scan_from_menu = false;
+        }
         return;
     }
     if (menu_open) {
@@ -3988,6 +4234,10 @@ void script_tick(Uint32 now)
     } else if (t.compare(0, 5, "shot:") == 0) {
         draw_frame();
         if (!video::save_bmp(t.c_str() + 5)) plat::log("[script] couldn't write %s\n", t.c_str() + 5);
+    } else if (t.compare(0, 3, "op:") == 0) {
+        // (op:OP:INDEX:VALUE - an Android app's tap on its views, as nativeMenu sends it)
+        int op = 0, i = 0, v = 0;
+        if (sscanf(t.c_str() + 3, "%d:%d:%d", &op, &i, &v) >= 2) android_op(op, i, v);
     } else if (t == "snapshot") {
         // (the Android app's Report a Problem's save, checked anywhere: into games/_CYD/_REPORT/SAVE)
         const std::string dir = std::string(games::kRootDir) + "/" + library::kCacheDir + "/_REPORT/SAVE";
@@ -4168,7 +4418,12 @@ int main(int argc, char** argv)
     shell::begin();
     const Uint32 t_sdl = SDL_GetTicks();     // (the start's times, in the log: where a slow start goes)
     shell::set_menu(android_op);
+#ifdef __ANDROID__
+    plat::log("[port] Gold Box Game Engine for Android: app %s, front end %s, engine %s; games in %s\n", PM_VERSION,
+              PM_FRONT_VERSION, CYD_VERSION, pm::games_root().c_str());
+#else
     plat::log("[port] Gold Box Game Engine for PortMaster %s; games in %s\n", PM_VERSION, pm::games_root().c_str());
+#endif
     settings_load(conf_dir, cfg);
 #ifdef __ANDROID__
     if (!cfg.fit_set) {

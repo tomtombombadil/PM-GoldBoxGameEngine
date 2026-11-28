@@ -3,6 +3,23 @@
 Every version of Gold Box Game Engine for PortMaster. A release's notes are
 its part of this file.
 
+## [0.23.0] - 2026-11-28
+
+Built on the CYD engine 0.226.5. The Android app's alone (Tom's notes from 0.12.0 on his Pixel 10a); the handhelds
+are unchanged.
+
+- Device Info: the versions each with its v; what the app sees of the device (as a report's DEVICE.TXT); each of
+  the nine games under its own heading - Steam / GOG / Unknown Version or Not Present, and what the scan made of
+  its journal, its cluebook (maps) and its music.
+- A choice line (Game Sound, Picture, Journal Font ...) sends its values for the app's drop-down list (op 19 picks
+  one); Quick Actions' member too. Worked out without applying or saving anything.
+- Rescan / Clean Up Game Files from the menu: the drawer gets out of the way at once (Rescan had left it locked
+  open), and Continue returns to the menu. The scan's page reads "Processing Game Files".
+- The menu's X closes it from Device Info, the Button Guide and About too (it had gone back a page); Quick Actions
+  has its back arrow. About's "Gold Box / Game Engine" on two lines.
+- Report a Problem: the front end's own version (it had sent the app's), and the log's head names the app.
+- Script step `op:OP:INDEX:VALUE` (an app's tap, for tests).
+
 ## [0.22.1] - 2026-11-28
 
 Built on the CYD engine 0.226.5.
