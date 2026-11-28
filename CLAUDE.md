@@ -662,5 +662,14 @@ and maintains it; it is the primary output of the Claude Project
     version - Tom wants all four in every log; `device.txt` has the same.
   - Tom reads the emails and passes the zips to Claude. When asking Tom
     for a log, ask for Send Logs - not for files fetched off the card.
+  - **The Android app has it too** (Tom, 2026-11-28: "somehow the send
+    logs function is missing from the menus!" - it had been left out on
+    Android since v0.12.13, sendlogs.sh can't run there): the app's
+    LogSender (Java, APK repo) posts the same fields and files to the same
+    relay and writes sendlogs.sh's answer to conf/sendlogs.result, which
+    job_tick reads; the Reply Address is Android's own box (ReplyDialog ->
+    nativeText, ops 16 / 17). **Every menu line the handhelds have, the app
+    has, unless Tom has said otherwise** - check the Android menu when
+    adding or #ifdef-ing one out.
 - Submitting to PortMaster's own catalogue (a PR to PortsMaster/PortMaster-New)
   is Tom's call and needs things only he can supply (TODO).

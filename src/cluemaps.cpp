@@ -14,6 +14,10 @@ namespace cluemaps {
 namespace {
 
 constexpr char kList[] = "CLUEMAPS.TXT";
+// The list's first word and the way it was made: a list by another (an older engine's tables - a cluebook it didn't
+// know may be known now; the narrow margin of "maps 1") is made again once (Tom, 2026-11-28: Gateway's cluebook,
+// "unknown edition" to 0.20, stayed so after 0.21 knew it)
+constexpr char kStamp[] = "3";
 std::string names_key, names_text;      // (CLUEMAPS.TXT as last read: name())
 
 // A PDF on the device's own disc (jour::documents gives the host's paths)
@@ -116,13 +120,14 @@ bool contains_nocase(const std::string& s, const char* what)
 
 bool ready(const std::string& cache)
 {
-    // (made, or none to make - by this version's way: a list of "maps 1" had the narrow margin and is made anew)
+    // (made, or none to make - by this version's way)
     plat::File f = plat::open((cache + "/" + kList).c_str());
     if (!f) return false;
-    char head[8] = {};
-    f.read(reinterpret_cast<uint8_t*>(head), 7);
+    char head[16] = {};
+    f.read(reinterpret_cast<uint8_t*>(head), sizeof head - 1);
     f.close();
-    return strncmp(head, "maps 1", 6) != 0;
+    const std::string want_maps = std::string("maps ") + kStamp, want_none = std::string("none ") + kStamp;
+    return strncmp(head, want_maps.c_str(), want_maps.size()) == 0 || strncmp(head, want_none.c_str(), want_none.size()) == 0;
 }
 
 std::string find(const library::GameDir& g)
@@ -132,7 +137,7 @@ std::string find(const library::GameDir& g)
     return "";
 }
 
-void none(const std::string& cache) { write_list(cache, "none\tno cluebook\n"); }
+void none(const std::string& cache) { write_list(cache, std::string("none ") + kStamp + "\tno cluebook\n"); }
 
 void make(const library::GameDir& g, const std::string& cache, Say say)
 {
@@ -146,7 +151,7 @@ void make(const library::GameDir& g, const std::string& cache, Say say)
     Writer w;
     w.cache = cache;
     w.say = say;
-    w.list = "maps 2\n";       // (2: the coordinates round the map kept - a margin of kMargin squares)
+    w.list = std::string("maps ") + kStamp + "\n";
     const int made = src.f ? cluebook::make(src, g.game, w) : -1;
     if (made > 0) {
         write_list(cache, w.list);
@@ -154,7 +159,7 @@ void make(const library::GameDir& g, const std::string& cache, Say say)
         snprintf(line, sizeof line, "  Its cluebook's maps are ready (%d).", made);
         say(line, false, nullptr);
     } else {
-        write_list(cache, made == -1 ? "none\tunknown edition\n" : "none\tnot made\n");
+        write_list(cache, std::string("none ") + kStamp + (made == -1 ? "\tunknown edition\n" : "\tnot made\n"));
         say(made == -1 ? "  No cluebook maps: this edition isn't known." : "  No cluebook maps: they couldn't be made.",
             false, nullptr);
     }

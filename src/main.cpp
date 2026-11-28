@@ -266,6 +266,45 @@ void android_open_pdf(const std::string& path, const std::string& title)
     env->DeleteLocalRef(act);
 }
 
+// Send Logs (Tom, 2026-11-28: it was missing from the app's menu): the app posts the logs to the relay as
+// tools/sendlogs.sh does (Java, LogSender) and writes its answer to conf/sendlogs.result, which job_tick reads
+void android_send_logs(const std::string& reply)
+{
+    JNIEnv* env = static_cast<JNIEnv*>(SDL_AndroidGetJNIEnv());
+    jobject act = static_cast<jobject>(SDL_AndroidGetActivity());
+    if (!env || !act) return;
+    jclass c = env->GetObjectClass(act);
+    jmethodID m = env->GetMethodID(c, "sendLogs", "(Ljava/lang/String;Ljava/lang/String;)V");
+    if (m) {
+        jstring r = env->NewStringUTF(reply.c_str()), v = env->NewStringUTF(PM_VERSION);
+        env->CallVoidMethod(act, m, r, v);
+        env->DeleteLocalRef(r);
+        env->DeleteLocalRef(v);
+    }
+    if (env->ExceptionCheck()) env->ExceptionClear();
+    env->DeleteLocalRef(c);
+    env->DeleteLocalRef(act);
+}
+
+// The Reply Address: Android's own box and keyboard (Java, GoldBoxActivity.askReply); its words come back by
+// nativeText with kOpReply / kOpReplySend
+void android_ask_reply(const std::string& now, bool then_send)
+{
+    JNIEnv* env = static_cast<JNIEnv*>(SDL_AndroidGetJNIEnv());
+    jobject act = static_cast<jobject>(SDL_AndroidGetActivity());
+    if (!env || !act) return;
+    jclass c = env->GetObjectClass(act);
+    jmethodID m = env->GetMethodID(c, "askReply", "(Ljava/lang/String;Z)V");
+    if (m) {
+        jstring t = env->NewStringUTF(now.c_str());
+        env->CallVoidMethod(act, m, t, static_cast<jboolean>(then_send));
+        env->DeleteLocalRef(t);
+    }
+    if (env->ExceptionCheck()) env->ExceptionClear();
+    env->DeleteLocalRef(c);
+    env->DeleteLocalRef(act);
+}
+
 // Start - System - Games Folder: the app's folder screen (Java,
 // GoldBoxActivity.chooseFolder) opens; this program then ends
 void android_choose_folder()
@@ -577,6 +616,15 @@ void prompt_begin(bool then_send);
 
 void send_logs_now()
 {
+#ifdef __ANDROID__
+    menu_open = false;
+    fflush(stdout);
+    remove((conf_dir + "/sendlogs.result").c_str());
+    job = Job::Logs;
+    show_notice("Send Logs", "Sending the logs to the developer...", nullptr, nullptr, nullptr);
+    android_send_logs(cfg.reply_email);
+    return;
+#endif
     if (!tools_ready("sendlogs.sh")) return;
     menu_open = false;
     fflush(stdout);
@@ -606,6 +654,22 @@ void job_tick()
 {
     std::string out;
     int code = 0;
+#ifdef __ANDROID__
+    // (the app's LogSender: its answer in conf/sendlogs.result)
+    if (job == Job::Logs) {
+        const std::string res = conf_dir + "/sendlogs.result";
+        FILE* f = fopen(res.c_str(), "rb");
+        if (!f) return;
+        char buf[512] = "";
+        const size_t n = fread(buf, 1, sizeof buf - 1, f);
+        fclose(f);
+        remove(res.c_str());
+        buf[n] = 0;
+        out = buf;
+        plat::log("[port] send logs: %s", out.c_str());
+        out += "\n";       // (in sendlogs.sh's words: "SENT <n> [thanks]" or "ERROR <what to tell the player>")
+    } else
+#endif
     if (job == Job::None || !task::finished(out, code)) return;
     const Job was = job;
     job = Job::None;
@@ -892,10 +956,8 @@ void menu_build()
 #ifdef __ANDROID__
         add(MAbout);
 #endif
-#ifndef __ANDROID__
-        add(MSendLogs);
+        add(MSendLogs);         // (the app's too since 0.21.1 - Android's LogSender; it had been left out)
         add(MReplyAddr);
-#endif
         break;
     }
     if (menu_page != Page::Top) add(MBack);
@@ -1448,6 +1510,11 @@ const char* prompt_note = nullptr;
 
 void prompt_begin(bool then_send)
 {
+#ifdef __ANDROID__
+    // (Android's own box and keyboard - the app's views, never SDL's; its words come back as kOpReply / kOpReplySend)
+    android_ask_reply(cfg.reply_email, then_send);
+    return;
+#endif
     keys.clear();
     key_sel = 0;
     static const char* const kRows[4] = {"abcdefghij", "klmnopqrst", "uvwxyz.@_-", "0123456789"};
@@ -2564,7 +2631,7 @@ void quick_begin()
     q_row = 0;
     q_col = cfg.comforts_off & kOffQuick ? -1 : 0;        // (off: on its switch)
     quick_open = true;
-    menu_open = false;
+    // (the menu stays open under it: Back returns to it - Tom, 2026-11-28 - Start closes both)
 }
 
 void quick_press(int b)
@@ -2602,8 +2669,11 @@ void quick_press(int b)
         } else if (!play::quick_toggle(q_row, q_col))
             show_notice("Quick Actions", "The change couldn't be kept: the games folder can't be written.");
         break;
-    case BB:
-    case BStart: quick_open = false; break;
+    case BB: quick_open = false; break;                     // (back to the menu)
+    case BStart:
+        quick_open = false;
+        menu_open = false;
+        break;
     default: break;
     }
 }
@@ -2705,7 +2775,7 @@ void menu_press(int b)
 // The screens stay this front end's: a controller still drives each.
 
 constexpr int kOpChooserPlay = 10, kOpLookAgain = 11, kOpChooserSelect = 12, kOpChooserContinue = 13,
-              kOpChooserMode = 14, kOpJournalClose = 15;
+              kOpChooserMode = 14, kOpJournalClose = 15, kOpReply = 16, kOpReplySend = 17;
 void press(int b);
 
 void android_op(int op, int index, int value)
@@ -2741,6 +2811,20 @@ void android_op(int op, int index, int value)
     if (op == kOpJournalClose) {
         // (the app's journal viewer closed - its close button, Back, a controller's B)
         if (jour::active()) journal_press(BB);
+        return;
+    }
+    if (op == kOpReply || op == kOpReplySend) {
+        // (the app's Reply Address box: its words - none: No Thanks / Clear - then, Send Logs' first time, the logs)
+        std::string t = shell::typed();
+        for (char& ch : t) ch = static_cast<char>(tolower(static_cast<unsigned char>(ch)));
+        if (!t.empty() && !email_like(t)) {
+            show_notice("Reply Address", "That isn't an email address.");
+            return;
+        }
+        cfg.reply_email = t;
+        cfg.reply_asked = true;
+        settings_save(conf_dir, cfg);
+        if (op == kOpReplySend) send_logs_now();
         return;
     }
     if (op == kOpChooserSelect) {
@@ -2787,8 +2871,10 @@ void android_op(int op, int index, int value)
             quick_press(BA);
         } else if (op == shell::MenuChange && index == 1) {
             quick_press(value < 0 ? BLeft : BRight);
-        } else if (op == shell::MenuBack || op == shell::MenuClose) {
-            quick_press(BB);
+        } else if (op == shell::MenuBack) {
+            quick_press(BB);                // (back to the menu - Tom, 2026-11-28)
+        } else if (op == shell::MenuClose) {
+            quick_press(BStart);
         }
         return;
     }

@@ -3,6 +3,18 @@
 Every version of Gold Box Game Engine for PortMaster. A release's notes are
 its part of this file.
 
+## [0.21.1] - 2026-11-28
+
+Built on the CYD engine 0.226.0.
+
+- **Send Logs in the Android app** (Start - System - Send Logs, Reply Address): it had never been there - the menu
+  left it out on Android, as the handhelds' way (tools/sendlogs.sh with the firmware's curl) can't run there. The
+  app now posts the same logs to the same relay itself, and the Reply Address is Android's own box and keyboard.
+- Gateway's Steam cluebook on a games folder scanned by 0.10 - 0.20: their "no cluebook" note was trusted, so the
+  book was never looked at again. Each game's cluebook list now carries its maker's version, and an older one is made
+  again once.
+- Quick Actions: Back returns to the menu (it had gone straight to the game); Start closes both.
+
 ## [0.21.0] - 2026-11-28
 
 Built on the CYD engine 0.226.0.

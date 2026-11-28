@@ -479,6 +479,10 @@ hotkey.
   - Sent: log.txt, log.prev.txt, device.txt, update.log, settings.cfg,
     the engine's `_CYD/*.TXT` logs - never BOOK.TXT (a journal's text),
     game files or saves.
+  - **Android**: the app posts the same (its LogSender - firmware "Android
+    <release> (API n)", portmaster "none (the Android app)", version "app
+    <x> (front end <y>)"); its answer, in sendlogs.sh's words, in
+    conf/sendlogs.result. The Reply Address there is Android's own box.
 - The helper scripts run on a thread (`src/task.*`); the screen shows a
   notice until they end. Buttons only: all of it from the Start menu.
 
