@@ -3,6 +3,14 @@
 Every version of Gold Box Game Engine for PortMaster. A release's notes are
 its part of this file.
 
+## [0.22.1] - 2026-11-28
+
+Built on the CYD engine 0.226.5.
+
+- The Android build of 0.22.0 didn't compile (Report a Problem's menu line called its function before it was
+  declared - the handhelds' build doesn't compile that part, so CI didn't see it). The Android app is now built
+  here before a version that changes its parts is pushed.
+
 ## [0.22.0] - 2026-11-28
 
 Built on the CYD engine 0.226.5.

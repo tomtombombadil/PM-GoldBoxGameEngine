@@ -271,6 +271,8 @@ void android_open_pdf(const std::string& path, const std::string& title)
 // (Java, GoldBoxActivity.reportProblem -> ReportDialog) asks what happened, then the player's own email app opens
 // with the answers and one zip - the log, settings, the engine's notes, the device's details and, if ticked, a save
 // of the game as it was (play::snapshot, made here first). `info`: "key\tvalue" lines (android_report)
+void android_report(int game);     // (below, beside android_op: it reads the screens' state)
+
 void android_report_call(const std::string& info)
 {
     JNIEnv* env = static_cast<JNIEnv*>(SDL_AndroidGetJNIEnv());

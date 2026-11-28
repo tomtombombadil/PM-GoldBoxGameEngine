@@ -429,6 +429,9 @@ and maintains it; it is the primary output of the Claude Project
 - **The Companion's signature asks both of the engine's marks** (v0.12.8: `panel_party_sig(true)` is the icons'
   alone - a trained member stayed magenta): `src/panel.cpp` `signature` - a new thing the party view shows needs
   nothing here as long as the engine's `panel_party_sig(false)` has it.
+- **The Android parts (`__ANDROID__`) are compiled by no check here** - CI builds the handhelds only. A change to
+  them is built in the APK repo (its `pm` checked out at the local commit, `./gradlew assembleDebug`) before it is
+  pushed (v0.22.0 was pushed with an Android compile error).
 - **Phlan's two maps** (Tom, 2026-11-20, Darkness): `tools/edge_test.py <binary> <games copy> <out>` walks to
   Traitor's Gate and across by the port's buttons - run it after an engine change near a step or a map load.
 - **Disable Race Level Limits** (Tom, 2026-11-21: "I want to add a cheat"): Start - Cheats (`MNoRace`,
