@@ -497,8 +497,8 @@ const char* fit_name(Fit f)
     switch (f) {
     case Fit::Square: return "Square Pixels";
     case Fit::Stretch: return "Stretch";
-    case Fit::Right: return "4:3 + Companion Right";
-    case Fit::Below: return "4:3 + Companion Below";
+    case Fit::Right: return "4:3 + Crystal Ball Right";
+    case Fit::Below: return "4:3 + Crystal Ball Below";
 #ifdef __ANDROID__
     default: return "4:3";
 #else

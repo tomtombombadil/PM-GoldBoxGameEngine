@@ -11,6 +11,7 @@
 
 #include <cctype>
 #include <algorithm>
+#include <memory>
 #include <cstdio>
 #include <sys/stat.h>
 #include <dirent.h>
@@ -22,6 +23,7 @@
 #include <string>
 #include <vector>
 
+#include "engine/font.h"
 #include "engine/geo.h"
 #include "engine/journal.h"
 #include "game/music_make.h"
@@ -1101,7 +1103,7 @@ const char* menu_help(const MItem& it)
 #ifdef __ANDROID__
         if (shell::on())
             return "4:3 as the games' monitors showed them, Square Pixels, or Stretch to all of the game's room.";
-        return "4:3 as the games' monitors showed them (the Companion slides out on Y), 4:3 + Companion Right or "
+        return "4:3 as the games' monitors showed them (the Crystal Ball slides out on Y), 4:3 + Crystal Ball Right or "
                "Below (it stays there), Square Pixels, or Stretch to the whole screen.";
 #else
         return "Original 4:3 as the games' monitors showed them, Square Pixels, or Stretch to the whole screen.";
@@ -1166,7 +1168,7 @@ const char* menu_help(const MItem& it)
         return "Dark: a cluebook map printed on white paper is shown light on dark, as the game's screens are. "
                "As Printed: as the book has it.";
     case MClueMaps:
-        return "On: the Companion shows the map from your cluebook, the party's arrow on it, where the scan found "
+        return "On: the Crystal Ball shows the map from your cluebook, the party's arrow on it, where the scan found "
                "the map in your cluebook PDF. Off: the map drawn by the game's own walls.";
     case MReplyAddr: return "Your email address, sent with Send Logs so the developer can write back. Optional.";
     case MRescan: return "Looks through the games folder again and makes every game's picture, journal and music anew.";
@@ -1422,7 +1424,7 @@ std::vector<HelpLine> help_lines()
         {"L1 R1", "Menu word left / right"},
         {"L2 R2", "List line up / down"},
         {"X", "Area map"},
-        {"Y", "Companion: map, party"},
+        {"Y", "Crystal Ball: map, party"},
         {"Select", "Pointer: D-Pad moves it,"},
         {"", "Confirm taps, Back ends"},
         {"Start", "This menu"},
@@ -2099,6 +2101,81 @@ bool app_art_make(const library::GameDir& g)
     return false;
 }
 
+#ifdef __ANDROID__
+// Game Font's list in the app shows each choice in its own font (Tom, 2026-11-28): the names drawn by the scan, as
+// pictures the list only reads - FONT0.IMG in a game's _CYD folder (its own font: "ORIGINAL"), and in _CYD
+// FONT1.IMG ("Clear", the engine's), FONT3.IMG ("CLEAR CAPS") and FONT2.IMG ("DARKNESS", from the player's own
+// Darkness). PNGs (shell::save_art), cream ink on nothing, four screen pixels a font pixel. The Dark Queen (GAME.FON
+// in its libraries): none - the list says the name in plain type.
+std::string font_pic_path(const library::GameDir* g, int which)
+{
+    if (which == 0 && g) return library::cache_dir(*g) + "/FONT0.IMG";
+    return std::string(games::kRootDir) + "/" + library::kCacheDir + "/FONT" + std::to_string(which) + ".IMG";
+}
+
+bool font_of_game(const library::GameDir& g, font::Font& out)
+{
+    if (g.hlib) return false;
+    const profile::Profile* prof = profile::first(g.game);
+    if (!prof) return false;
+    char path[200];
+    games::path_of(g.data_dir.c_str(), prof->font_file ? prof->font_file : prof->tiles_file, path, sizeof path);
+    plat::File f = plat::open(path, "r");
+    if (!f) return false;
+    plat::FileSource src(f);
+    std::unique_ptr<dax::Index> idx(new dax::Index);
+    const bool ok = dax::read_index(src, *idx) == dax::Status::Ok && font::load(src, *idx, out);
+    f.close();
+    return ok;
+}
+
+bool font_pic(const font::Font& f, const char* text, const std::string& out)
+{
+    const int n = static_cast<int>(strlen(text)), w = n * 8, h = 8, k = 4;
+    std::vector<uint8_t> px(static_cast<size_t>(w * h), 0);
+    pic::Canvas c{px.data(), w, h};
+    c.bpp = 8;
+    for (int i = 0; i < n; ++i) font::draw_glyph(c, f, font::glyph_of(f, text[i]), i * 8, 0, 1, 0);
+    std::vector<uint8_t> rgba(static_cast<size_t>(w * k * h * k * 4), 0);
+    for (int y = 0; y < h * k; ++y)
+        for (int x = 0; x < w * k; ++x)
+            if (px[static_cast<size_t>((y / k) * w + x / k)] == 1) {
+                uint8_t* q = &rgba[static_cast<size_t>((y * w * k + x) * 4)];
+                q[0] = 0xF0, q[1] = 0xE6, q[2] = 0xC8, q[3] = 0xFF;
+            }
+    return shell::save_art("", rgba.data(), w * k, h * k, pm::host_path(out.c_str()));
+}
+
+// The scan's step (a game: its own font; done: the shared ones when missing)
+void font_pics_make(const library::GameDir* g)
+{
+    if (g) {
+        font::Font f;
+        const std::string out = font_pic_path(g, 0);
+        if (font_of_game(*g, f)) font_pic(f, "ORIGINAL", out);
+        else if (plat::File e = plat::open(out.c_str(), "w")) e.close();     // (none: an empty file - looked once)
+        return;
+    }
+    static font::Font clear;                  // (the Clear letters need no game's: glyphs of their own)
+    clear.loaded = true;
+    if (!plat::exists(font_pic_path(nullptr, 1).c_str())) {
+        font::set_letters(clear, font::kClearLetters, nullptr);
+        font_pic(clear, "Clear", font_pic_path(nullptr, 1));
+    }
+    if (!plat::exists(font_pic_path(nullptr, 3).c_str())) {
+        font::set_letters(clear, font::kClearCapsLetters, nullptr);
+        font_pic(clear, "CLEAR CAPS", font_pic_path(nullptr, 3));
+    }
+    if (!plat::exists(font_pic_path(nullptr, 2).c_str()))
+        for (const auto& o : games_found)
+            if (o.game == games::Game::PoolsOfDarkness && !o.hlib) {
+                font::Font dk;
+                if (font_of_game(o, dk)) font_pic(dk, "DARKNESS", font_pic_path(nullptr, 2));
+                break;
+            }
+}
+#endif
+
 void scan_picture(const library::GameDir& g, const std::string& cache)
 {
     app_art_make(g);
@@ -2133,6 +2210,8 @@ bool discover(bool all, bool pictures = true)
                 scan_say(line, false, nullptr);
                 app_art_make(g);
             }
+            // (and the Game Font list's picture of its font, before 0.23.3: made now, once - quick, no page)
+            if (!plat::exists(font_pic_path(&g, 0).c_str())) font_pics_make(&g);
 #endif
             // (found by a version before the cluebook maps: made now, once)
             if (!cluemaps::ready(cache) && cluemaps::find(g).empty()) cluemaps::none(cache);
@@ -2157,6 +2236,9 @@ bool discover(bool all, bool pictures = true)
         // Its program's tables, unpacked (the game's start reads this copy)
         if (!g.hlib) play::prepare_program(g.data_dir.c_str(), g.game, cache.c_str());
         scan_picture(g, cache);
+#ifdef __ANDROID__
+        font_pics_make(&g);         // (Game Font's list: its own font's name)
+#endif
         // Its Adventurer's Journal, from the player's own PDF
         // (anew on Rescan, and when an older version's scan made it - a new
         //  scan tag means the journal making changed, here or in the engine)
@@ -2195,6 +2277,9 @@ bool discover(bool all, bool pictures = true)
             f.close();
         }
     }
+#ifdef __ANDROID__
+    font_pics_make(nullptr);        // (the Clear, Clear CAPS and Darkness names - once, when missing)
+#endif
     if (any) {
         scan_done = true;
         scan_say("Done.", false, nullptr);
@@ -3173,6 +3258,18 @@ std::vector<std::pair<std::string, bool>> menu_choice_list(int i)
             if (g.game == games::Game::PoolsOfDarkness && !g.hlib) dark = true;
         for (const char* v : {"Original", "Clear", "Clear CAPS", "Darkness"})
             out.push_back({v, strcmp(v, "Darkness") != 0 || dark});
+#ifdef __ANDROID__
+        // (each name's picture in its font, after 0x03 - the scan's; Original: the game open, else the chooser's)
+        const library::GameDir* g =
+            game_sel >= 0 && game_sel < static_cast<int>(games_found.size()) ? &games_found[game_sel] : nullptr;
+        static const int kWhich[4] = {0, 1, 3, 2};
+        for (int k = 0; k < 4; ++k) {
+            const std::string p = font_pic_path(g, kWhich[k]);
+            struct stat st;
+            const std::string host = pm::host_path(p.c_str());
+            if (stat(host.c_str(), &st) == 0 && st.st_size > 0) out[static_cast<size_t>(k)].first += "\x03" + host;
+        }
+#endif
         return out;
     }
     const int keep = menu_sel;
@@ -3227,8 +3324,9 @@ void menu_pick(int i, int k)
     const std::string now = menu_value(i);
     int cur = 0;
     for (int j = 0; j < n; ++j)
-        if (list[j].first == now) cur = j;
-    const auto& want = list[(cur + k) % n];
+        if (list[j].first.substr(0, list[j].first.find('\x03')) == now) cur = j;
+    auto bare = [](const std::string& v) { return v.substr(0, v.find('\x03')); };
+    const std::pair<std::string, bool> want{bare(list[(cur + k) % n].first), list[(cur + k) % n].second};
     if (!want.second) return;
     menu_sel = i;
     const Settings was = cfg;

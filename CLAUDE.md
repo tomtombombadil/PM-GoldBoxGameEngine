@@ -30,8 +30,8 @@ and maintains it; it is the primary output of the Claude Project
 ## Decisions (Tom, 2026-11-14)
 - The port's name is "Gold Box Game Engine", its folder `goldbox` - settled.
 - B = Back / Exit (SPEC 4). L2 / R2 = list up / down, no side-step
-  buttons; Y = the Companion slide-out; no Look button (SPEC 4).
-- **The Companion slides in from the RIGHT** (Tom, 2026-11-14: he had
+  buttons; Y = the Crystal Ball slide-out; no Look button (SPEC 4).
+- **The Crystal Ball slides in from the RIGHT** (Tom, 2026-11-14: he had
   said left and meant right - the 3D view / fight field stay in sight).
   On wide panels (16:9 and the like) it stands beside the game instead
   (SPEC 4) - Tom's idea, as the CYD's bigger boards.
@@ -70,7 +70,7 @@ and maintains it; it is the primary output of the Claude Project
   Champions' / the Dark Queen's maps (Steps6) - the D-pad's Left / Right are StepLeft / StepRight there (west /
   east), on Steps6 L1 / R1 the diagonals; `game_dir` / `BL1` in main.cpp. A new overland kind in the engine gets
   its D-pad here in the version that moves the pin - try all four directions by buttons.
-- **The Companion's map asks the engine** for what isn't in the map's bytes: `play::map_secret` (the S), `play::map_place`
+- **The Crystal Ball's map asks the engine** for what isn't in the map's bytes: `play::map_secret` (the S), `play::map_place`
   (an overland's places, orange; the legend reads "Place" then) - `panel.cpp` `draw_map`, both in its signature.
 - **Journal viewer's X** (Tom, 2026-11-14): text entries - no zoom, X =
   next page, round to the top; picture entries - Width (start), Double,
@@ -110,16 +110,16 @@ and maintains it; it is the primary output of the Claude Project
   <games>` (target `jlist`; counts by kind, gaps, the shortest section)
   with the last run; a section far shorter than its neighbours is a miss.
   A miss in the engine's reading is an engine bug: fixed in the CYD repo.
-- **No Companion on a game's title screens** (Tom, 2026-11-14, v0.9.5:
+- **No Crystal Ball on a game's title screens** (Tom, 2026-11-14, v0.9.5:
   blank beside the intro on 16:9, "look bad"): the game centred and
   nothing beside it until the party menu (Begin Adventuring); then the
-  Companion and the game at the left (`panel::hold`, SPEC 4; the engine's
+  Crystal Ball and the game at the left (`panel::hold`, SPEC 4; the engine's
   `play::titles()`, CYD 0.200.9 - Tom OK'd the call, 2026-11-15). **The
-  demo keeps the Companion** (Tom, 2026-11-15: "don't turn off the
+  demo keeps the Crystal Ball** (Tom, 2026-11-15: "don't turn off the
   companion for the demo").
 - **Square panels** (Tom, 2026-11-15: 1:1, 720 x 720 - RG CubeXX, RGB30:
   "Could the game area be shifted up and the companion info fit at the
-  bottom?"): the game at the top, the Companion in the room under it - map
+  bottom?"): the game at the top, the Crystal Ball in the room under it - map
   (a fight: the battlefield) left, party right (`video::below_room` /
   `set_below`, `panel.cpp` `draw_below`; SPEC 4). Tom has no such device:
   checked at `--window 720x720` only; check it there before a release.
@@ -146,7 +146,7 @@ and maintains it; it is the primary output of the Claude Project
   are"): when he says the CYD changed, fetch it, move the pin once its
   CI is green, adapt the port to any changed call, and wrap anything
   player-facing into this repo in the same version (new music -> the
-  scan; a Companion change -> `src/panel.*` shows it).
+  scan; a Crystal Ball change -> `src/panel.*` shows it).
 - **B = the menu's Exit or a question's No, and out of "Pick Character"**
   (Tom, 2026-11-14: "use B to exit if there is an exit menu item or 'no'
   item ... only enhancing it with the B-button-exit feature, not altering
@@ -162,7 +162,7 @@ and maintains it; it is the primary output of the Claude Project
   GOG's Curse / PoolRad take **any answer** at the code wheel (Tom);
   PoolRad in DOSBox needs its folder's parent mounted as C: and
   `cd POOLRAD`; Curse's and PoolRad's menus take letters, not Return.
-- **Coming from the CYD** (Tom, 2026-11-14): Companion map / party-info
+- **Coming from the CYD** (Tom, 2026-11-14): Crystal Ball map / party-info
   changes, mostly for the small boards but with effects here, and maybe a
   rearranged party-info layout ("It's hard to read as is"). Don't
   redesign `src/panel.*`'s Party view meanwhile; when it lands, move the
@@ -215,9 +215,9 @@ and maintains it; it is the primary output of the Claude Project
   save's date from the file, the device's local time; 18 letters is the
   4:3 column - `platform_sdl.cpp` closes "9:41 PM" up to "9:41PM" rather
   than let it wrap badly), and `play::set_side_panel(panel::docked_on())`
-  each frame so a Companion beside / under the game shows the slot's party
+  each frame so a Crystal Ball beside / under the game shows the slot's party
   and the words get the whole game screen. Since v0.11.1 (engine 0.208.0;
-  Tom: "we may as well show fill in the map display too") the Companion's map
+  Tom: "we may as well show fill in the map display too") the Crystal Ball's map
   is the highlighted save's meanwhile - the engine's `play::map()` / `pos_x` /
   `pos_y` / `dir` give the save's; `panel.cpp`'s signature takes the map's
   walls in so another slot redraws. Check it at 640 x 480, 1280 x
@@ -251,6 +251,12 @@ and maintains it; it is the primary output of the Claude Project
   player's copy as the CYD scan does). Fetch with `project_read`, unpack
   under `/tmp/claude-0/pmgames/` (never under a repo).
 
+## Crystal Ball Features (Tom, 2026-11-28)
+- **Our map / party / battle panel is "the Crystal Ball"; its features "Crystal Ball Features"** - never "the
+  Companion" in a help text, a label or a document: the Gold Box Companion (GBC) is someone else's program (Steam's
+  `GBC` folder, its journal files and icons keep its name). Older history entries (CHANGELOG) say "Companion" for
+  ours; code names (`panel.*`, `companion.*` in the engine, `CompLayout`) stay.
+
 ## The Android app (Tom, 2026-11-23)
 - **Its own repo: `tomtombombadil/APK-GoldBoxGameEngine`** ("especially considering F-Droid's requirements") -
   the Gradle project, the Java folder screen, F-Droid's metadata. It has THIS repo as a submodule and builds
@@ -273,10 +279,10 @@ and maintains it; it is the primary output of the Claude Project
   shape, everything else goes to the game**; the D-Pad and face buttons kept above the game's menu line ("it
   might cover the menu line at the bottom"); **an arrow at the top left hides / shows them**; **Button Size and
   Button Opacity are the player's** ("give the user options, don't use fixed values").
-- **The Companion is as large as its room allows, keeping its shape** (Tom, 2026-11-23): `below_pair` (upright: map
+- **The Crystal Ball is as large as its room allows, keeping its shape** (Tom, 2026-11-23): `below_pair` (upright: map
   and party side by side under the game), the strip beside the game the game's full height.
-- **Display - Picture has 4:3 + Companion Right and 4:3 + Companion Below ON ANDROID ONLY** (Tom, 2026-11-23); in
-  plain 4:3 on Android the Companion slides out; Android starts on Right ("B by default, but changeable").
+- **Display - Picture has 4:3 + Crystal Ball Right and 4:3 + Crystal Ball Below ON ANDROID ONLY** (Tom, 2026-11-23); in
+  plain 4:3 on Android the Crystal Ball slides out; Android starts on Right ("B by default, but changeable").
   **The handhelds keep Original 4:3 / Square Pixels / Stretch, unchanged** (Tom, 2026-11-23, after v0.12.17 put
   the Android choices there too: "The new display options are for Android, not handhelds. The Port is working and
   displaying great. Why would you change it?!?"). **Android work never changes what a handheld shows or does**:
@@ -290,7 +296,7 @@ and maintains it; it is the primary output of the Claude Project
 - **The app's redesign (Tom, 2026-11-24): Android's own UI round the game** - the app (APK repo, its CLAUDE.md
   "The redesign") draws the controls, the menu drawer, the game chooser in Android's views; this front end draws
   the game and the Companion's pictures in the rectangles the app gives it (`src/shell.*`, Android only; the
-  on-screen overlay `touchpad.*` stays for when the app hasn't spoken). Phone landscape: the Companion's map
+  on-screen overlay `touchpad.*` stays for when the app hasn't spoken). Phone landscape: the Crystal Ball's map
   above the app's pad beside the game, a tap flips it to the party. **The handhelds are untouched by it.**
   Since v0.16.0 the app shows **every screen of the port's own** (the menu and its pages, Device Info, the Button
   Guide, the journal list, Quick Actions, notices, messages, the game chooser, the scan's page - SPEC 4): **a new
@@ -302,7 +308,7 @@ and maintains it; it is the primary output of the Claude Project
 - **The app's menu, Tom 2026-11-25** (Android only): Rescan Game Files and Clean Up Game Files under **System**
   (a handheld keeps them on the main menu, Tom 2026-11-17); **Display › Game Chooser: Auto / Tiles / Cards**
   (`cfg.chooser`; Auto - tiles on a tablet; the chooser's own toggle sets it too, op 14; its value in the chooser
-  text's head). The Companion's view 3 (`video.cpp`): the map as wide as the app's room at its top, the party under
+  text's head). The Crystal Ball's view 3 (`video.cpp`): the map as wide as the app's room at its top, the party under
   it - as wide as the map, right under it, its members' rows only (the empty rows below cut: `set_side_used`) -
   "don't shrink the map to make them fit"; the party "justified like the map" (Tom, 2026-11-25).
 - **Where the games go must be plain to the player** (Tom: "GoldBox/games doesn't tell me where that folder
@@ -372,7 +378,7 @@ and maintains it; it is the primary output of the Claude Project
 - `src/library.*` - finds the games: the engine's `cyd/src/game/game_find.h` (the boards' scan uses it too -
   a rule changes there, in the CYD repo).
 - `src/art.*` (the game list's pictures: made by the scan into
-  `_CYD/<folder>/ART.BIN`, only read by the list), `src/panel.*` (the Companion),
+  `_CYD/<folder>/ART.BIN`, only read by the list), `src/panel.*` (the Crystal Ball),
   `src/jour.*` (the journal: made and shown), `src/task.*` (the helper
   scripts' thread).
 - `src/main.cpp` - the screens (game list, the scan, play, the menu's
@@ -401,14 +407,14 @@ and maintains it; it is the primary output of the Claude Project
   game"): plays a game with button presses alone through `--drive` (steps
   on stdin; after each line the port prints its state and the game screen
   read back as text, `drive_text` in main.cpp) - party set-up, walking,
-  overland Move, Area, the Companion, Encamp / Save, Journal, Quick
+  overland Move, Area, the Crystal Ball, Encamp / Save, Journal, Quick
   Actions, the Cheats, a fight. Needs real game files, so it is run by
   hand on a COPY of the games folder before every release Tom is to
   announce, every game (since v0.10.1 the reader takes text over pictures
   and off the 8-pixel grid - lines after the 25 - so Treasures and the
   Dark Queen are played too; a boxed word = WHITE paper; `canvas=` in the
   state is the picture's sum, `title=` / `dock=` the title screens / the
-  docked Companion). **The engine's `play::walking()` decides what the D-pad
+  docked Crystal Ball). **The engine's `play::walking()` decides what the D-pad
   does** - a place where the boards' movement keys work but walking() is
   false is a place this port can't move (v0.9.1: the Krynn / Darkness
   overland). The ARM program can be run here too: qemu-user plus an arm64
@@ -423,10 +429,10 @@ and maintains it; it is the primary output of the Claude Project
   nowhere). Use copies already scanned by this version (a scan under the
   sanitizer or qemu takes very long). The update across REAL releases was
   checked by hand once (v0.9.4 -> v0.10.1, scratch script).
-- **The Companion's party: ready to train = magenta** (Tom, 2026-11-20: "their name in the character list
+- **The Crystal Ball's party: ready to train = magenta** (Tom, 2026-11-20: "their name in the character list
   turns magenta ... carry that over to the companion"): the member's name and the ready class + level, the
   engine's `companion.cpp` (0.211.4) - never yellow again.
-- **The Companion's signature asks both of the engine's marks** (v0.12.8: `panel_party_sig(true)` is the icons'
+- **The Crystal Ball's signature asks both of the engine's marks** (v0.12.8: `panel_party_sig(true)` is the icons'
   alone - a trained member stayed magenta): `src/panel.cpp` `signature` - a new thing the party view shows needs
   nothing here as long as the engine's `panel_party_sig(false)` has it.
 - **The Android parts (`__ANDROID__`) are compiled by no check here** - CI builds the handhelds only. A change to
@@ -577,7 +583,7 @@ and maintains it; it is the primary output of the Claude Project
   (`a! wait:700!`), and keep sheets small - a shot per step that matters.
 - `journal:K:N` (script step, in a game): opens that journal entry as if
   the game had mentioned it.
-- `layout:gx:gy:gw:gh:cx:cy:cw:ch:view` (script step): the Android app's layout, to see the game and the Companion
+- `layout:gx:gy:gw:gh:cx:cy:cw:ch:view` (script step): the Android app's layout, to see the game and the Crystal Ball
   in it off the phone; `menutext`: the drawer's text of what is open (the menu's page, Device Info, Quick Actions
   ...) to stderr between `[menutext]` / `[/menutext]`; `continue`: the chooser's Continue in the open game
   (`[continue] slot X: in the game` to stderr).

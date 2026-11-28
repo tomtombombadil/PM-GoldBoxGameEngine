@@ -65,7 +65,7 @@ direction keys (`play::fight_dir`, `fight_select`), typed keys
 | L1 / R1 | menu word left / right | highlight left / right | up-left / up-right | - |
 | L2 / R2 | list line up / down (the party list) | list line up / down | down-left / down-right | - |
 | X | Area map | - | - | space |
-| Y | the Companion | the Companion | the Companion | Done |
+| Y | the Crystal Ball | the Crystal Ball | the Crystal Ball | Done |
 | Select | Pointer Mode | Pointer Mode | Pointer Mode | Pointer Mode |
 | Start | the port's menu | the port's menu | the port's menu | the port's menu |
 
@@ -92,7 +92,7 @@ direction keys (`play::fight_dir`, `fight_select`), typed keys
   move the list's line while L1 / R1 move the menu's word, so both of a
   screen's highlights are at hand and the D-pad keeps walking. Look is on
   the game's menu (no button).
-- **The Companion** (Y; Tom, 2026-11-14; `src/panel.*`): slides in from
+- **The Crystal Ball** (Y; Tom, 2026-11-14; `src/panel.*`): slides in from
   the **right** over the game screen (208 of 320 pixels; from the right
   the 3D view and a fight's field, at the screen's left, stay in sight -
   Tom), the game going on
@@ -112,19 +112,19 @@ direction keys (`play::fight_dir`, `fight_select`), typed keys
   right of the regular game area, similar to how it works on the higher
   resolution CYD screens"): when the Original 4:3 picture leaves 200
   device pixels or more beside it (`video::side_room` - 16:9, 16:10, 3:2
-  at 1.5 or wider), the game stands at the left and the Companion fills
+  at 1.5 or wider), the game stands at the left and the Crystal Ball fills
   the rest all the time - Map (a fight: Battle) above Party
   (`video::set_side`, two 208 x 200 pictures smoothed into the strip). Y
   there takes it away (the game centred) and brings it back; no slide-out.
   **Not on the game's title screens** (Tom, 2026-11-14, v0.9.5: a blank
-  Companion beside the intro "look bad"): until the party menu (Begin
+  Crystal Ball beside the intro "look bad"): until the party menu (Begin
   Adventuring) is reached the game stays centred with nothing beside it
   and Y does nothing, on every panel (`panel::hold`; the engine's
-  `play::titles()`). A demo (Play / Demo) has the Companion.
+  `play::titles()`). A demo (Play / Demo) has the Crystal Ball.
   **Square panels** (Tom, 2026-11-15; 1:1, 720 x 720 - RG CubeXX, RGB30):
   when the Original 4:3 picture leaves 150 device pixels or more UNDER it
   on a panel 600 or more across (`video::below_room`), the game stands at
-  the top and the Companion fills the room under it all the time - one
+  the top and the Crystal Ball fills the room under it all the time - one
   picture of 600 x 150 square pixels as large as fits (1.2 x on 720 x
   720): the map at 9 pixels a square with its legend beside it (a fight:
   the battlefield) at the left, the party's rows at the right
@@ -180,9 +180,9 @@ controller". All three, any mix; nothing is touch's alone (the rule above stands
   once the app has sent a layout, the app draws the pad (8 ways - the corners only in a fight -, OK, Back), the
   edge handles and the panels in Android's views; the front end draws the game in the app's rectangle and the
   Companion's pictures in its other (one - the map / battlefield or the party - or both). The overlay above is
-  then never shown; Display - Picture offers 4:3 / Square Pixels / Stretch only (the app places the Companion) and
+  then never shown; Display - Picture offers 4:3 / Square Pixels / Stretch only (the app places the Crystal Ball) and
   Controls keeps Button Size (the app's pad) - On-Screen Buttons and Button Opacity are the overlay's, gone. The app's pad sends the
-  front end's buttons (A / B never swapped); Y on a controller asks the app for its Companion. The front end
+  front end's buttons (A / B never swapped); Y on a controller asks the app for its Crystal Ball. The front end
   tells the app what is on screen: its own pages, a game's titles, play, a fighter's move / aim.
 - **The Android app's menu drawer** (Tom, 2026-11-24, the redesign's stage 2; v0.15.0): once the app has laid
   the screen out, Start (the left edge's MENU handle, a controller's Start) opens the menu as always, but its
@@ -216,14 +216,14 @@ controller". All three, any mix; nothing is touch's alone (the rule above stands
   **The chooser's order** (Tom, 2026-11-24): by series - PoolRad, Curse, Secret, Darkness, Gateway, Treasures,
   Champions, Knights, Queen (a tablet's three rows: the Realms, ..., Krynn the last row) - `rescan`, Android only;
   the handhelds' list keeps its order.
-- **The Android app's journal, Companion and About** (Tom, 2026-11-25 afternoon; v0.19.0): a journal entry is
+- **The Android app's journal, Crystal Ball and About** (Tom, 2026-11-25 afternoon; v0.19.0): a journal entry is
   shown by the app (channel 5, `jour::app_entry`: "journal\t<title>\t<font>" then a line a piece - "T\t<text>"
   with line breaks as 0x1F, or "P\t<path>\t<w>\t<h>", the scan's picture saved once in `_CYD/<folder>` as
   `JE_<kind><nnn>_<ii>.IMG`, at most 2400 across; "" closes it). None of the game's journal screen is drawn there
   (no "X Width  B Back", no entry number / %). The app's close is op 15 (as B: the next entry mentioned follows).
   **Display › Journal Font** (Android): Journal / Book / Serif / Plain - the type the app uses (`journal_font`).
   **System › About** (Android): the app's (`--app-version`), the front end's and the engine's versions and repos,
-  the licence, credits. **The Companion's layout is the app's** (view 4): it sends each picture's place and the
+  the licence, credits. **The Crystal Ball's layout is the app's** (view 4): it sends each picture's place and the
   rows of it shown (`nativePictures`: groups of which, x, y, w, h, top row, rows); the front end tells it what
   the pictures hold (channel 4: "comp\t<map rows>\t<members>\t<pitch>\t<fight>").
 - **Touching the port's own screens** (`touch_tap` / `touch_swipe` in main.cpp - each the buttons a player
@@ -248,15 +248,15 @@ controller". All three, any mix; nothing is touch's alone (the rule above stands
 - Script steps `touch:x:y` / `swipe:dx:dy` (canvas pixels) for the smoke test.
 - **A camera cutout / notch** (Android; Tom's Pixel 10a, 2026-11-23): its safe margins (`video::set_safe`,
   from the activity's `cutoutInsets()`, asked about once a second by `safe_check`) are left black; the picture,
-  the on-screen buttons and the Companion are laid out in the rest (`usable()` in video.cpp).
+  the on-screen buttons and the Crystal Ball are laid out in the rest (`usable()` in video.cpp).
 
 ## 5. The screen
 **Display - Picture** (Tom, 2026-11-23): the handhelds - Original 4:3 / Square Pixels / Stretch (`fit` 0 / 1 / 2),
-as always. **Android only**: 4:3 / **4:3 + Companion Right** / **4:3 + Companion Below** / Square Pixels / Stretch
-(`fit` 0 / 3 / 4 / 1 / 2). **The Companion as large as its room allows, at its own
+as always. **Android only**: 4:3 / **4:3 + Crystal Ball Right** / **4:3 + Crystal Ball Below** / Square Pixels / Stretch
+(`fit` 0 / 3 / 4 / 1 / 2). **The Crystal Ball as large as its room allows, at its own
 shape** (Tom, 2026-11-23): Below on a tall panel uses the two pictures beside the game's, side by side under it,
 down to the on-screen buttons (`below_pair`, `touchpad::foot`) - when they come out 1.3 times the wide strip's
-area or more; else the wide 600 x 150 strip. Original docks the Companion by itself
+area or more; else the wide 600 x 150 strip. Original docks the Crystal Ball by itself
 where there is room on a handheld (`kAutoDock`), never on Android (the slide-out on Y). Right / Below dock it
 there whatever the panel: the game made smaller if it must (Right: the pair's width is 4/3 + 0.43 of the
 game's height; Below: the game's width + 1/4 of it in height); with the on-screen buttons the Right pair goes
@@ -358,7 +358,7 @@ on screen the overlay is 320 again.
     Exchange, Flasks of Oil (engine 0.210.0: `coin_exchange`, `oil_burns`), Character Info
     (0.211.0: `add_info`), More
     Characters, Icon Portrait, Icon Gallery. (Not here: the CYD's
-    Companion Views and Large Icon - the boards'.)
+    Crystal Ball Views and Large Icon - the boards'.)
   - **AD&D 1E Rules** (`rules_off`, rules::Adnd bits) and **Game Fixes**
     (`fixes_off`, bit = rules::Fix; pages Every Game and one a game - in a
     game Every Game and that game's): one switch each, names / games /
@@ -378,7 +378,7 @@ on screen the overlay is 320 again.
   - **Clean Up Game Files** (v0.13.0, Tom 2026-11-24; top page, beside
     Rescan; in a game: leaves it first): the engine's `game/tidy.*` on each
     game found and the Launcher folder - what the engine never reads goes
-    (DOSBox, installer / Galaxy and Steam launcher files, the Companion's
+    (DOSBox, installer / Galaxy and Steam launcher files, the Gold Box Companion's
     program and pictures, DOS drivers / tools, the Dark Queen's non-AdLib
     music, the Launcher but its box art); game files, saves, SAVE* folders,
     icons, the Companion's journal files, every PDF and unknown files stay.
@@ -495,6 +495,11 @@ hotkey.
     games with music). A line's name may hold 0x1F, the app's line break. Rescan / Clean Up from the menu: the
     drawer told at once (scan_put sends channel 0), Continue back to the menu (`scan_from_menu`). Script step
     `op:OP:INDEX:VALUE`.
+  - **Game Font's list in its fonts** (v0.24.0): the scan draws each name - FONT0.IMG in a game's _CYD folder
+    ("ORIGINAL" in its own 8x8 font: the profile's font file or tiles file, block 201; the Dark Queen none), and in
+    _CYD FONT1 ("Clear"), FONT3 ("CLEAR CAPS") and FONT2 ("DARKNESS", the player's Pools of Darkness) - PNGs by
+    shell::save_art, cream ink, 4 screen pixels a font pixel; a folder scanned before gets them at the start. The
+    choice list's values carry the picture after 0x03 (Original: the open game's, else the chooser's).
 - The helper scripts run on a thread (`src/task.*`); the screen shows a
   notice until they end. Buttons only: all of it from the Start menu.
 
@@ -508,7 +513,7 @@ hotkey.
    editor, shops, camp and spells, fights and aiming, saving / loading.
 4. **The engine's own features the CYD front end hosts** (each needs a
    button-driven screen here): done - the journal's entries, the
-   Companion (map, party, battle; beside the game on wide panels), the
+   Crystal Ball (map, party, battle; beside the game on wide panels), the
    sound sets, music, Cheats, Quick Actions, the comfort switches (v0.6);
    still to do - the journal as a whole book.
 5. **Game art in the list** - done (Steam box art v0.4, the GOG logo

@@ -3,6 +3,17 @@
 Every version of Gold Box Game Engine for PortMaster. A release's notes are
 its part of this file.
 
+## [0.24.0] - 2026-11-28
+
+Built on the CYD engine 0.226.6.
+
+- **The Crystal Ball** (Tom): the map / party / battle panel is called the Crystal Ball - its features "Crystal Ball
+  Features" - everywhere a player reads it (the Button Guide's Y, the Picture choices, the help) and in the
+  documents. "Companion" is the Gold Box Companion's name, someone else's program.
+- The Android app's Game Font list: each name drawn in its own font - pictures made by the scan (a game's own font
+  from its files, the engine's Clear and Clear CAPS, Darkness's from your Pools of Darkness); a folder scanned
+  before gets them at the next start, quickly, without a page.
+
 ## [0.23.2] - 2026-11-28
 
 Built on the CYD engine 0.226.5. The Android app's (Tom):

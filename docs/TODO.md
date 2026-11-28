@@ -17,7 +17,7 @@ a finished one moves to Done.
       only, never seen on a board: a look on a CYD when you flash next.
 - [ ] v0.12.8 on a handheld: Darkness - out of Phlan's first map by Traitor's Gate (by the Temple of Tempus)
       and back; Oratisi (the Steam release's second saved game, loaded afresh) trained at the hall - fighter and
-      magic-user both rise, the experience stays 500,000, the Companion's name turns from magenta to cyan.
+      magic-user both rise, the experience stays 500,000, the Crystal Ball's name turns from magenta to cyan.
 - [ ] v0.9.1 on a handheld: Champions' overland map - Start a game from its
       own save, choose Move, walk with the D-Pad, B to end. (Checked here by
       script and under ARM emulation, not on a device.)
@@ -34,13 +34,13 @@ a finished one moves to Done.
       `goldbox/games/` and the installer makes it; say if v0.4's install
       (or a refresh of the Explorer window) still doesn't show it.
 - [ ] v0.9.5 on the RGB10 MAX3: the title screens centred with nothing
-      beside them, the Companion from the party menu on. (Checked here at
+      beside them, the Crystal Ball from the party menu on. (Checked here at
       1280 x 720 by script in all nine games, not on a device.)
 - [ ] v0.10.0, if you know someone with a 1:1 handheld (RG CubeXX,
-      RGB30): the Companion under the game - readable? (Checked here in a
+      RGB30): the Crystal Ball under the game - readable? (Checked here in a
       720 x 720 window: PoolRad's play test with a fight, Curse walking.
       Its letters are 9.6 device pixels there - smaller than the 14 of the
-      RGB10 MAX3's Companion.)
+      RGB10 MAX3's Crystal Ball.)
 - [ ] **Buck Rogers - SET ASIDE** (Tom, 2026-11-16: "disregard the Buck
       Rogers games for now"; don't raise it until he does). Notes kept: (Tom, 2026-11-16: "Consider the impact of adding the
       two Buck Rogers games (Countdown to Doomsday & Matrix Cubed)" - no
@@ -115,7 +115,7 @@ a finished one moves to Done.
       Queen, Gateway, Treasures. Secret and Darkness: no fight reached by the test's walk - seen in the engine
       instead (Darkness: Speed's picks and Exit by the playsim; both: navcheck's empty-fight-menu rule, 0 failures).
 - [ ] **Tom to try on a device (v0.12.6)**: Gateway's fight Speed (Faster stays lit; Exit / B bring the fight menu
-      back); the Companion's magenta name and class when someone can train; Treasures: load a save made on the
+      back); the Crystal Ball's magenta name and class when someone can train; Treasures: load a save made on the
       overland (the map must be there), a fight on the overland (grass, not river banks).
 - [x] (done 2026-11-26) **Treasures play-through** (the Project's claude/playtest_treasures.md): Llorkh, Loudwater, Secomber, Leilon,
       Waterdeep's caverns, Waterdeep Village's dragon done; Daggerford next. Open: the Leilon potion; ELWYN level-drained (to restore); loot not yet ID'd / sold.
@@ -127,7 +127,7 @@ a finished one moves to Done.
 - [ ] Tom, v0.11.0 on a handheld: Save Slot Info - Encamp - Save and the
       party menu's Load: the highlighted slot's date (is the device's clock
       right?), place and party; on the RGB10 MAX3 the party and (v0.11.1) the save's map in the
-      Companion.
+      Crystal Ball.
 - [ ] **Gateway play-through** (Tom, 2026-11-16; the CYD kit's `gateway/`
       folder, engine at full speed, a new party of Tom's shape; notes in
       the Project's claude/playtest_gateway.md). 2026-11-16, v0.10.7: from
@@ -284,7 +284,7 @@ a finished one moves to Done.
       gallery and editor (may need D-pad support beyond Pointer Mode),
       and every other game; the Steam (SNEG) folders; the VGA games.
 - [ ] v0.6.0, checked headless with Curse (GOG): the scan's screen and
-      its mark, the logo page, the Companion from the right and beside
+      its mark, the logo page, the Crystal Ball from the right and beside
       the game at 1280 x 720, Quick Actions (a switch flipped, kept),
       Cheats - Healer and Trainer opened, every Settings line.
       **Not yet**: Merchant / Sanctuary used through, Max Hit Points at a
@@ -331,14 +331,14 @@ a finished one moves to Done.
       that uploads logs) - ask in the testing thread; (5) the PR itself
       from Tom's fork of PortsMaster/PortMaster-New, branch `goldbox`.
 - [ ] Keep the `cyd` pin current (built on CYD 0.221.20). Tom, 2026-11-14:
-      Companion map / party-info changes are in work in the CYD (small
+      Crystal Ball map / party-info changes are in work in the CYD (small
       boards first; the party-info layout may be rearranged) - when they
       land, move the pin and bring `src/panel.*` along.
 
 ## Done
 - [x] (Tom, 2026-11-27: done) v0.13.0 **Tom: Clean Up Game Files** (Start menu, beside Rescan): run it on a handheld with GOG and Steam
       folders, then play a game of each; the report is games/_CYD/CLEANUP.TXT (also sent by Send Logs).
-- [x] Handhelds' Picture: Tom, 2026-11-23 - the Companion choices are Android's; the handhelds' three back (v0.12.20).
+- [x] Handhelds' Picture: Tom, 2026-11-23 - the Crystal Ball choices are Android's; the handhelds' three back (v0.12.20).
 - [x] (Tom, 2026-11-27: done) v0.12.17 (app 0.1.3) on the Tab S2 and the Pixel: the game larger, the buttons over it; the arrow at the top
       left; Controls - Button Size / Opacity; Display - Picture's two new choices, landscape and portrait.
 - [x] (Tom, 2026-11-27: done) v0.12.16 (app 0.1.2) on your phone: a fight - move a fighter diagonally with the on-screen D-Pad's corners;
@@ -354,7 +354,7 @@ a finished one moves to Done.
 - [x] v0.12.7 (Tom, 2026-11-20: "fix the faults you found during testing"; engine 0.211.5): B inside a treasure's Take menu left the
       treasure - fixed, seen by buttons in PoolRad; Treasures' lucky papers' plural; navcheck's two false alarms (all nine games clean).
 - [x] v0.12.6 (Tom, 2026-11-20; engine 0.211.4): a fight's Speed menu (the highlight stays on Faster / Slower; Exit and B bring the
-      fight menu back); the Companion's ready-to-train magenta; Treasures' overland (saves keep the map, fights outdoors, no Area) -
+      fight menu back); the Crystal Ball's ready-to-train magenta; Treasures' overland (saves keep the map, fights outdoors, no Area) -
       the last three found by the play-through and set against the original in DOSBox. `tools/hand_test.py ... speed`.
 - [x] v0.12.5 (Tom, 2026-11-18: Treasures' fight field black; engine 0.211.1): indoor fights got an outdoor field in every game
       but Gateway since engine 0.203.12 - this session's own Gateway change. Fixed in the CYD repo. Character Info switch (0.211.0).
@@ -369,9 +369,9 @@ a finished one moves to Done.
 - [x] v0.12.0 (Tom, 2026-11-17; engine 0.209.0): the menus as the CYD's tree - Display, Audio, Game Play (Original Games, Enhancements,
       AD&D 1E Rules, Game Fixes - each rule and fix its own switch), Cheats, Quick Actions, Controls, System (Device Info new).
 - [x] v0.11.2 (engine 0.208.1): Treasures - a spell cast where a script waits for one (the two Siulajias in Llorkh) reaches the script.
-- [x] v0.11.1 (Tom, 2026-11-17; engine 0.208.0): Save Slot Info shows the highlighted save's map, square and heading in the Companion (16:9, 1:1).
+- [x] v0.11.1 (Tom, 2026-11-17; engine 0.208.0): Save Slot Info shows the highlighted save's map, square and heading in the Crystal Ball (16:9, 1:1).
       Seen at 1280 x 720: PoolRad, Curse, Secret, Darkness, Knights, Treasures; Curse at 720 x 720. Not seen: Gateway. Stock saves / overland: "No map here."
-- [x] v0.11.0 (Tom, 2026-11-17; engine 0.207.2): Save Slot Info - Settings line, the saves' dates, the docked Companion shows the slot's party.
+- [x] v0.11.0 (Tom, 2026-11-17; engine 0.207.2): Save Slot Info - Settings line, the saves' dates, the docked Crystal Ball shows the slot's party.
 - [x] 2026-11-16 (Tom: use the game files' own knowledge, no random walks): `tools/guide.py`, the CYD sweep's EVMAP; shops / temples / halls walked into. Coverage above.
 - [x] v0.10.6 (Tom, 2026-11-15: "Go ahead with your testing ... using the cheats"; engine 0.203.7): a new game in every game by buttons;
       Pools of Darkness' new game hung after the tour - fixed in the engine. `tools/newgame_test.py`. Coverage above.
@@ -391,8 +391,8 @@ a finished one moves to Done.
       (0.201.2), journals not made anew by v0.10.0's update. The test reads Treasures and the Dark
       Queen now (text over pictures, off the grid).
 - [x] v0.10.0 (Tom, 2026-11-15; engine 0.200.9): `play::titles()` added to the engine and used; the demo keeps
-      the Companion; square panels - the Companion under the game; the CYD's Companion look (0.200.7 / .8).
-- [x] v0.9.5: no Companion beside a game's title screens on wide panels - the game centred until its party menu (Tom, 2026-11-14).
+      the Crystal Ball; square panels - the Crystal Ball under the game; the CYD's Crystal Ball look (0.200.7 / .8).
+- [x] v0.9.5: no Crystal Ball beside a game's title screens on wide panels - the game centred until its party menu (Tom, 2026-11-14).
 - [x] 2026-11-14: PoolRad's and Curse's party menus set beside the
       originals in DOSBox (any answer passes GOG's code wheel - Tom): the
       same as the engine, no "Pick Character" there. All nine done.
@@ -436,7 +436,7 @@ a finished one moves to Done.
 - [x] v0.6.1 (2026-11-14, Tom: nothing processed at start-up or first
       use): the scan also makes the program's copy and the game list's
       picture (ART.BIN, only read afterwards); no loading screen.
-- [x] v0.6.0 (2026-11-14, Tom): the Companion from the right, and beside
+- [x] v0.6.0 (2026-11-14, Tom): the Crystal Ball from the right, and beside
       the game on wide panels; journals and music made when a game is
       found (Look for Games Again: anew), not at its start; the GOG logo
       on the game list; Settings page with every engine comfort, Cheats,
@@ -445,7 +445,7 @@ a finished one moves to Done.
       shown in the game, the Start menu's list.
 - [x] v0.4.0 (2026-11-14, Tom's first run on the RG40XX H: installer OK,
       A / B right, L2 / R2, sound, picture fit all fine): box-art game
-      list, sound sets, the Companion on Y, L2 / R2 = list up / down,
+      list, sound sets, the Crystal Ball on Y, L2 / R2 = list up / down,
       Modify's single highlight, the games' music (CYD 0.197.1).
 - [x] v0.3.1: the installer's stray log. v0.3.0 (2026-11-14): releases as Pocket Curator's - installer,
       Check for Updates, pre-releases; Send Logs to a WebDAV server.
@@ -461,7 +461,7 @@ a finished one moves to Done.
 ## v0.12.8
 - [x] Darkness, Phlan's gates (Tom): engine 0.211.6; `tools/edge_test.py`.
 - [x] Multi-class training (Tom, Oratisi): engine 0.211.10 - every ready class but in Curse / Gateway.
-- [x] The Companion's party view redrawn on a line's change (the port's signature).
+- [x] The Crystal Ball's party view redrawn on a line's change (the port's signature).
 - [x] Treasures' overland fight distance (engine 0.211.8); Aim's Next / Prev foes only (Darkness-type).
 - [x] v0.12.9: Game Fix Training Every Class (Curse, Gateway; engine 0.211.11). Its effect by the port's buttons: not played.
 - [x] v0.12.9: the training by the port's buttons (norace.py, Darkness). [ ] The Speed test by buttons in Secret /
@@ -484,9 +484,9 @@ a finished one moves to Done.
 
 ## v0.12.12
 - [x] A shop's goods in the next fight's treasure (engine 0.214.10; found at Ruathym, the original run in DOSBox).
-- [x] The D-pad's Left / Right on PoolRad's wilderness and the Krynn overlands (`play::move_keys`); the Companion's
+- [x] The D-pad's Left / Right on PoolRad's wilderness and the Krynn overlands (`play::move_keys`); the Crystal Ball's
       wilderness map and the engine's secret doors.
-- [ ] Tom, on a handheld: PoolRad's wilderness (leave Phlan by boat) - walk all four ways, the Companion's map there;
+- [ ] Tom, on a handheld: PoolRad's wilderness (leave Phlan by boat) - walk all four ways, the Crystal Ball's map there;
       Champions' overland - Move, then Left / Right (west / east) and L1 / R1 (the diagonals).
 - [ ] Not tried by buttons: the Dark Queen's overland; Champions' step itself (the test's square ran into a fight).
 - [ ] Curse / PoolRad shops: do their goods stay on the item list after the shop? (the CYD's TODO has it.) 2026-11-27:

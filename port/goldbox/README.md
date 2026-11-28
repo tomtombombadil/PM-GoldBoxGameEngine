@@ -18,7 +18,7 @@ Everything is done with the buttons; sticks are optional extras.
 | L1 / R1 | Menu word left / right while walking |
 | L2 / R2 | List line up / down (the party list while walking) |
 | X | Area map |
-| Y | The Companion, from the right: auto-map, party, a fight's battlefield (press again for the next, then away; on a wide screen it stands beside the game - Y hides it) |
+| Y | The Crystal Ball, from the right: auto-map, party, a fight's battlefield (press again for the next, then away; on a wide screen it stands beside the game - Y hides it) |
 | Select | Pointer Mode: the D-Pad moves a pointer, A taps there, B ends it |
 | Start | The port's menu (display, sound, font, controls, updates, logs, exit game) |
 | Select + Start | Quit |
