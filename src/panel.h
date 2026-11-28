@@ -18,6 +18,7 @@
 #pragma once
 
 #include <cstdint>
+#include <string>
 
 namespace panel {
 
@@ -37,5 +38,8 @@ void draw(uint32_t now_ms);
 // beside them "look bad"): no Companion, the game centred, Y does nothing -
 // until the game's party menu (Begin Adventuring) is reached
 void hold(bool on);
+// The Companion's map from the cluebook (Tom, 2026-11-27: Cluebook Maps): the open game's _CYD folder (the
+// scan's pictures there) and whether the switch is on - each frame
+void clue(const std::string& cache, bool on);
 
 } // namespace panel

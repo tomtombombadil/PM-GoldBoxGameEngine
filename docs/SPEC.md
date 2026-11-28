@@ -100,7 +100,10 @@ direction keys (`play::fight_dir`, `fight_select`), typed keys
   view, then away. Exploring: Map (walls, doors gold short of the corners, locked red, secret
   doors S - the engine's `play::map_secret`, turned on an up-and-down wall - archways an opening with serifs
   (`play::map_arch`), one-way doors half a door on their side and an arrow out the other (the map's bytes;
-  legend "One-way"), the party's arrow a pixel clear of each wall - Tom, 2026-11-27, from mock-ups; on
+  no legend words - Tom, 2026-11-27), the party's arrow a pixel clear of each wall - Tom, 2026-11-27, from
+  mock-ups; **Cluebook Maps** (Enhancements, on; `src/cluemaps.*`, the engine's `cluebook::make` at the scan,
+  `_CYD/<folder>/CM_<GEO>_<block>.IMG` + CLUEMAPS.TXT): the cluebook's own map, straightened, the party's arrow on
+  it, the area's name above (the drawn map gets the name too) - `play::map_source` says which map; on
   PoolRad's wilderness the lines are where a step is refused and the
   scripts' places are orange squares, the legend "Place"), Party; in a fight: Battle, Party. Party
   and Battle are the engine's own views (`game/companion.*`) through its

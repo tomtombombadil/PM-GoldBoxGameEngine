@@ -3,6 +3,18 @@
 Every version of Gold Box Game Engine for PortMaster. A release's notes are
 its part of this file.
 
+## [0.20.0] - 2026-11-27
+
+Built on the CYD engine 0.223.0.
+
+- **Cluebook Maps** (Start - Game Play - Enhancements, on): where your copy has the game's cluebook PDF (Steam's
+  Documentation folder, or the game's folder), the scan cuts each of its maps out - straightened, as the scans
+  curve near the binding - and the Companion shows the cluebook's own map with the party's arrow on it, the area's
+  name above. Off, or for a map the cluebook hasn't: the drawn map, the area's name above it too. Found so far in
+  the Steam and GOG cluebooks: Pool of Radiance 17 maps, Curse 7, Pools of Darkness 2, Champions 10, Death Knights
+  14, Treasures 28 (Gateway's and Secret's to come). A game scanned before gets them once at the next start.
+- No more legend words under the map (Locked / Secret / One-way): the symbols say it.
+
 ## [0.19.24] - 2026-11-27
 
 Built on the CYD engine 0.222.3.

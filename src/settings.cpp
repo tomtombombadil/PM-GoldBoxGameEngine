@@ -58,6 +58,7 @@ bool settings_load(const std::string& dir, Settings& s)
         else if (!strcmp(line, "saved_font")) s.saved_font = static_cast<uint8_t>(v < 0 || v > 3 ? 0 : v);
         else if (!strcmp(line, "max_hp")) s.max_hp = v != 0;
         else if (!strcmp(line, "no_race_limits")) s.no_race_limits = v != 0;
+        else if (!strcmp(line, "clue_maps")) s.clue_maps = v != 0;
         else if (!strcmp(line, "saved_no_race_limits")) s.saved_no_race_limits = v != 0;
         else if (!strcmp(line, "reply_asked")) s.reply_asked = v != 0;
     }
@@ -91,5 +92,6 @@ bool settings_save(const std::string& dir, const Settings& s)
             s.rules_off, static_cast<unsigned long long>(s.fixes_off), s.original ? 1 : 0, s.saved_comforts_off, s.saved_rules_off,
             static_cast<unsigned long long>(s.saved_fixes_off), s.saved_max_hp ? 1 : 0, s.saved_font);
     fprintf(f, "no_race_limits=%d\nsaved_no_race_limits=%d\n", s.no_race_limits ? 1 : 0, s.saved_no_race_limits ? 1 : 0);
+    fprintf(f, "clue_maps=%d\n", s.clue_maps ? 1 : 0);
     return fclose(f) == 0;
 }

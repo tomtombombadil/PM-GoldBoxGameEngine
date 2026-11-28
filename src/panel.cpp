@@ -1,5 +1,9 @@
 #include "panel.h"
 
+#include <functional>
+
+#include "cluemaps.h"
+
 #include "engine/geo.h"
 #include "game/companion.h"
 #include "game/play.h"
@@ -79,6 +83,79 @@ View first() { return play::fighting() ? View::Battle : View::Map; }
 // In the zone zx, zy, zw x zh. square: the buffer's pixels are square
 // (under the game; the legend to the map's right) - else squares 12 x 10,
 // about square once a 4:3 screen has stretched the rows, the legend under.
+std::string clue_cache;
+bool clue_on = false;
+
+// The party's arrowhead in a square at (sx, sy), cw x ch: fitted between its walls a pixel clear of each (Tom,
+// 2026-11-27: balanced every way round) - its tip two pixels wide where the room across is even
+void party_arrow(int sx, int sy, int cw, int ch, uint32_t col)
+{
+    const int dir = play::dir(), fx = geo::dx(dir), fy = geo::dy(dir);
+    const int na = (fx ? cw : ch) - 1, np = (fx ? ch : cw) - 1, len = na - 2;
+    const int base = np % 2 == 0 ? 2 : 1;
+    for (int i = 0; i < len; ++i) {
+        int wd = base + 2 * (i / 2);
+        if (wd > np - 2) wd = np - 2;
+        if (wd < 1) wd = 1;
+        const int a = 1 + (np - wd) / 2, along = (fx > 0 || fy > 0) ? na - 1 - i : 2 + i;
+        if (fx) put(sx + along, sy + a, 1, wd, col);
+        else put(sx + a, sy + along, wd, 1, col);
+    }
+}
+
+// The cluebook's own picture of the map (Cluebook Maps on and the scan made one for this map): as large as the zone
+// lets it be, the area's name above it, the party's arrow on its square. False: none - the drawn map then.
+bool draw_clue_map(int zx, int zy, int zw, int zh, bool square)
+{
+    if (!clue_on || clue_cache.empty()) return false;
+    char file[16];
+    const int block = play::map_source(file, sizeof file);
+    if (block < 0) return false;
+    const cluemaps::Picture* pic = cluemaps::picture(clue_cache, file, block);
+    if (!pic) return false;
+    const std::string name = cluemaps::name(clue_cache, file, block);
+    const int head = name.empty() ? 0 : 11;
+    // (beside the game the buffer's pixels are 1.2 times as tall as wide on the screen - the drawn map's 12 x 10
+    // squares: the picture 1.2 times as wide as tall here; under the game the pixels are square)
+    const double stretch = square ? 1.0 : 1.2;
+    int ph = square ? zh - 4 - head : zh - 6 - head;
+    if ((square ? zw - 4 : zw - 6) < ph * stretch) ph = static_cast<int>((square ? zw - 4 : zw - 6) / stretch);
+    const int pw = static_cast<int>(ph * stretch);
+    if (ph < 40) return false;
+    const int mx = square ? zx + 2 : zx + (zw - pw) / 2, my = zy + 2 + head;
+    if (head) letters(square ? zx + 2 : zx + 3, zy + 2, name.substr(0, (square ? pw : zw - 6) / 8).c_str(), video::kGold);
+    // (each screen pixel the mean of the picture's pixels under it)
+    const double kx = static_cast<double>(pic->w) / pw, ky = static_cast<double>(pic->h) / ph;
+    for (int y = 0; y < ph; ++y) {
+        const int y0 = static_cast<int>(y * ky), y1 = static_cast<int>((y + 1) * ky) > y0 ? static_cast<int>((y + 1) * ky) : y0 + 1;
+        for (int x = 0; x < pw; ++x) {
+            const int x0 = static_cast<int>(x * kx), x1 = static_cast<int>((x + 1) * kx) > x0 ? static_cast<int>((x + 1) * kx) : x0 + 1;
+            uint32_t r = 0, g = 0, b = 0, n = 0;
+            for (int j = y0; j < y1 && j < pic->h; ++j)
+                for (int i = x0; i < x1 && i < pic->w; ++i) {
+                    const uint8_t* q = &pic->rgb[(static_cast<size_t>(j) * pic->w + i) * 3];
+                    r += q[0];
+                    g += q[1];
+                    b += q[2];
+                    ++n;
+                }
+            if (n) put(mx + x, my + y, 1, 1, 0xFF000000u | (r / n) << 16 | (g / n) << 8 | (b / n));
+        }
+    }
+    // The party: its square on the straightened grid (half a square round it)
+    const double sqx = pic->square / kx, sqy = pic->square / ky;
+    const int ax = mx + static_cast<int>(0.5 * sqx + play::pos_x() * sqx), ay = my + static_cast<int>(0.5 * sqy + play::pos_y() * sqy);
+    const int cw = static_cast<int>(sqx + 0.5) + 1, ch = static_cast<int>(sqy + 0.5) + 1;
+    // (dark under the green so it shows on the paper)
+    party_arrow(ax - 1, ay, cw, ch, 0xFF004000u);
+    party_arrow(ax + 1, ay, cw, ch, 0xFF004000u);
+    party_arrow(ax, ay - 1, cw, ch, 0xFF004000u);
+    party_arrow(ax, ay + 1, cw, ch, 0xFF004000u);
+    party_arrow(ax, ay, cw, ch, 0xFF28FF28u);
+    map_rows = my + ph + 2;
+    return true;
+}
+
 void draw_map(int zx, int zy, int zw, int zh, bool square)
 {
     put(zx, zy, zw, zh, video::kBlack);
@@ -87,6 +164,20 @@ void draw_map(int zx, int zy, int zw, int zh, bool square)
         letters(zx + 8, zy + (square ? 8 : 40), "No map here.", video::kCream);
         map_rows = zy + 52;
         return;
+    }
+    if (draw_clue_map(zx, zy, zw, zh, square)) return;
+    // (the area's name from the cluebook above the drawn map too)
+    std::string area;
+    if (!clue_cache.empty()) {
+        char file[16];
+        const int block = play::map_source(file, sizeof file);
+        if (block >= 0) area = cluemaps::name(clue_cache, file, block);
+    }
+    const int head = area.empty() ? 0 : 11;
+    if (head) {
+        letters(zx + 3, zy + 2, area.substr(0, (zw - 6) / 8).c_str(), video::kGold);
+        zy += head;
+        zh -= head;
     }
     int cw = square ? (zh - 6) / m->h : (zw - 10) / m->w, ch = square ? cw : (zh - 24) / m->h;
     const int cap_w = square ? 9 : 12, cap_h = square ? 9 : 10;
@@ -193,39 +284,15 @@ void draw_map(int zx, int zy, int zw, int zh, bool square)
                 put(mx + x * cw + (cw - pw + 1) / 2, my + y * ch + (ch - ph + 1) / 2, pw, ph, kPlace);
                 places = true;
             }
-    // The party: an arrowhead the way it faces, fitted between the square's walls a pixel clear of each (Tom,
-    // 2026-11-27: balanced every way round) - its tip two pixels wide where the room across is even
-    {
-        const int sx = mx + play::pos_x() * cw, sy = my + play::pos_y() * ch;
-        const int dir = play::dir(), fx = geo::dx(dir), fy = geo::dy(dir);
-        const int na = (fx ? cw : ch) - 1, np = (fx ? ch : cw) - 1, len = na - 2;
-        const int base = np % 2 == 0 ? 2 : 1;
-        for (int i = 0; i < len; ++i) {
-            int wd = base + 2 * (i / 2);
-            if (wd > np - 2) wd = np - 2;
-            if (wd < 1) wd = 1;
-            const int a = 1 + (np - wd) / 2, along = (fx > 0 || fy > 0) ? na - 1 - i : 2 + i;
-            if (fx) put(sx + along, sy + a, 1, wd, 0xFF28FF28u);
-            else put(sx + a, sy + along, wd, 1, 0xFF28FF28u);
-        }
-    }
+    party_arrow(mx + play::pos_x() * cw, my + play::pos_y() * ch, cw, ch, 0xFF28FF28u);
     if (square) {
         const int lx = mx + m->w * cw + 10;
         if (places) letters(lx, my, "Place", kPlace);
-        else {
-            letters(lx, my, "Locked", video::kWarn);
-            letters(lx, my + 12, "Secret", video::kCyan);
-            letters(lx, my + 24, "One-way", video::kGold);
-        }
     } else {
         const int ly = my + m->h * ch + 6;
-        map_rows = ly + 10;
+        // (no words for the doors - Tom, 2026-11-27: the symbols say it; an overland's places keep theirs)
+        map_rows = places ? ly + 10 : my + m->h * ch + 3;
         if (places) letters(zx + 4, ly, "Place", kPlace);
-        else {
-            letters(zx + 4, ly, "Locked", video::kWarn);
-            letters(zx + 68, ly, "Secret", video::kCyan);
-            letters(zx + 132, ly, "One-way", video::kGold);
-        }
     }
 }
 
@@ -247,6 +314,10 @@ uint32_t signature(View v, bool blink_on)
         const geo::Map* m = play::map();
         s ^= static_cast<uint32_t>(reinterpret_cast<uintptr_t>(m)) ^ static_cast<uint32_t>(play::pos_x() << 8) ^
              static_cast<uint32_t>(play::pos_y() << 16) ^ static_cast<uint32_t>(play::dir() << 24) ^ (m ? 1u : 0u);
+        // (the cluebook's picture or the drawn map: Cluebook Maps, and which map it is)
+        char file[16];
+        s = s * 31 + (clue_on ? 7u : 3u) + static_cast<uint32_t>(play::map_source(file, sizeof file)) * 131u +
+            static_cast<uint32_t>(std::hash<std::string>()(clue_cache + file));
         // (a door opened shows too: the map's own bytes)
         if (m)
             for (int i = 0; i < m->squares(); ++i) s = s * 31 + m->pl(3)[i];
@@ -360,6 +431,12 @@ void leave()
         video::set_below(nullptr);
     }
     side_shown = false;
+}
+
+void clue(const std::string& cache, bool on)
+{
+    clue_cache = cache;
+    clue_on = on;
 }
 
 void hold(bool on)

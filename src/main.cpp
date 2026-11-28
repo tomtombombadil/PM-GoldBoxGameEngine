@@ -35,6 +35,7 @@
 
 #include "host.h"
 #include "jour.h"
+#include "cluemaps.h"
 #include "art.h"
 #include "library.h"
 #include "panel.h"
@@ -675,7 +676,7 @@ enum MenuItem : uint8_t {
     MDisplay, MRotation, MChooser, MJFont,  // Display (MRotation, MChooser, MJFont: Android's)
     MSound, MMusic, MVolume,                // Audio
     MOriginal, MEnhancePg, MRulesPg, MFixGamesPg,       // Game Play
-    MFont, MRolls, MSaveInfo, MAutoJoin, MKeepMem, MCampFix, MCoins, MOil, MAddInfo, MMoreGuys, MPortrait, MGallery,    // Enhancements
+    MFont, MClueMaps, MRolls, MSaveInfo, MAutoJoin, MKeepMem, MCampFix, MCoins, MOil, MAddInfo, MMoreGuys, MPortrait, MGallery,    // Enhancements
     MRule,                                  // AD&D 1E Rules (arg: rules::adnd_info's row)
     MFixGame,                               // Game Fixes (arg: games::Game; 0 Every Game)
     MFix,                                   // a game's fixes (arg: rules::Fix)
@@ -844,7 +845,7 @@ void menu_build()
         add(MFixGamesPg);
         break;
     case Page::Enhance:
-        for (MenuItem m : {MFont, MRolls, MSaveInfo, MAutoJoin, MKeepMem, MCampFix, MCoins, MOil, MAddInfo, MMoreGuys, MPortrait, MGallery}) add(m);
+        for (MenuItem m : {MFont, MClueMaps, MRolls, MSaveInfo, MAutoJoin, MKeepMem, MCampFix, MCoins, MOil, MAddInfo, MMoreGuys, MPortrait, MGallery}) add(m);
         break;
     case Page::Rules:
         for (int k = 0; k < rules::kAdndCount; ++k) add(MRule, k);
@@ -980,6 +981,7 @@ void menu_label(const MItem& it, char* out, size_t cap)
     case MFolder: snprintf(out, cap, "Games Folder..."); break;
     case MMaxHp: snprintf(out, cap, "Max Hit Points: %s", cfg.max_hp ? "On" : "Off"); break;
     case MNoRace: snprintf(out, cap, "Disable Race Level Limits: %s", cfg.no_race_limits ? "On" : "Off"); break;
+    case MClueMaps: snprintf(out, cap, "Cluebook Maps: %s", cfg.clue_maps ? "On" : "Off"); break;
     case MRescan: snprintf(out, cap, "Rescan Game Files"); break;
     case MClean: snprintf(out, cap, "Clean Up Game Files"); break;
     case MDevice: snprintf(out, cap, "Device Info"); break;
@@ -1092,6 +1094,9 @@ const char* menu_help(const MItem& it)
     case MNoRace:
         return "No race stops a class's levels: an elf fighter trains past 7, a new character starts at the levels its "
                "experience gives. Each game's own last level stays. A cheat: off unless you turn it on.";
+    case MClueMaps:
+        return "On: the Companion shows the map from your cluebook, the party's arrow on it, where the scan found "
+               "the map in your cluebook PDF. Off: the map drawn by the game's own walls.";
     case MReplyAddr: return "Your email address, sent with Send Logs so the developer can write back. Optional.";
     case MRescan: return "Looks through the games folder again and makes every game's picture, journal and music anew.";
     case MClean:
@@ -1562,6 +1567,7 @@ void draw_frame()
         // (Save Slot Info: with the Companion beside or under the game its Party view shows the
         // highlighted slot's party; without, the engine draws it in the game screen's right half)
         play::set_side_panel(panel::docked_on());
+        panel::clue(cur_cache, cfg.clue_maps);
         panel::draw(SDL_GetTicks());
         if (!menu_open && !prompt_open) draw_keys();
         if (ptr_on && !menu_open) video::pointer(static_cast<int>(ptr_x), static_cast<int>(ptr_y));
@@ -1926,6 +1932,14 @@ bool discover(bool all, bool pictures = true)
                 app_art_make(g);
             }
 #endif
+            // (found by a version before the cluebook maps: made now, once)
+            if (!cluemaps::ready(cache) && cluemaps::find(g).empty()) cluemaps::none(cache);
+            if (!cluemaps::ready(cache)) {
+                scan_begin(any);
+                snprintf(line, sizeof line, "Preparing the cluebook maps for %s", games::title(g.game));
+                scan_say(line, false, nullptr);
+                cluemaps::make(g, cache, scan_say);
+            }
             if (pictures && !art::ready(g, cache, art_want(g))) {
                 scan_begin(any);
                 snprintf(line, sizeof line, "Preparing the picture for %s", games::title(g.game));
@@ -1953,6 +1967,8 @@ bool discover(bool all, bool pictures = true)
                                               ? "  Its journal is ready."
                                               : "  No journal: its PDF isn't in the game's folder.");
         scan_say(line, false, nullptr);
+        // Its cluebook's maps, from the player's own PDF (the Companion's Cluebook Maps)
+        cluemaps::make(g, cache, scan_say);
         // Its music (the later games), from its own files
         // (engine 0.199: the Dark Queen's and Champions' too - by the game's profile, as the CYD's scan)
         const profile::Profile* prof = profile::first(g.game);
@@ -2415,6 +2431,7 @@ void menu_change(int step)
         cfg.no_race_limits = !cfg.no_race_limits;
         if (playing) apply_options();
         break;
+    case MClueMaps: cfg.clue_maps = !cfg.clue_maps; break;
     default:
         if (const uint16_t bit = comfort_bit(m)) {
             cfg.comforts_off ^= bit;
