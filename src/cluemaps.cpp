@@ -114,7 +114,16 @@ bool contains_nocase(const std::string& s, const char* what)
 
 } // namespace
 
-bool ready(const std::string& cache) { return plat::exists((cache + "/" + kList).c_str()); }
+bool ready(const std::string& cache)
+{
+    // (made, or none to make - by this version's way: a list of "maps 1" had the narrow margin and is made anew)
+    plat::File f = plat::open((cache + "/" + kList).c_str());
+    if (!f) return false;
+    char head[8] = {};
+    f.read(reinterpret_cast<uint8_t*>(head), 7);
+    f.close();
+    return strncmp(head, "maps 1", 6) != 0;
+}
 
 std::string find(const library::GameDir& g)
 {
@@ -137,7 +146,7 @@ void make(const library::GameDir& g, const std::string& cache, Say say)
     Writer w;
     w.cache = cache;
     w.say = say;
-    w.list = "maps 1\n";
+    w.list = "maps 2\n";       // (2: the coordinates round the map kept - a margin of kMargin squares)
     const int made = src.f ? cluebook::make(src, g.game, w) : -1;
     if (made > 0) {
         write_list(cache, w.list);

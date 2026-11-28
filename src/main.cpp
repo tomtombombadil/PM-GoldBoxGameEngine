@@ -673,7 +673,7 @@ enum MenuItem : uint8_t {
     MResume,
     // the pages
     MDisplayPg, MAudioPg, MPlayPg, MJournal, MCheats, MQuickPg, MControlsPg, MSystemPg, MLeaveGame, MExit,
-    MDisplay, MRotation, MChooser, MJFont,  // Display (MRotation, MChooser, MJFont: Android's)
+    MDisplay, MClueDark, MRotation, MChooser, MJFont,  // Display (MRotation, MChooser, MJFont: Android's)
     MSound, MMusic, MVolume,                // Audio
     MOriginal, MEnhancePg, MRulesPg, MFixGamesPg,       // Game Play
     MFont, MClueMaps, MRolls, MSaveInfo, MAutoJoin, MKeepMem, MCampFix, MCoins, MOil, MAddInfo, MMoreGuys, MPortrait, MGallery,    // Enhancements
@@ -827,6 +827,7 @@ void menu_build()
         break;
     case Page::Display:
         add(MDisplay);      // (in the Android app's drawer: 4:3, Square Pixels, Stretch - the app places the Companion)
+        add(MClueDark);
 #ifdef __ANDROID__
         add(MRotation);
         if (shell::on()) add(MChooser);
@@ -982,6 +983,7 @@ void menu_label(const MItem& it, char* out, size_t cap)
     case MMaxHp: snprintf(out, cap, "Max Hit Points: %s", cfg.max_hp ? "On" : "Off"); break;
     case MNoRace: snprintf(out, cap, "Disable Race Level Limits: %s", cfg.no_race_limits ? "On" : "Off"); break;
     case MClueMaps: snprintf(out, cap, "Cluebook Maps: %s", cfg.clue_maps ? "On" : "Off"); break;
+    case MClueDark: snprintf(out, cap, "Cluebook Map Colors: %s", cfg.clue_dark ? "Dark" : "As Printed"); break;
     case MRescan: snprintf(out, cap, "Rescan Game Files"); break;
     case MClean: snprintf(out, cap, "Clean Up Game Files"); break;
     case MDevice: snprintf(out, cap, "Device Info"); break;
@@ -1094,6 +1096,9 @@ const char* menu_help(const MItem& it)
     case MNoRace:
         return "No race stops a class's levels: an elf fighter trains past 7, a new character starts at the levels its "
                "experience gives. Each game's own last level stays. A cheat: off unless you turn it on.";
+    case MClueDark:
+        return "Dark: a cluebook map printed on white paper is shown light on dark, as the game's screens are. "
+               "As Printed: as the book has it.";
     case MClueMaps:
         return "On: the Companion shows the map from your cluebook, the party's arrow on it, where the scan found "
                "the map in your cluebook PDF. Off: the map drawn by the game's own walls.";
@@ -1567,7 +1572,7 @@ void draw_frame()
         // (Save Slot Info: with the Companion beside or under the game its Party view shows the
         // highlighted slot's party; without, the engine draws it in the game screen's right half)
         play::set_side_panel(panel::docked_on());
-        panel::clue(cur_cache, cfg.clue_maps);
+        panel::clue(cur_cache, cfg.clue_maps, cfg.clue_dark);
         panel::draw(SDL_GetTicks());
         if (!menu_open && !prompt_open) draw_keys();
         if (ptr_on && !menu_open) video::pointer(static_cast<int>(ptr_x), static_cast<int>(ptr_y));
@@ -2432,6 +2437,7 @@ void menu_change(int step)
         if (playing) apply_options();
         break;
     case MClueMaps: cfg.clue_maps = !cfg.clue_maps; break;
+    case MClueDark: cfg.clue_dark = !cfg.clue_dark; break;
     default:
         if (const uint16_t bit = comfort_bit(m)) {
             cfg.comforts_off ^= bit;

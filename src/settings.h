@@ -25,6 +25,7 @@ struct Settings {
     bool    max_hp = false;     // the Max Hit Points cheat
     bool    no_race_limits = false;   // the Disable Race Level Limits cheat (Tom, 2026-11-21)
     bool    clue_maps = true;         // the Companion shows the cluebook's own map pictures (Tom, 2026-11-27)
+    bool    clue_dark = true;         // ... light on dark (Tom, 2026-11-28: the white maps stand out)
     std::string reply_email;    // Send Logs: the player's reply address ("" none) - goes with the logs
     bool    reply_asked = false; // Send Logs asked for it once (the player may have said No Thanks)
     // ---- the menus by Tom's tree (v0.12.0, engine 0.209.0)

@@ -3,6 +3,7 @@
 #include <functional>
 
 #include "cluemaps.h"
+#include "engine/cluebook.h"
 
 #include "engine/geo.h"
 #include "game/companion.h"
@@ -85,6 +86,7 @@ View first() { return play::fighting() ? View::Battle : View::Map; }
 // about square once a 4:3 screen has stretched the rows, the legend under.
 std::string clue_cache;
 bool clue_on = false;
+bool clue_dark = true;
 
 // The party's arrowhead in a square at (sx, sy), cw x ch: fitted between its walls a pixel clear of each (Tom,
 // 2026-11-27: balanced every way round) - its tip two pixels wide where the room across is even
@@ -124,6 +126,14 @@ bool draw_clue_map(int zx, int zy, int zw, int zh, bool square)
     if (ph < 40) return false;
     const int mx = square ? zx + 2 : zx + (zw - pw) / 2, my = zy + 2 + head;
     if (head) letters(square ? zx + 2 : zx + 3, zy + 2, name.substr(0, (square ? pw : zw - 6) / 8).c_str(), video::kGold);
+    // (Dark: a book printed on light paper shown light on dark - each colour's lightness turned over, its hue kept;
+    // a book printed light on dark - Steam Gateway's - as it is)
+    bool flip = false;
+    if (clue_dark) {
+        uint64_t sum = 0;
+        for (size_t i = 0; i < pic->rgb.size(); i += 3 * 7) sum += (pic->rgb[i] * 3 + pic->rgb[i + 1] * 6 + pic->rgb[i + 2]) / 10;
+        flip = sum * 3 * 7 / pic->rgb.size() > 128;
+    }
     // (each screen pixel the mean of the picture's pixels under it)
     const double kx = static_cast<double>(pic->w) / pw, ky = static_cast<double>(pic->h) / ph;
     for (int y = 0; y < ph; ++y) {
@@ -139,12 +149,21 @@ bool draw_clue_map(int zx, int zy, int zw, int zh, bool square)
                     b += q[2];
                     ++n;
                 }
-            if (n) put(mx + x, my + y, 1, 1, 0xFF000000u | (r / n) << 16 | (g / n) << 8 | (b / n));
+            if (!n) continue;
+            int cr = static_cast<int>(r / n), cg = static_cast<int>(g / n), cb = static_cast<int>(b / n);
+            if (flip) {
+                const int l = (cr * 3 + cg * 6 + cb) / 10, shift = 255 - 2 * l;
+                cr = cr + shift < 0 ? 0 : cr + shift > 255 ? 255 : cr + shift;
+                cg = cg + shift < 0 ? 0 : cg + shift > 255 ? 255 : cg + shift;
+                cb = cb + shift < 0 ? 0 : cb + shift > 255 ? 255 : cb + shift;
+            }
+            put(mx + x, my + y, 1, 1, 0xFF000000u | static_cast<uint32_t>(cr) << 16 | static_cast<uint32_t>(cg) << 8 | static_cast<uint32_t>(cb));
         }
     }
     // The party: its square on the straightened grid (half a square round it)
     const double sqx = pic->square / kx, sqy = pic->square / ky;
-    const int ax = mx + static_cast<int>(0.5 * sqx + play::pos_x() * sqx), ay = my + static_cast<int>(0.5 * sqy + play::pos_y() * sqy);
+    const int ax = mx + static_cast<int>(cluebook::kMargin * sqx + play::pos_x() * sqx),
+              ay = my + static_cast<int>(cluebook::kMargin * sqy + play::pos_y() * sqy);
     const int cw = static_cast<int>(sqx + 0.5) + 1, ch = static_cast<int>(sqy + 0.5) + 1;
     // (dark under the green so it shows on the paper)
     party_arrow(ax - 1, ay, cw, ch, 0xFF004000u);
@@ -316,7 +335,7 @@ uint32_t signature(View v, bool blink_on)
              static_cast<uint32_t>(play::pos_y() << 16) ^ static_cast<uint32_t>(play::dir() << 24) ^ (m ? 1u : 0u);
         // (the cluebook's picture or the drawn map: Cluebook Maps, and which map it is)
         char file[16];
-        s = s * 31 + (clue_on ? 7u : 3u) + static_cast<uint32_t>(play::map_source(file, sizeof file)) * 131u +
+        s = s * 31 + (clue_on ? 7u : 3u) + (clue_dark ? 11u : 0u) + static_cast<uint32_t>(play::map_source(file, sizeof file)) * 131u +
             static_cast<uint32_t>(std::hash<std::string>()(clue_cache + file));
         // (a door opened shows too: the map's own bytes)
         if (m)
@@ -433,10 +452,11 @@ void leave()
     side_shown = false;
 }
 
-void clue(const std::string& cache, bool on)
+void clue(const std::string& cache, bool on, bool dark)
 {
     clue_cache = cache;
     clue_on = on;
+    clue_dark = dark;
 }
 
 void hold(bool on)

@@ -40,6 +40,6 @@ void draw(uint32_t now_ms);
 void hold(bool on);
 // The Companion's map from the cluebook (Tom, 2026-11-27: Cluebook Maps): the open game's _CYD folder (the
 // scan's pictures there) and whether the switch is on - each frame
-void clue(const std::string& cache, bool on);
+void clue(const std::string& cache, bool on, bool dark);
 
 } // namespace panel

@@ -3,6 +3,18 @@
 Every version of Gold Box Game Engine for PortMaster. A release's notes are
 its part of this file.
 
+## [0.21.0] - 2026-11-28
+
+Built on the CYD engine 0.226.0.
+
+- **Display - Cluebook Map Colors: Dark / As Printed** (Dark at first; Tom: "the white background maps really stand
+  out"): a cluebook map printed on white paper is shown light on dark, its colours' lightness turned over; a book
+  already printed light on dark (Steam Gateway's) stays as it is.
+- The cluebook maps keep the row and column numbers printed round them (the coordinates the games show). Maps made
+  by 0.20 are made again once at the next start.
+- Gateway's Steam cluebook is recognised: 18 maps (its pages were pieced together from several pictures, and the
+  PDF has more objects than the reader took at first).
+
 ## [0.20.1] - 2026-11-27
 
 Built on the CYD engine 0.224.1.
