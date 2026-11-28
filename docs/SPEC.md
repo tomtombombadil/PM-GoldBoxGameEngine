@@ -486,6 +486,15 @@ hotkey.
     engine. The app's dialog asks what happened and opens the player's email app with the answers and a
     zip (the log, settings, the engine's notes, DEVICE.TXT, REPORT.TXT, the save if ticked). The chooser's
     hold menu: op 18 with the game's index.
+  - **The app's menu, v0.23.0** (Tom, 2026-11-28): a choice line (kind C) carries a 5th field - its values in
+    Right's order, 0x1F between (`menu_choices`, worked out in cfg alone - `menu_dry`: nothing applied or saved);
+    the app's list picks one by op 19 (index, how many places on - `menu_pick`); Quick Actions' member the same.
+    Device Info (Android): the versions with their v, a G heading "This Device" and the app's lines
+    (`GoldBoxActivity.deviceInfo`), then a G heading per game (the nine in series order, others after) - Version
+    (Steam / GOG / Unknown Version, Not Present), Journal, Cluebook (CLUEMAPS.TXT's maps or why not), Music (the
+    games with music). A line's name may hold 0x1F, the app's line break. Rescan / Clean Up from the menu: the
+    drawer told at once (scan_put sends channel 0), Continue back to the menu (`scan_from_menu`). Script step
+    `op:OP:INDEX:VALUE`.
 - The helper scripts run on a thread (`src/task.*`); the screen shows a
   notice until they end. Buttons only: all of it from the Start menu.
 
